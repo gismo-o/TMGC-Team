@@ -1,0 +1,287 @@
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable, ScrollView } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList } from '../types';
+import { Sparkles, Droplets, Wind, Sun, Leaf, Edit2, Lightbulb } from 'lucide-react-native';
+import { useProducts } from '../context/ProductContext';
+
+type Props = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'ProductDetail'>;
+  route: RouteProp<RootStackParamList, 'ProductDetail'>;
+};
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'Temizleyici': return <Wind size={48} color="#426447" />;
+    case 'Tonik': return <Droplets size={48} color="#426447" />;
+    case 'Serum': return <Droplets size={48} color="#426447" />;
+    case 'Nemlendirici': return <Leaf size={48} color="#426447" />;
+    case 'Güneş Kremi': return <Sun size={48} color="#426447" />;
+    default: return <Sparkles size={48} color="#426447" />;
+  }
+};
+
+const getRemainingDays = (dateString?: string) => {
+  if (!dateString) return null;
+  const expiry = new Date(dateString);
+  const now = new Date();
+  const diffTime = expiry.getTime() - now.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const isExpired = (dateString?: string) => {
+  const days = getRemainingDays(dateString);
+  return days !== null && days < 0;
+};
+
+export default function ProductDetailScreen({ navigation, route }: Props) {
+  const { products } = useProducts();
+  const product = products.find(p => p.id === route.params.productId);
+
+  if (!product) {
+    return (
+      <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} onPress={() => navigation.goBack()} />
+        <View style={styles.sheet}>
+          <Text style={styles.name}>Ürün bulunamadı.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const handleEdit = () => {
+    Alert.alert('Bilgi', 'Düzenleme ekranı yapım aşamasındadır.');
+  };
+
+  const remainingDays = getRemainingDays(product.expiryDate);
+  const expired = isExpired(product.expiryDate);
+
+  // TODO / BACKEND NOTE: İleride Supabase'den çekilecek örnek veriler.
+  // product.ingredients veya benzer bir array'den beslenmeli.
+  const sampleIngredients = ['C Vitamini', 'Ferulik Asit', 'E Vitamini'];
+  
+  // TODO / BACKEND NOTE: product.description alanından dinamik olarak gelmeli.
+  const sampleDescription = 'Cilt tonunu eşitlemeye, leke görünümünü azaltmaya ve cilde daha aydınlık bir görünüm kazandırmaya yardımcı olan yoğun antioksidan serum.';
+
+  // TODO / BACKEND NOTE: user_custom_analysis veya AI generatif sonucundan dönen metin buraya basılmalı.
+  const sampleAiAnalysis = 'Bu C Vitamini serumu lekelerinizi açmada çok etkilidir ancak profilinizde belirttiğiniz Roza hassasiyetiniz sebebiyle cildinizde hafif kızarıklık yapabilir. Haftada 2 gün ile başlayarak cildinizi alıştırmanız önerilir.';
+
+  return (
+    <View style={styles.overlay}>
+      <Pressable style={styles.backdrop} onPress={() => navigation.goBack()} />
+      <View style={styles.sheet}>
+        {/* Modal Handle */}
+        <View style={styles.handle} />
+        
+        {/* Header & Edit Button */}
+        <View style={styles.sheetHeader}>
+          <View style={styles.headerSpacer} />
+          <TouchableOpacity style={styles.editIconButton} onPress={handleEdit}>
+            <Edit2 size={20} color="#707973" />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Icon & Title */}
+          <View style={styles.topSection}>
+            <View style={styles.iconWrapper}>
+              {getCategoryIcon(product.category)}
+            </View>
+
+            <Text style={styles.brand}>{product.brand}</Text>
+            <Text style={styles.name}>{product.name}</Text>
+            
+            {(remainingDays !== null || expired) && (
+              <View style={[styles.expiryBadge, expired && styles.expiredBadge]}>
+                <Text style={[styles.expiryText, expired && styles.expiredText]}>
+                  {expired ? 'Süresi Doldu' : `${remainingDays} gün kaldı`}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Ingredients */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Öne Çıkan İçerikler</Text>
+            <View style={styles.ingredientsContainer}>
+              {sampleIngredients.map((ing, idx) => (
+                <View key={idx} style={styles.ingredientBadge}>
+                  <Text style={styles.ingredientText}>{ing}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* About */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ürün Hakkında</Text>
+            <Text style={styles.bodyText}>{sampleDescription}</Text>
+          </View>
+
+          {/* AI Analysis */}
+          <View style={styles.aiCard}>
+            <View style={styles.aiCardHeader}>
+              <Lightbulb size={20} color="#8a6100" style={{ marginRight: 8 }} />
+              <Text style={styles.aiCardTitle}>Cildinize Özel AI Analizi 💡</Text>
+            </View>
+            <Text style={styles.aiCardText}>{sampleAiAnalysis}</Text>
+          </View>
+          
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  sheet: {
+    backgroundColor: '#FAF9F5',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingTop: 16,
+    maxHeight: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  handle: {
+    width: 48,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#c0c9c1',
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 8,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  editIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f1ec',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  topSection: {
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 32,
+  },
+  iconWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#e9efea',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  brand: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#426447',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#1b1c1c',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  expiryBadge: {
+    backgroundColor: '#ffdad6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  expiredBadge: {
+    backgroundColor: '#BA1A1A',
+  },
+  expiryText: {
+    color: '#BA1A1A',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  expiredText: {
+    color: '#ffffff',
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1b1c1c',
+    marginBottom: 12,
+  },
+  ingredientsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  ingredientBadge: {
+    backgroundColor: '#e9efea',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  ingredientText: {
+    color: '#426447',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  bodyText: {
+    fontSize: 15,
+    color: '#404943',
+    lineHeight: 22,
+  },
+  aiCard: {
+    backgroundColor: '#fefce8',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#fef08a',
+  },
+  aiCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  aiCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#854d0e',
+  },
+  aiCardText: {
+    fontSize: 15,
+    color: '#713f12',
+    lineHeight: 22,
+  },
+});
