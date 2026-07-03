@@ -113,8 +113,8 @@ Uygulamanın arayüz mimarisi ve kullanıcı akışları mantıksal modüllere a
 
 Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını, cilt tipi ve özel hassasiyetlerini (alerjenler, özel durumlar) belirleyerek kişiselleştirilmiş bir deneyim başlatmasını sağlayan onboarding adımlarıdır.
 
-| <img src="assets/screenshots/giris.png" width="200"> | <img src="assets/screenshots/hesap_olustur.png" width="200"> | <img src="assets/screenshots/cilt_tip.png" width="200"> |
-| <img src="assets/screenshots/giris2.png" width="200"> | <img src="assets/screenshots/ozel_durum.png" width="200"> | <img src="assets/screenshots/ozel_durum2.png" width="200"> |
+<img src="assets/screenshots/giris.png" width="200"> <img src="assets/screenshots/hesap_olustur.png" width="200"> <img src="assets/screenshots/cilt_tip.png" width="200">
+<img src="assets/screenshots/giris2.png" width="200"> <img src="assets/screenshots/ozel_durum.png" width="200"> <img src="assets/screenshots/ozel_durum2.png" width="200">
 
 - **Açıklama:** Kullanıcı kayıt aşamasında sadece temel bilgilerini değil; hamilelik, emzirme veya belirli içerik hassasiyetlerini (parfüm, alkol vb.) sisteme işleyerek yapay zeka analiz motoruna temel girdi sağlar.
 
