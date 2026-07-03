@@ -113,8 +113,8 @@ Uygulamanın arayüz mimarisi ve kullanıcı akışları mantıksal modüllere a
 
 Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını, cilt tipi ve özel hassasiyetlerini (alerjenler, özel durumlar) belirleyerek kişiselleştirilmiş bir deneyim başlatmasını sağlayan onboarding adımlarıdır.
 
-| <img src="SkinShelf/assets/screenshots/giris.png" width="200"> | <img src="SkinShelf/assets/screenshots/hesap_olustur.png" width="200"> | <img src="SkinShelf/assets/screenshots/cilt_tip.png" width="200"> |
-| <img src="SkinShelf/assets/screenshots/giris2.png" width="200"> | <img src="SkinShelf/assets/screenshots/ozel_durum.png" width="200"> | <img src="SkinShelf/assets/screenshots/ozel_durum2.png" width="200"> |
+| <img src="assets/screenshots/giris.png" width="200"> | <img src="assets/screenshots/hesap_olustur.png" width="200"> | <img src="assets/screenshots/cilt_tip.png" width="200"> |
+| <img src="assets/screenshots/giris2.png" width="200"> | <img src="assets/screenshots/ozel_durum.png" width="200"> | <img src="assets/screenshots/ozel_durum2.png" width="200"> |
 
 - **Açıklama:** Kullanıcı kayıt aşamasında sadece temel bilgilerini değil; hamilelik, emzirme veya belirli içerik hassasiyetlerini (parfüm, alkol vb.) sisteme işleyerek yapay zeka analiz motoruna temel girdi sağlar.
 
@@ -124,9 +124,9 @@ Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını, cilt tipi v
 
 Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yükledikleri ya da kozmetik ürün barkodlarını taratarak Gemini 2.5 Flash motoru üzerinden içerik analizi aldıkları merkez modüldür.
 
-|                          AI Cilt Analizi                           |                         Barkod Tarayıcı                         |                          Fotoğraf Çekim                           |
-| :----------------------------------------------------------------: | :-------------------------------------------------------------: | :---------------------------------------------------------------: |
-| <img src="SkinShelf/assets/screenshots/ai_analiz.png" width="200"> | <img src="SkinShelf/assets/screenshots/barkod.png" width="200"> | <img src="SkinShelf/assets/screenshots/foto_cek.png" width="200"> |
+|                     AI Cilt Analizi                      |                    Barkod Tarayıcı                    |                     Fotoğraf Çekim                      |
+| :------------------------------------------------------: | :---------------------------------------------------: | :-----------------------------------------------------: |
+| <img src="assets/screenshots/ai_analiz.png" width="200"> | <img src="assets/screenshots/barkod.png" width="200"> | <img src="assets/screenshots/foto_cek.png" width="200"> |
 
 - **Açıklama:** Canlı kamera entegrasyonu ve tarama animasyonları ile desteklenen bu modül, kullanıcının anlık girdi göndermesini kolaylaştıracak şekilde tasarlanmıştır.
 
@@ -136,9 +136,9 @@ Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yü
 
 Kullanıcıların ellerindeki kozmetik ürünleri dijital ortama aktardıkları, rutinlerini yönettikleri ve ürünlerin detaylı içerik analiz raporlarını inceledikleri yönetim panelidir.
 
-|                        Dijital Dolabım                         |                         Ürün Detay & Analiz                          |                        Ürün Ekleme (Arama)                         |                          Ürün Detay Girişi                          |
-| :------------------------------------------------------------: | :------------------------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------------------: |
-| <img src="SkinShelf/assets/screenshots/dolab.png" width="180"> | <img src="SkinShelf/assets/screenshots/dolab_detay.png" width="180"> | <img src="SkinShelf/assets/screenshots/urun_ekle.png" width="180"> | <img src="SkinShelf/assets/screenshots/urun_ekle2.png" width="180"> |
+|                   Dijital Dolabım                    |                    Ürün Detay & Analiz                     |                   Ürün Ekleme (Arama)                    |                     Ürün Detay Girişi                     |
+| :--------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: | :-------------------------------------------------------: |
+| <img src="assets/screenshots/dolab.png" width="180"> | <img src="assets/screenshots/dolab_detay.png" width="180"> | <img src="assets/screenshots/urun_ekle.png" width="180"> | <img src="assets/screenshots/urun_ekle2.png" width="180"> |
 
 - **Açıklama:** Kullanıcılar dolaplarındaki ürünlerin içeriklerinin kendi cilt tiplerine (Örn: Niasinamid %10 + Çinko %1) uygun olup olmadığını, komedojenik risk durumlarını ve özel hassasiyetleriyle çakışıp çakışmadığını görebilirler.
 
@@ -148,7 +148,7 @@ Kullanıcıların ellerindeki kozmetik ürünleri dijital ortama aktardıkları,
 
 |                                   Kullanıcı Profili                                   |
 | :-----------------------------------------------------------------------------------: |
-|            <img src="SkinShelf/assets/screenshots/profil.png" width="200">            |
+|                 <img src="assets/screenshots/profil.png" width="200">                 |
 | Cilt profili güncellenmesi, hesap ayarları ve bildirim yönetiminin yapıldığı alandır. |
 
 ---
