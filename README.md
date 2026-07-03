@@ -4,17 +4,21 @@
 >
 > Yapay zekâ destekli kişiselleştirilmiş cilt bakım asistanı geliştirmeyi amaçlayan mobil uygulama projesi.
 
+# 📌 Ürün Bilgileri
+
 ---
 
-# 📌 Ürün Bilgileri
+## Ürün İsmi : **SkinShelf**
+
+---
 
 ## 👥 Takım Elemanları
 
-| İsim | Rol |
-|------|-----|
-| **Tuba Köten** | Scrum Master |
+| İsim                 | Rol           |
+| -------------------- | ------------- |
+| **Tuba Köten**       | Scrum Master  |
 | **Gizem İlayda Koz** | Product Owner |
-| **Ceren Sivri** | Developer |
+| **Ceren Sivri**      | Developer     |
 
 ---
 
@@ -90,3 +94,61 @@ Bu proje aşağıdaki kullanıcı gruplarına yönelik geliştirilmektedir:
 # 🎯 Proje Amacı
 
 Kullanıcıların sahip oldukları cilt bakım ürünlerini daha bilinçli kullanmalarını sağlamak, ürün içeriklerini yapay zekâ ile analiz etmek, kişiye özel bakım rutinleri oluşturmak ve cilt bakım sürecini daha kolay, güvenli ve etkili hale getirmektir.
+
+## 📌 Sprint - 1
+
+### Sprint 1 Kapsamında Tamamlananlar
+
+- **Mobil İskelet ve Mimari:** React Native, Expo (SDK 54) ve TypeScript ortamı başarıyla ayağa kaldırıldı. Projenin ölçeklenebilir olması adına `src/` altında `screens`, `navigation`, `services` ve `context` katmanları oluşturuldu.
+- **UI/UX Tasarımı ve Ekran Geliştirmeleri:** Kullanıcı deneyimini (UX) ön planda tutan modern, temiz ve tutarlı bir arayüz dili oluşturularak uygulamanın tüm ana akış tasarımları tamamlandı.
+- **Kritik Hata Çözümleri:** Form ekranlarında klavye odaklanma problemleri (`keyboardShouldPersistTaps`) ve butonların üst üste binerek tıklama kaçırma sorunları (`pointerEvents`) tamamen optimize edildi.
+
+---
+
+### Uygulama Ekranları ve Akış Açıklamaları
+
+Uygulamanın arayüz mimarisi ve kullanıcı akışları mantıksal modüllere ayrılarak geliştirilmiştir:
+
+#### 1. Giriş ve Hesap Oluşturma Akışı
+
+Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını, cilt tipi ve özel hassasiyetlerini (alerjenler, özel durumlar) belirleyerek kişiselleştirilmiş bir deneyim başlatmasını sağlayan onboarding adımlarıdır.
+
+| <img src="SkinShelf/assets/screenshots/giris.png" width="200"> | <img src="SkinShelf/assets/screenshots/hesap_olustur.png" width="200"> | <img src="SkinShelf/assets/screenshots/cilt_tip.png" width="200"> |
+| <img src="SkinShelf/assets/screenshots/giris2.png" width="200"> | <img src="SkinShelf/assets/screenshots/ozel_durum.png" width="200"> | <img src="SkinShelf/assets/screenshots/ozel_durum2.png" width="200"> |
+
+- **Açıklama:** Kullanıcı kayıt aşamasında sadece temel bilgilerini değil; hamilelik, emzirme veya belirli içerik hassasiyetlerini (parfüm, alkol vb.) sisteme işleyerek yapay zeka analiz motoruna temel girdi sağlar.
+
+---
+
+#### 2. Yapay Zeka (AI) Analiz ve Tarama Akışı
+
+Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yükledikleri ya da kozmetik ürün barkodlarını taratarak Gemini 2.5 Flash motoru üzerinden içerik analizi aldıkları merkez modüldür.
+
+|                          AI Cilt Analizi                           |                         Barkod Tarayıcı                         |                          Fotoğraf Çekim                           |
+| :----------------------------------------------------------------: | :-------------------------------------------------------------: | :---------------------------------------------------------------: |
+| <img src="SkinShelf/assets/screenshots/ai_analiz.png" width="200"> | <img src="SkinShelf/assets/screenshots/barkod.png" width="200"> | <img src="SkinShelf/assets/screenshots/foto_cek.png" width="200"> |
+
+- **Açıklama:** Canlı kamera entegrasyonu ve tarama animasyonları ile desteklenen bu modül, kullanıcının anlık girdi göndermesini kolaylaştıracak şekilde tasarlanmıştır.
+
+---
+
+#### 3. Dijital Dolap ve Ürün Yönetimi Akışı
+
+Kullanıcıların ellerindeki kozmetik ürünleri dijital ortama aktardıkları, rutinlerini yönettikleri ve ürünlerin detaylı içerik analiz raporlarını inceledikleri yönetim panelidir.
+
+|                        Dijital Dolabım                         |                         Ürün Detay & Analiz                          |                        Ürün Ekleme (Arama)                         |                          Ürün Detay Girişi                          |
+| :------------------------------------------------------------: | :------------------------------------------------------------------: | :----------------------------------------------------------------: | :-----------------------------------------------------------------: |
+| <img src="SkinShelf/assets/screenshots/dolab.png" width="180"> | <img src="SkinShelf/assets/screenshots/dolab_detay.png" width="180"> | <img src="SkinShelf/assets/screenshots/urun_ekle.png" width="180"> | <img src="SkinShelf/assets/screenshots/urun_ekle2.png" width="180"> |
+
+- **Açıklama:** Kullanıcılar dolaplarındaki ürünlerin içeriklerinin kendi cilt tiplerine (Örn: Niasinamid %10 + Çinko %1) uygun olup olmadığını, komedojenik risk durumlarını ve özel hassasiyetleriyle çakışıp çakışmadığını görebilirler.
+
+---
+
+#### 4. Profil ve Ayarlar
+
+|                                   Kullanıcı Profili                                   |
+| :-----------------------------------------------------------------------------------: |
+|            <img src="SkinShelf/assets/screenshots/profil.png" width="200">            |
+| Cilt profili güncellenmesi, hesap ayarları ve bildirim yönetiminin yapıldığı alandır. |
+
+---
