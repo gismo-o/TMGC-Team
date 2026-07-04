@@ -95,6 +95,35 @@ Bu proje aşağıdaki kullanıcı gruplarına yönelik geliştirilmektedir:
 
 Kullanıcıların sahip oldukları cilt bakım ürünlerini daha bilinçli kullanmalarını sağlamak, ürün içeriklerini yapay zekâ ile analiz etmek, kişiye özel bakım rutinleri oluşturmak ve cilt bakım sürecini daha kolay, güvenli ve etkili hale getirmektir.
 
+# 🧩 Sistem Tasarımı
+
+## UML Diyagramı
+
+Uygulamanın veri modelini ve sınıflar arası ilişkileri gösteren UML class diyagramı, mevcut kod tabanı (`src/types.ts`, `src/context/*`, `src/services/*`) esas alınarak oluşturulmuştur.
+
+<img width="1104" height="826" alt="Ekran Resmi 2026-07-04 10 29 26" src="https://github.com/user-attachments/assets/151e7fe6-f745-4e2b-83cf-d3812bad9bce" />
+
+**Mevcut varlıklar (kodda uygulanmış):**
+- `User` — kimlik doğrulama bilgisi (`authService`)
+- `UserProfile` — cilt tipi, hassasiyetler, onboarding durumu (`UserContext`)
+- `Product` — dolaptaki ürün bilgisi (`ProductContext`, `productService`)
+
+**Planlanan varlıklar (Sprint 2–3 kapsamında, henüz kodda yok):** `Routine`, `SkinAnalysis`, `ProgressEntry`. Diyagramda bunlar kesikli çizgiyle gösterilmiştir; geliştirildikçe diyagram güncellenmelidir.
+
+## Akış Şemaları (Flow Charts)
+
+Uygulamanın temel kullanıcı akışları, `RootNavigator.tsx` ve ekranlardaki `navigate()` / `replace()` çağrıları esas alınarak çıkarılmıştır — yani şema kod ile birebir doğrulanmıştır.
+
+<img width="1104" height="750" alt="Ekran Resmi 2026-07-04 10 30 11" src="https://github.com/user-attachments/assets/336c95cc-b0e5-4f4b-9801-77939c22e647" />
+
+**Kapsanan akışlar:**
+1. **Kimlik Doğrulama & Onboarding** — Login → SignIn/SignUp → SkinType → SkinConditions → MainTabs
+2. **Ürün Tarama & Dolaba Ekleme** — Home → Scanner (Barkod | Fotoğraf) → `productService.scanProduct()` → ProductReview → MainTabs; ayrıca Home → ProductDetail
+3. **Profil Düzenleme & Çıkış** — Profile → Login (çıkış) veya Profile → SkinType → SkinConditions → MainTabs (cilt tipini düzenleme)
+
+> Not: `Routine`, `SkinAnalysis`, `ProgressEntry` ekranları henüz kodda olmadığı için bu şemaya dahil edilmedi. Sprint 2–3'te bu ekranlar geliştirildiğinde şema güncellenmelidir.
+
+
 ## 📌 Sprint - 1
 
 ### Sprint 1 Kapsamında Tamamlananlar
@@ -102,6 +131,9 @@ Kullanıcıların sahip oldukları cilt bakım ürünlerini daha bilinçli kulla
 - **Mobil İskelet ve Mimari:** React Native, Expo (SDK 54) ve TypeScript ortamı başarıyla ayağa kaldırıldı. Projenin ölçeklenebilir olması adına `src/` altında `screens`, `navigation`, `services` ve `context` katmanları oluşturuldu.
 - **UI/UX Tasarımı ve Ekran Geliştirmeleri:** Kullanıcı deneyimini (UX) ön planda tutan modern, temiz ve tutarlı bir arayüz dili oluşturularak uygulamanın tüm ana akış tasarımları tamamlandı.
 - **Kritik Hata Çözümleri:** Form ekranlarında klavye odaklanma problemleri (`keyboardShouldPersistTaps`) ve butonların üst üste binerek tıklama kaçırma sorunları (`pointerEvents`) tamamen optimize edildi.
+
+**Backlog düzeni ve Story seçimleri:** Backlog'umuz story bazında düzenlenmiştir. Notion üzerindeki Product Backlog'da 22 kart bulunmaktadır: User Story & Analiz, UI/UX Tasarımı, Authentication, Cilt Profili Modülü, Ürün Yönetimi, Ingredient Analyzer Agent, Compatibility Checker Agent, Recommendation Agent, Routine Planner Agent, AI Chat, Analiz Sonucu, Geçmiş Analizler, Bildirimler, Backend, Database, AI Servisleri, Mobil, Deployment, Test, Dokümantasyon, Sunum, Opsiyonel Özellikler.
+
 
 ---
 
