@@ -1,10 +1,10 @@
 import { Category, ProductDraft } from '../types';
+import { matchProductCutout } from './productVisualCatalog';
 
 interface OpenBeautyFactsProduct {
   product_name?: string;
   brands?: string;
   ingredients_text?: string;
-  image_front_url?: string;
   categories_tags?: string[];
 }
 
@@ -19,7 +19,6 @@ const fields = [
   'product_name',
   'brands',
   'ingredients_text',
-  'image_front_url',
   'categories_tags',
 ].join(',');
 
@@ -31,10 +30,10 @@ const normalizeCategory = (product: OpenBeautyFactsProduct): Category => {
 
   if (text.includes('cleanser') || text.includes('temizleyici') || text.includes('gel')) return 'Temizleyici';
   if (text.includes('toner') || text.includes('tonik')) return 'Tonik';
-  if (text.includes('serum')) return 'Serum';
+  if (text.includes('serum') || text.includes('effaclar') || text.includes('treatment')) return 'Serum';
   if (text.includes('eye') || text.includes('göz')) return 'Göz Kremi';
-  if (text.includes('cream') || text.includes('crème') || text.includes('krem') || text.includes('moistur')) return 'Nemlendirici';
   if (text.includes('spf') || text.includes('sun') || text.includes('güneş') || text.includes('sunscreen')) return 'Güneş Kremi';
+  if (text.includes('cream') || text.includes('crème') || text.includes('krem') || text.includes('moistur')) return 'Nemlendirici';
   if (text.includes('mask') || text.includes('maske')) return 'Maske';
 
   return 'Diğer';
@@ -64,7 +63,8 @@ const toProductDraft = (product: OpenBeautyFactsProduct): ProductDraft => {
     brand: product.brands || 'Bilinmeyen Marka',
     category,
     timeOfDay: getRoutineTime(category),
-    imageUrl: product.image_front_url || 'https://via.placeholder.com/150',
+    imageUrl: '',
+    cutoutImageUrl: matchProductCutout(product.brands, product.product_name),
     description: product.ingredients_text
       ? `Open Beauty Facts verisine göre içerik özeti: ${product.ingredients_text.slice(0, 220)}${product.ingredients_text.length > 220 ? '...' : ''}`
       : 'Open Beauty Facts üzerinde ürün bilgisi bulundu, ancak içerik metni eksik.',

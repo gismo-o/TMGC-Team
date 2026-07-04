@@ -3,11 +3,11 @@ import {
   Animated,
   Alert,
   Image,
-  ImageSourcePropType,
   PanResponder,
   Platform,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,7 +18,8 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList, Product } from '../types';
 import { useProducts } from '../context/ProductContext';
-import { Camera, Droplets, Wind, Sun, Leaf, Sparkles, User, ArrowDownUp, Trash2, Bell, Plus } from 'lucide-react-native';
+import { Camera, User, ArrowDownUp, Bell, Plus } from 'lucide-react-native';
+import { getProductVisualSource } from '../services/productVisualCatalog';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -30,7 +31,6 @@ type Props = {
 };
 
 type SortMode = 'category' | 'name' | 'expiryDate';
-type ShelfAccent = { soft: string; strong: string; shadow: string };
 
 const routineOrder: Product['category'][] = [
   'Temizleyici',
@@ -42,28 +42,6 @@ const routineOrder: Product['category'][] = [
   'Maske',
   'Diğer',
 ];
-
-const categoryAccents: Record<Product['category'], ShelfAccent> = {
-  Temizleyici: { soft: '#dfecea', strong: '#53766e', shadow: '#b7d0ca' },
-  Tonik: { soft: '#e2edf5', strong: '#4d6f83', shadow: '#bbd2df' },
-  Serum: { soft: '#eef0dc', strong: '#6c7648', shadow: '#d2d7ab' },
-  'Göz Kremi': { soft: '#eee6f5', strong: '#725b86', shadow: '#d7c4e5' },
-  Nemlendirici: { soft: '#e7f0e4', strong: '#55734b', shadow: '#c7dabb' },
-  'Güneş Kremi': { soft: '#f8ecd2', strong: '#8a6a20', shadow: '#e8d09b' },
-  Maske: { soft: '#f1e7df', strong: '#7c604b', shadow: '#dfc8b6' },
-  Diğer: { soft: '#e9efea', strong: '#426447', shadow: '#c5d5c8' },
-};
-
-const productObjectAssets: Record<Product['category'], ImageSourcePropType> = {
-  Temizleyici: require('../../assets/products/cleanser-pump.png'),
-  Tonik: require('../../assets/products/toner-bottle.png'),
-  Serum: require('../../assets/products/serum-bottle.png'),
-  'Göz Kremi': require('../../assets/products/eye-cream-tube.png'),
-  Nemlendirici: require('../../assets/products/moisturizer-jar.png'),
-  'Güneş Kremi': require('../../assets/products/sunscreen-tube.png'),
-  Maske: require('../../assets/products/mask-jar.png'),
-  Diğer: require('../../assets/products/generic-bottle.png'),
-};
 
 const getRemainingDays = (dateString?: string) => {
   if (!dateString) return null;
@@ -83,61 +61,46 @@ const isExpired = (dateString?: string) => {
   return days !== null && days < 0;
 };
 
-const getCategoryIcon = (category: Product['category'], size = 22, color = '#426447') => {
-  switch (category) {
-    case 'Temizleyici':
-      return <Wind size={size} color={color} />;
-    case 'Tonik':
-    case 'Serum':
-      return <Droplets size={size} color={color} />;
-    case 'Nemlendirici':
-      return <Leaf size={size} color={color} />;
-    case 'Güneş Kremi':
-      return <Sun size={size} color={color} />;
-    default:
-      return <Sparkles size={size} color={color} />;
-  }
-};
-
 const getRoutineIndex = (category: Product['category']) => {
   const index = routineOrder.indexOf(category);
   return index === -1 ? 99 : index;
 };
 
-const ProductFallbackShape = ({ category }: { category: Product['category'] }) => {
-  const accent = categoryAccents[category];
+const buildShelfRows = (products: Product[]) => {
+  const firstRowCount = products.length > 6 ? 4 : 3;
+  const secondRowCount = products.length > 7 ? 3 : 2;
 
-  return (
-    <View style={styles.fallbackObject}>
-      <View style={[styles.fallbackCap, { backgroundColor: accent.strong }]} />
-      <View style={[styles.fallbackBottle, { backgroundColor: accent.soft, borderColor: accent.strong }]}>
-        <View style={[styles.fallbackLabel, { backgroundColor: accent.strong }]}>
-          {getCategoryIcon(category, 15, '#ffffff')}
-        </View>
-      </View>
-    </View>
-  );
+  return [
+    products.slice(0, firstRowCount),
+    products.slice(firstRowCount, firstRowCount + secondRowCount),
+    products.slice(firstRowCount + secondRowCount),
+  ];
 };
 
 type ShelfProductProps = {
   product: Product;
   onDelete: () => void;
   onPress: () => void;
-  onReorder: (productId: string, direction: -1 | 1, category: Product['category']) => void;
+  onReorder: (productId: string, direction: -1 | 1) => void;
 };
 
 const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
   const [dragging, setDragging] = useState(false);
-  const accent = categoryAccents[product.category];
+  const [imageFailed, setImageFailed] = useState(false);
   const expiring = isExpiringSoon(product.expiryDate);
   const expired = isExpired(product.expiryDate);
+  const productImageSource = getProductVisualSource(product, imageFailed);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [product.cutoutImageUrl]);
 
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8,
+        onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 10 || Math.abs(gesture.dy) > 10,
         onPanResponderGrant: () => {
           setDragging(true);
         },
@@ -145,10 +108,10 @@ const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductPro
           pan.setValue({ x: gesture.dx, y: gesture.dy });
         },
         onPanResponderRelease: (_, gesture) => {
-          if (gesture.dx > 48) {
-            onReorder(product.id, 1, product.category);
-          } else if (gesture.dx < -48) {
-            onReorder(product.id, -1, product.category);
+          if (gesture.dx > 52) {
+            onReorder(product.id, 1);
+          } else if (gesture.dx < -52) {
+            onReorder(product.id, -1);
           }
 
           Animated.spring(pan, {
@@ -167,7 +130,7 @@ const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductPro
           }).start(() => setDragging(false));
         },
       }),
-    [onReorder, pan, product.category, product.id]
+    [onReorder, pan, product.id]
   );
 
   return (
@@ -179,86 +142,70 @@ const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductPro
         { transform: pan.getTranslateTransform() },
       ]}
     >
-      <TouchableOpacity style={styles.productObjectButton} onPress={onPress} activeOpacity={0.78}>
-        <View style={[styles.productGlow, { backgroundColor: accent.shadow }]} />
-        <View style={styles.productVisualStage}>
-          <Image source={productObjectAssets[product.category]} style={styles.productPng} resizeMode="contain" />
-        </View>
-
-        <View style={styles.productShelfLabel}>
-          <Text style={[styles.shelfBrand, { color: accent.strong }]} numberOfLines={1}>
-            {product.brand}
-          </Text>
-          <Text style={styles.shelfName} numberOfLines={2}>
-            {product.name}
-          </Text>
-          {(expiring || expired) && (
-            <Text style={[styles.expiryText, expired && styles.expiredText]}>
-              {expired ? 'Süresi Doldu' : `${getRemainingDays(product.expiryDate)} gün kaldı`}
+      <TouchableOpacity
+        style={styles.productTapArea}
+        onPress={onPress}
+        onLongPress={onDelete}
+        activeOpacity={0.82}
+      >
+        <View style={styles.productShadow} />
+        <Image
+          source={productImageSource}
+          style={styles.productPhoto}
+          resizeMode="contain"
+          onError={() => setImageFailed(true)}
+        />
+        {(expiring || expired) && (
+          <View style={styles.expiryBadge}>
+            <Text style={styles.expiryBadgeText}>
+              {expired ? 'SKT' : `${getRemainingDays(product.expiryDate)}g`}
             </Text>
-          )}
-        </View>
+          </View>
+        )}
       </TouchableOpacity>
-
-      <View style={styles.dragHint}>
-        <ArrowDownUp size={13} color="#6c786f" />
-      </View>
-
-      <TouchableOpacity style={styles.deleteButton} onPress={onDelete} activeOpacity={0.7}>
-        <Trash2 size={16} color="#BA1A1A" />
-      </TouchableOpacity>
+      <Text style={styles.productShelfName} numberOfLines={1}>
+        {product.brand}
+      </Text>
     </Animated.View>
   );
 };
 
-type ShelfSectionProps = {
-  category: Product['category'];
+type CabinetShelfRowProps = {
   products: Product[];
+  index: number;
   onDelete: (product: Product) => void;
   onOpen: (product: Product) => void;
-  onReorder: (productId: string, direction: -1 | 1, category: Product['category']) => void;
+  onReorder: (productId: string, direction: -1 | 1) => void;
 };
 
-const ShelfSection = ({ category, products, onDelete, onOpen, onReorder }: ShelfSectionProps) => {
-  const accent = categoryAccents[category];
-
-  return (
-    <View style={styles.shelfSection}>
-      <View style={styles.shelfSectionHeader}>
-        <View style={[styles.shelfIcon, { backgroundColor: accent.soft }]}>
-          {getCategoryIcon(category, 18, accent.strong)}
-        </View>
-        <Text style={styles.shelfTitle}>{category}</Text>
-        <Text style={styles.shelfCount}>{products.length} ürün</Text>
-      </View>
-
-      <View style={[styles.shelfStage, { borderColor: accent.shadow }]}>
-        <View style={styles.shelfBackShine} />
-        <View style={styles.shelfProductRow}>
-          {products.map(product => (
-            <ShelfProduct
-              key={product.id}
-              product={product}
-              onPress={() => onOpen(product)}
-              onDelete={() => onDelete(product)}
-              onReorder={onReorder}
-            />
-          ))}
-        </View>
-        <View style={[styles.shelfBoard, { backgroundColor: accent.strong }]}>
-          <View style={styles.shelfBoardHighlight} />
-        </View>
-      </View>
+const CabinetShelfRow = ({ products, index, onDelete, onOpen, onReorder }: CabinetShelfRowProps) => (
+  <View style={styles.referenceShelfSlot}>
+    <View style={styles.referenceProductsRow}>
+      {products.map(product => (
+        <ShelfProduct
+          key={product.id}
+          product={product}
+          onPress={() => onOpen(product)}
+          onDelete={() => onDelete(product)}
+          onReorder={onReorder}
+        />
+      ))}
     </View>
-  );
-};
+    <View style={styles.referenceShelfBoard}>
+      <View style={styles.referenceShelfHighlight} />
+    </View>
+    {products.length === 0 && (
+      <View style={[styles.emptyShelfHint, index === 1 && styles.emptyShelfHintShort]} />
+    )}
+  </View>
+);
 
 export default function HomeScreen({ navigation }: Props) {
   const { products, deleteProduct } = useProducts();
   const [sortBy, setSortBy] = useState<SortMode>('category');
   const [shelfOrder, setShelfOrder] = useState<string[]>([]);
-  const [doorOpen, setDoorOpen] = useState(false);
-  const doorProgress = useRef(new Animated.Value(0)).current;
+  const [doorOpen, setDoorOpen] = useState(true);
+  const doorProgress = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const productIds = products.map(product => product.id);
@@ -267,19 +214,6 @@ export default function HomeScreen({ navigation }: Props) {
       ...productIds.filter(productId => !previousOrder.includes(productId)),
     ]);
   }, [products]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDoorOpen(true);
-      Animated.timing(doorProgress, {
-        toValue: 1,
-        duration: 850,
-        useNativeDriver: false,
-      }).start();
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [doorProgress]);
 
   const displayedProducts = useMemo(() => {
     const orderIndex = new Map(shelfOrder.map((productId, index) => [productId, index]));
@@ -304,16 +238,7 @@ export default function HomeScreen({ navigation }: Props) {
     });
   }, [products, shelfOrder, sortBy]);
 
-  const shelfGroups = useMemo(
-    () =>
-      routineOrder
-        .map(category => ({
-          category,
-          products: displayedProducts.filter(product => product.category === category),
-        }))
-        .filter(group => group.products.length > 0),
-    [displayedProducts]
-  );
+  const shelfRows = useMemo(() => buildShelfRows(displayedProducts), [displayedProducts]);
 
   const handleDoorToggle = () => {
     const nextOpenState = !doorOpen;
@@ -326,16 +251,14 @@ export default function HomeScreen({ navigation }: Props) {
     }).start();
   };
 
-  const handleShelfReorder = (productId: string, direction: -1 | 1, category: Product['category']) => {
-    const visibleCategoryIds = displayedProducts
-      .filter(product => product.category === category)
-      .map(product => product.id);
+  const handleShelfReorder = (productId: string, direction: -1 | 1) => {
+    const visibleIds = displayedProducts.map(product => product.id);
 
     setShelfOrder(previousOrder => {
       const currentOrder = previousOrder.length ? [...previousOrder] : products.map(product => product.id);
-      const localIndex = visibleCategoryIds.indexOf(productId);
+      const localIndex = visibleIds.indexOf(productId);
       const targetLocalIndex = localIndex + direction;
-      const targetId = visibleCategoryIds[targetLocalIndex];
+      const targetId = visibleIds[targetLocalIndex];
 
       if (localIndex === -1 || !targetId) return currentOrder;
 
@@ -351,7 +274,6 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleDeleteProduct = async (userProductId: string) => {
     try {
-      // Sprint 2 backend note: Delete the product from the persisted closet through the product API.
       await deleteProduct(userProductId);
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -382,24 +304,24 @@ export default function HomeScreen({ navigation }: Props) {
 
   const leftDoorTranslate = doorProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -780],
+    outputRange: [0, -168],
   });
 
   const rightDoorTranslate = doorProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 780],
+    outputRange: [0, 168],
   });
 
   const doorOpacity = doorProgress.interpolate({
-    inputRange: [0, 0.88, 1],
-    outputRange: [1, 0.18, 0],
+    inputRange: [0, 1],
+    outputRange: [0.96, 0.34],
   });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-          <User size={20} color="#426447" />
+          <User size={21} color="#426447" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SkinShelf</Text>
         <TouchableOpacity style={styles.notificationButton} onPress={() => {}}>
@@ -436,17 +358,18 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.cabinetHeaderRow}>
-          <View>
-            <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
-            <Text style={styles.cabinetSubtitle}>Kullandığın ve beklettiğin tüm ürünler burada. Rutinim sekmesi bu dolaptan ürün seçer.</Text>
-          </View>
-          <TouchableOpacity style={styles.doorToggleButton} onPress={handleDoorToggle}>
-            <Text style={styles.doorToggleText}>{doorOpen ? 'Kapat' : 'Aç'}</Text>
-          </TouchableOpacity>
+          <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
+          <Text style={styles.cabinetSubtitle}>
+            Rutinim sekmesi bu raftaki gerçek ürün görselleri ve içerik bilgilerine göre seçim yapar.
+          </Text>
         </View>
 
         <View style={styles.cabinetShell}>
           <View style={styles.cabinetTopLip} />
+          <View style={styles.backGlowTop} />
+          <View style={styles.backGlowBottom} />
+          <View style={styles.leftWallShadow} />
+          <View style={styles.rightWallShadow} />
 
           {products.length === 0 ? (
             <View style={styles.emptyCabinet}>
@@ -460,12 +383,12 @@ export default function HomeScreen({ navigation }: Props) {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.shelvesContainer}>
-              {shelfGroups.map(group => (
-                <ShelfSection
-                  key={group.category}
-                  category={group.category}
-                  products={group.products}
+            <View style={styles.referenceShelvesContainer}>
+              {shelfRows.map((rowProducts, index) => (
+                <CabinetShelfRow
+                  key={`shelf-${index}`}
+                  index={index}
+                  products={rowProducts}
                   onOpen={product => navigation.navigate('ProductDetail', { productId: product.id })}
                   onDelete={handleDelete}
                   onReorder={handleShelfReorder}
@@ -475,7 +398,6 @@ export default function HomeScreen({ navigation }: Props) {
           )}
 
           <Animated.View
-            pointerEvents="none"
             style={[
               styles.doorPanel,
               styles.leftDoor,
@@ -485,11 +407,11 @@ export default function HomeScreen({ navigation }: Props) {
               },
             ]}
           >
+            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={handleDoorToggle} activeOpacity={0.9} />
             <View style={styles.doorInset} />
             <View style={styles.doorHandleLeft} />
           </Animated.View>
           <Animated.View
-            pointerEvents="none"
             style={[
               styles.doorPanel,
               styles.rightDoor,
@@ -499,6 +421,7 @@ export default function HomeScreen({ navigation }: Props) {
               },
             ]}
           >
+            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={handleDoorToggle} activeOpacity={0.9} />
             <View style={styles.doorInset} />
             <View style={styles.doorHandleRight} />
           </Animated.View>
@@ -507,12 +430,14 @@ export default function HomeScreen({ navigation }: Props) {
 
       {products.length > 0 && (
         <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Scanner')}>
-          <Plus size={24} color="#ffffff" />
+          <Plus size={25} color="#ffffff" />
         </TouchableOpacity>
       )}
     </SafeAreaView>
   );
 }
+
+const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 12;
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
@@ -520,187 +445,159 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: androidHeaderPadding,
+    paddingBottom: 14,
     paddingHorizontal: 20,
-    height: 64,
-    backgroundColor: 'rgba(250, 249, 245, 0.96)',
+    backgroundColor: 'rgba(250, 249, 245, 0.98)',
   },
   profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#f0f1ec',
     justifyContent: 'center',
     alignItems: 'center',
   },
   notificationButton: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: { fontSize: 24, fontWeight: '700', color: '#426447' },
+  headerTitle: { fontSize: 25, fontWeight: '800', color: '#426447' },
   scrollContent: { paddingBottom: 150 },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#f0f1ec',
-    borderRadius: 30,
-    padding: 4,
-    marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 12,
-  },
-  toggleButton: { flex: 1, paddingVertical: 12, borderRadius: 26, alignItems: 'center' },
-  toggleButtonActive: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  toggleText: { fontSize: 12, fontWeight: '700', color: '#707973' },
-  toggleTextActive: { color: '#426447' },
-  sortContainer: { paddingHorizontal: 20, marginBottom: 14 },
+  sortContainer: { paddingHorizontal: 20, marginTop: 10, marginBottom: 20 },
   sortHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  sortLabel: { fontSize: 14, fontWeight: '700', color: '#426447', marginLeft: 6 },
+  sortLabel: { fontSize: 14, fontWeight: '800', color: '#426447', marginLeft: 6 },
   sortOptions: { paddingBottom: 4 },
   sortButton: {
     backgroundColor: '#f0f1ec',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
     marginRight: 8,
   },
   sortButtonActive: { backgroundColor: '#426447' },
-  sortButtonText: { fontSize: 12, fontWeight: '700', color: '#707973' },
+  sortButtonText: { fontSize: 12, fontWeight: '800', color: '#707973' },
   sortButtonTextActive: { color: '#ffffff' },
-  aiStrip: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    padding: 14,
-    borderRadius: 18,
-    backgroundColor: '#e9efea',
-    borderWidth: 1,
-    borderColor: '#d7e3d9',
-  },
-  aiStripHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  aiStripTitle: { fontSize: 15, fontWeight: '800', color: '#1b1c1c', marginLeft: 8 },
-  routinePreviewRow: { gap: 8, alignItems: 'center' },
-  routinePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#d8e0da',
-  },
-  routinePillIndex: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#426447',
-    color: '#ffffff',
-    textAlign: 'center',
-    lineHeight: 20,
-    fontSize: 11,
-    fontWeight: '800',
-    marginRight: 7,
-  },
-  routinePillText: { maxWidth: 110, color: '#404943', fontSize: 12, fontWeight: '700' },
-  routineEmptyText: { color: '#707973', fontSize: 13 },
   cabinetHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
     marginHorizontal: 20,
-    marginBottom: 10,
-    gap: 12,
+    marginBottom: 12,
   },
-  cabinetTitle: { fontSize: 22, fontWeight: '800', color: '#14351f' },
-  cabinetSubtitle: { fontSize: 12, color: '#627168', marginTop: 3, maxWidth: 520 },
-  doorToggleButton: {
-    backgroundColor: '#426447',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
-  },
-  doorToggleText: { color: '#ffffff', fontSize: 12, fontWeight: '800' },
+  cabinetTitle: { fontSize: 24, fontWeight: '900', color: '#14351f' },
+  cabinetSubtitle: { fontSize: 13, color: '#627168', marginTop: 5, lineHeight: 18, maxWidth: 620 },
   cabinetShell: {
-    marginHorizontal: 20,
-    borderRadius: 24,
-    backgroundColor: '#eef4ef',
+    marginHorizontal: 18,
+    borderRadius: 22,
+    backgroundColor: '#f2f4ef',
     borderWidth: 1,
-    borderColor: '#c7d9ca',
+    borderColor: '#d9e0d9',
     overflow: 'hidden',
-    minHeight: 410,
+    minHeight: 760,
+    position: 'relative',
     shadowColor: '#21412a',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.16,
+    shadowRadius: 26,
+    elevation: 5,
   },
   cabinetTopLip: {
-    height: 16,
-    backgroundColor: '#426447',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    height: 22,
+    backgroundColor: '#fdfdfb',
+    borderBottomWidth: 1,
+    borderBottomColor: '#dde2dd',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  shelvesContainer: { padding: 16, paddingBottom: 24 },
-  shelfSection: { marginBottom: 22 },
-  shelfSectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  shelfIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  shelfTitle: { fontSize: 16, fontWeight: '800', color: '#1b1c1c', flex: 1 },
-  shelfCount: { fontSize: 12, color: '#65736a', fontWeight: '700' },
-  shelfStage: {
-    minHeight: 238,
-    borderRadius: 18,
-    borderWidth: 1,
-    backgroundColor: '#f8faf7',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  shelfBackShine: {
+  backGlowTop: {
     position: 'absolute',
-    top: 0,
+    top: 22,
     left: 0,
     right: 0,
-    height: '58%',
+    height: 180,
     backgroundColor: 'rgba(255,255,255,0.62)',
   },
-  shelfProductRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-end',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 26,
-    zIndex: 2,
-  },
-  shelfBoard: {
+  backGlowBottom: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
+    height: 170,
+    backgroundColor: 'rgba(215,218,212,0.36)',
+  },
+  leftWallShadow: {
+    position: 'absolute',
+    top: 22,
+    bottom: 0,
+    left: 0,
+    width: 28,
+    backgroundColor: 'rgba(42,49,43,0.06)',
+  },
+  rightWallShadow: {
+    position: 'absolute',
+    top: 22,
+    bottom: 0,
+    right: 0,
+    width: 28,
+    backgroundColor: 'rgba(42,49,43,0.06)',
+  },
+  referenceShelvesContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 22,
+    gap: 14,
+  },
+  referenceShelfSlot: {
+    minHeight: 226,
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  referenceProductsRow: {
+    minHeight: 198,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingBottom: 13,
+    zIndex: 2,
+  },
+  referenceShelfBoard: {
     height: 18,
+    borderRadius: 4,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e4e6e1',
+    shadowColor: '#31372f',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.16,
+    shadowRadius: 9,
+    elevation: 3,
   },
-  shelfBoardHighlight: {
+  referenceShelfHighlight: {
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.34)',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.85)',
   },
+  emptyShelfHint: {
+    position: 'absolute',
+    bottom: 52,
+    alignSelf: 'center',
+    width: '54%',
+    height: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(196,207,197,0.42)',
+  },
+  emptyShelfHintShort: { width: '38%' },
   shelfProduct: {
-    width: 142,
-    minHeight: 208,
+    width: 112,
+    height: 198,
     alignItems: 'center',
+    justifyContent: 'flex-end',
     position: 'relative',
   },
   shelfProductDragging: {
@@ -710,91 +607,60 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 9,
   },
-  productObjectButton: { width: '100%', alignItems: 'center' },
-  productGlow: {
-    position: 'absolute',
-    top: 138,
+  productTapArea: {
     width: 112,
-    height: 26,
-    borderRadius: 43,
-    opacity: 0.48,
-  },
-  productVisualStage: {
-    width: 132,
-    height: 158,
+    height: 176,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  productPng: {
-    width: 132,
-    height: 158,
-  },
-  productShelfLabel: {
-    marginTop: 2,
-    width: '100%',
-    minHeight: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1,
-    borderColor: 'rgba(225,232,227,0.74)',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  shelfBrand: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', marginBottom: 2 },
-  shelfName: { fontSize: 12, fontWeight: '700', color: '#1b1c1c', lineHeight: 15 },
-  dragHint: {
+  productShadow: {
     position: 'absolute',
-    top: 4,
-    left: 4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    bottom: 2,
+    width: 82,
+    height: 14,
+    borderRadius: 50,
+    backgroundColor: 'rgba(82,91,83,0.16)',
   },
-  deleteButton: {
+  productPhoto: {
+    width: 110,
+    height: 170,
+  },
+  productShelfName: {
+    maxWidth: 102,
+    minHeight: 16,
+    marginTop: 1,
+    color: '#435248',
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  expiryBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    top: 8,
+    right: 2,
+    minWidth: 30,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: '#BA1A1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  expiryText: { fontSize: 10, fontWeight: '800', color: '#BA1A1A', marginTop: 3 },
-  expiredText: { color: '#BA1A1A' },
-  fallbackObject: { width: 58, height: 92, alignItems: 'center', justifyContent: 'flex-end' },
-  fallbackCap: { width: 24, height: 12, borderTopLeftRadius: 5, borderTopRightRadius: 5 },
-  fallbackBottle: {
-    width: 48,
-    height: 74,
-    borderRadius: 13,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fallbackLabel: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  expiryBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
   doorPanel: {
     position: 'absolute',
-    top: 16,
+    top: 22,
     bottom: 0,
     width: '50%',
-    backgroundColor: '#dce8df',
-    borderColor: '#aac1ae',
+    backgroundColor: '#e8eee9',
+    borderColor: '#bdcabe',
     shadowColor: '#12351f',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.22,
     shadowRadius: 18,
-    elevation: 5,
+    elevation: 7,
+    zIndex: 8,
   },
   leftDoor: {
     left: 0,
@@ -806,41 +672,41 @@ const styles = StyleSheet.create({
   },
   doorInset: {
     position: 'absolute',
-    top: 22,
+    top: 24,
     left: 18,
     right: 18,
-    bottom: 28,
+    bottom: 32,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(66,100,71,0.28)',
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   doorHandleLeft: {
     position: 'absolute',
-    right: 16,
+    right: 14,
     top: '48%',
-    width: 10,
-    height: 56,
+    width: 9,
+    height: 58,
     borderRadius: 8,
     backgroundColor: '#426447',
   },
   doorHandleRight: {
     position: 'absolute',
-    left: 16,
+    left: 14,
     top: '48%',
-    width: 10,
-    height: 56,
+    width: 9,
+    height: 58,
     borderRadius: 8,
     backgroundColor: '#426447',
   },
   emptyCabinet: {
-    minHeight: 394,
+    minHeight: 710,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
   },
-  emptyShelfLine: { width: '84%', height: 14, borderRadius: 10, backgroundColor: '#426447', opacity: 0.78, marginBottom: 38 },
-  emptyShelfLineShort: { width: '58%', height: 12, borderRadius: 10, backgroundColor: '#abc3b0', marginBottom: 34 },
+  emptyShelfLine: { width: '84%', height: 14, borderRadius: 10, backgroundColor: '#ffffff', marginBottom: 38 },
+  emptyShelfLineShort: { width: '58%', height: 12, borderRadius: 10, backgroundColor: '#d8ded8', marginBottom: 34 },
   emptyTitle: { fontSize: 24, fontWeight: '800', color: '#426447', marginBottom: 8 },
   emptyText: { fontSize: 15, color: '#707973', textAlign: 'center', marginBottom: 26, lineHeight: 21 },
   scanButton: {

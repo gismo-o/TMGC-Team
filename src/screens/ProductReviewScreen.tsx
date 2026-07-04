@@ -6,6 +6,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, Category, ProductDraft } from '../types';
 import { ArrowLeft, Check, Sparkles, AlertCircle, AlertTriangle, Plus, X } from 'lucide-react-native';
 import { useProducts } from '../context/ProductContext';
+import { getProductVisualSource } from '../services/productVisualCatalog';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ProductReview'>;
@@ -13,12 +14,13 @@ type Props = {
 };
 
 const defaultProductData: ProductDraft = {
-  name: 'Niacinamide 10% + Zinc 1%',
-  brand: 'The Ordinary',
+  name: 'Effaclar duo+',
+  brand: 'La Roche-Posay',
   category: 'Serum' as Category,
-  imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400',
-  description: 'Leke görünümünü azaltan ve sebum dengeleyen serum.',
-  activeIngredients: ['Niacinamide', 'Zinc PCA'],
+  imageUrl: '',
+  cutoutImageUrl: 'local:la-roche-effaclar-kplus',
+  description: 'Niacinamide, Zinc PCA ve salisilik asit içeren hedefli bakım ürünü.',
+  activeIngredients: ['Niacinamide', 'Zinc PCA', 'Salicylic Acid'],
   expiryDate: '2027-01',
   timeOfDay: 'both',
 };
@@ -30,12 +32,17 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
   const [timeOfDay, setTimeOfDay] = useState<'morning' | 'evening' | 'both'>('morning');
   const [loading, setLoading] = useState(false);
   const [productData, setProductData] = useState<ProductDraft>(route.params?.scannedProduct || defaultProductData);
+  const [productImageFailed, setProductImageFailed] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [conflictData, setConflictData] = useState<{ hasConflict: boolean, severity: 'high' | 'warning' | 'synergy', message: string, conflictingProduct?: string } | null>(null);
   const [aiSuggestedTime, setAiSuggestedTime] = useState<'morning' | 'evening' | 'both' | null>(null);
   const [ingredientInput, setIngredientInput] = useState('');
   const editingProductId = route.params?.editingProductId;
   const activeIngredients = productData.activeIngredients || [];
+
+  useEffect(() => {
+    setProductImageFailed(false);
+  }, [productData.cutoutImageUrl, productData.category]);
 
   useEffect(() => {
     // Simulate fetching data from backend
@@ -115,8 +122,10 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.imageContainer}>
           <Image 
-            source={{ uri: productData.imageUrl }} 
+            source={getProductVisualSource(productData, productImageFailed)}
             style={styles.image} 
+            resizeMode="contain"
+            onError={() => setProductImageFailed(true)}
           />
           <View style={styles.aiBadge}>
             <Sparkles size={16} color="#ffffff" />

@@ -7,13 +7,14 @@ type ScanInput = {
 };
 
 const fallbackProduct: ProductDraft = {
-  brand: 'The Ordinary',
-  name: 'Niacinamide 10% + Zinc 1%',
+  brand: 'La Roche-Posay',
+  name: 'Effaclar duo+',
   category: 'Serum',
   timeOfDay: 'both',
-  imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400',
-  description: 'Leke görünümünü azaltan ve sebum dengeleyen serum.',
-  activeIngredients: ['Niacinamide', 'Zinc PCA'],
+  imageUrl: '',
+  cutoutImageUrl: 'local:la-roche-effaclar-kplus',
+  description: 'Niacinamide, Zinc PCA ve salisilik asit içeren hedefli bakım ürünü.',
+  activeIngredients: ['Niacinamide', 'Zinc PCA', 'Salicylic Acid'],
   expiryDate: '2027-01',
 };
 

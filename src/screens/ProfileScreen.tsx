@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Platform, StatusBar } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { User, Settings, Shield, CircleHelp, LogOut, Sparkles } from 'lucide-react-native';
@@ -64,7 +64,10 @@ export default function ProfileScreen({ navigation }: Props) {
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <TouchableOpacity key={index} style={styles.menuItem}>
+              <TouchableOpacity
+                key={index}
+                style={[styles.menuItem, index === menuItems.length - 1 && styles.menuItemLast]}
+              >
                 <View style={styles.menuIconBox}>
                   <Icon size={20} color="#404943" />
                 </View>
@@ -86,9 +89,11 @@ export default function ProfileScreen({ navigation }: Props) {
   );
 }
 
+const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20;
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
-  header: { padding: 20, alignItems: 'center' },
+  header: { paddingTop: androidHeaderPadding, paddingBottom: 18, paddingHorizontal: 20, alignItems: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '600', color: '#1b1c1c' },
   content: { padding: 20 },
   profileCard: { backgroundColor: '#ffffff', borderRadius: 24, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5, marginBottom: 32 },
@@ -99,6 +104,7 @@ const styles = StyleSheet.create({
   skinTypeText: { color: '#ffffff', fontSize: 12, fontWeight: '600' },
   menuContainer: { backgroundColor: '#ffffff', borderRadius: 24, padding: 8, marginBottom: 32, borderWidth: 1, borderColor: '#f0f1ec' },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0f1ec' },
+  menuItemLast: { borderBottomWidth: 0 },
   menuIconBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f1ec', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
   menuText: { fontSize: 16, color: '#1b1c1c', fontWeight: '500' },
   inlineBadge: { backgroundColor: '#e9efea', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },

@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar } from 'react-native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Calendar, CheckCircle, Moon, Plus, RotateCcw, Sparkles, Sun } from 'lucide-react-native';
+import { Calendar, Moon, Plus, Sparkles, Sun } from 'lucide-react-native';
 import { MainTabParamList, Product, RootStackParamList } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useUser } from '../context/UserContext';
@@ -166,6 +166,19 @@ const RoutineBlock = ({
   </View>
 );
 
+const ChatBubble = ({ from, children }: { from: 'ai' | 'user'; children: React.ReactNode }) => (
+  <View style={[styles.chatBubble, from === 'user' && styles.chatBubbleUser]}>
+    {from === 'ai' && (
+      <View style={styles.chatAvatar}>
+        <Sparkles size={14} color="#ffffff" />
+      </View>
+    )}
+    <View style={[styles.chatMessage, from === 'user' && styles.chatMessageUser]}>
+      {children}
+    </View>
+  </View>
+);
+
 export default function RoutineScreen({ navigation }: Props) {
   const { products } = useProducts();
   const { profile } = useUser();
@@ -182,6 +195,12 @@ export default function RoutineScreen({ navigation }: Props) {
       : selectedConcern === 'custom'
         ? customConcern || 'Yeni şikayetine göre dolabındaki en uygun ürünler seçiliyor.'
         : concernOptions.find(option => option.key === selectedConcern)?.prompt;
+  const selectedConcernLabel =
+    followUpState === 'standard'
+      ? 'Şikayetim geçti, standart rutine dönelim.'
+      : selectedConcern === 'custom'
+        ? customConcern || 'Kendi şikayetimi yazacağım.'
+        : concernOptions.find(option => option.key === selectedConcern)?.label || 'Standart rutin';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -203,19 +222,30 @@ export default function RoutineScreen({ navigation }: Props) {
           <Text style={styles.aiMessage}>{selectedPrompt}</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Bugünkü şikayetim</Text>
-          <View style={styles.concernGrid}>
+        <View style={styles.chatCard}>
+          <ChatBubble from="ai">
+            <Text style={styles.chatText}>Bugün cildinde seni rahatsız eden bir şikayet var mı?</Text>
+          </ChatBubble>
+          <ChatBubble from="user">
+            <Text style={styles.chatTextUser}>{selectedConcernLabel}</Text>
+          </ChatBubble>
+          <ChatBubble from="ai">
+            <Text style={styles.chatText}>
+              Dolabındaki ürünlere göre bugünkü rutini ve 7 günlük planı oluşturdum. 7. gün sana otomatik olarak şikayetin geçti mi diye soracağım.
+            </Text>
+          </ChatBubble>
+
+          <View style={styles.quickReplyGrid}>
             {concernOptions.map(option => (
               <TouchableOpacity
                 key={option.key}
-                style={[styles.concernChip, selectedConcern === option.key && followUpState !== 'standard' && styles.concernChipActive]}
+                style={[styles.quickReply, selectedConcern === option.key && followUpState !== 'standard' && styles.quickReplyActive]}
                 onPress={() => {
                   setSelectedConcern(option.key);
                   setFollowUpState('active');
                 }}
               >
-                <Text style={[styles.concernChipText, selectedConcern === option.key && followUpState !== 'standard' && styles.concernChipTextActive]}>
+                <Text style={[styles.quickReplyText, selectedConcern === option.key && followUpState !== 'standard' && styles.quickReplyTextActive]}>
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -231,7 +261,7 @@ export default function RoutineScreen({ navigation }: Props) {
                   setFollowUpState('active');
                 }
               }}
-              placeholder="Başka şikayet ekle"
+              placeholder="AI'a kendi cümlenle yaz"
               placeholderTextColor="#8b968f"
               style={styles.customConcernInput}
             />
@@ -284,16 +314,14 @@ export default function RoutineScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.followUpCard}>
-          <Text style={styles.followUpTitle}>Bir hafta sonra kontrol</Text>
-          <Text style={styles.followUpText}>Şikayetin geçtiyse standart rutine dön. Devam ediyorsa aynı hedefli planı sürdür ya da yeni şikayet ekle.</Text>
+          <Text style={styles.followUpTitle}>7. gün otomatik mesaj</Text>
+          <Text style={styles.followUpText}>AI haftanın sonunda kontrol sorusunu kendi başlatır. Cevaba göre standart rutine döner veya hedefli planı günceller.</Text>
           <View style={styles.followUpActions}>
             <TouchableOpacity style={styles.followUpButton} onPress={() => setFollowUpState('standard')}>
-              <CheckCircle size={17} color="#ffffff" />
-              <Text style={styles.followUpButtonText}>Geçti</Text>
+              <Text style={styles.followUpButtonText}>Geçti varsay</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.followUpButtonSecondary} onPress={() => setFollowUpState('continued')}>
-              <RotateCcw size={17} color="#426447" />
-              <Text style={styles.followUpButtonSecondaryText}>Devam ediyor</Text>
+              <Text style={styles.followUpButtonSecondaryText}>Devam ediyor varsay</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -304,7 +332,13 @@ export default function RoutineScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
-  header: { height: 64, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(250,249,245,0.96)' },
+  header: {
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20,
+    paddingBottom: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(250,249,245,0.96)',
+  },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#426447' },
   content: { padding: 20, paddingBottom: 120 },
   aiCard: { backgroundColor: '#e9efea', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: '#cfe0d2', marginBottom: 18 },
@@ -317,11 +351,19 @@ const styles = StyleSheet.create({
   section: { marginBottom: 22 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: '#1b1c1c', marginBottom: 12 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  concernGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  concernChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: '#f0f1ec', borderWidth: 1, borderColor: '#d8e0da' },
-  concernChipActive: { backgroundColor: '#426447', borderColor: '#426447' },
-  concernChipText: { color: '#526159', fontSize: 13, fontWeight: '800' },
-  concernChipTextActive: { color: '#ffffff' },
+  chatCard: { backgroundColor: '#ffffff', borderRadius: 22, padding: 14, borderWidth: 1, borderColor: '#e3ebe5', marginBottom: 22 },
+  chatBubble: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 10 },
+  chatBubbleUser: { justifyContent: 'flex-end' },
+  chatAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#426447', justifyContent: 'center', alignItems: 'center', marginRight: 8 },
+  chatMessage: { maxWidth: '82%', backgroundColor: '#e9efea', borderRadius: 18, borderBottomLeftRadius: 6, paddingHorizontal: 13, paddingVertical: 10 },
+  chatMessageUser: { backgroundColor: '#426447', borderBottomLeftRadius: 18, borderBottomRightRadius: 6 },
+  chatText: { color: '#314239', fontSize: 13, lineHeight: 19, fontWeight: '600' },
+  chatTextUser: { color: '#ffffff', fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  quickReplyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  quickReply: { paddingHorizontal: 13, paddingVertical: 9, borderRadius: 18, backgroundColor: '#f0f1ec', borderWidth: 1, borderColor: '#d8e0da' },
+  quickReplyActive: { backgroundColor: '#426447', borderColor: '#426447' },
+  quickReplyText: { color: '#526159', fontSize: 12, fontWeight: '800' },
+  quickReplyTextActive: { color: '#ffffff' },
   customConcernRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 },
   customConcernInput: { flex: 1, minHeight: 46, borderRadius: 14, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#d8e0da', paddingHorizontal: 14, color: '#1b1c1c', fontSize: 14, fontWeight: '600' },
   customConcernButton: { width: 46, height: 46, borderRadius: 14, backgroundColor: '#426447', justifyContent: 'center', alignItems: 'center' },

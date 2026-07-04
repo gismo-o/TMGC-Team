@@ -8,6 +8,7 @@ export interface Product {
   category: Category;
   timeOfDay: 'morning' | 'evening' | 'both';
   imageUrl: string;
+  cutoutImageUrl?: string;
   description: string;
   expiryDate?: string;
   activeIngredients?: string[];
