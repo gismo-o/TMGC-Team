@@ -16,19 +16,19 @@ export default function ScannerScreen({ navigation }: Props) {
   const handleScan = async () => {
     setIsScanning(true);
     try {
+      let result;
       if (activeTab === 'barcode') {
-        // TODO (BACKEND NOTE): Yakalanan barkod Supabase 'products' tablosunda sorgulanacak.
-        console.log('Barkod algılandı');
+        const demoBarcode = '3337875863377'; // La Roche-Posay Effaclar Duo+ sample from Open Beauty Facts.
+        result = await productService.scanProduct({ barcode: demoBarcode });
       } else {
-        // TODO (BACKEND NOTE): Fotoğraf storage\'a yüklenmeden direkt Vision AI API\'sine gönderilecek.
+        // Sprint 2 backend note: Send the photo to Vision AI without storing raw camera images.
         console.log('Fotoğraf geçici hafızada, Vision AI\'a gönderiliyor');
+        result = await productService.scanProduct({ imageData: 'demo-photo' });
       }
-      
-      const result = await productService.scanProduct('mock-data');
-      
+
       setTimeout(() => {
         setIsScanning(false);
-        navigation.replace('ProductReview');
+        navigation.replace('ProductReview', { scannedProduct: result });
       }, 1500);
     } catch (error) {
       console.error('Scan error:', error);

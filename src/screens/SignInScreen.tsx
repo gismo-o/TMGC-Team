@@ -34,7 +34,7 @@ export default function SignInScreen({ navigation }: Props) {
   };
 
   const handleForgotPassword = () => {
-    // TODO: Implement forgot password logic
+    // Sprint 2: Connect this action to the backend password reset endpoint.
     console.log('Forgot password clicked');
     Alert.alert('Bilgi', 'Şifre sıfırlama linki e-posta adresinize gönderilecektir.');
   };

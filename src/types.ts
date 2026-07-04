@@ -14,6 +14,8 @@ export interface Product {
   isFavorite?: boolean;
 }
 
+export type ProductDraft = Omit<Product, 'id'>;
+
 export type RootStackParamList = {
   Login: undefined;
   SignIn: undefined;
@@ -22,7 +24,7 @@ export type RootStackParamList = {
   SkinConditions: undefined;
   MainTabs: undefined; 
   Scanner: undefined;
-  ProductReview: undefined;
+  ProductReview: { scannedProduct?: ProductDraft } | undefined;
   ProductDetail: { productId: string };
 };
 

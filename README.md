@@ -132,6 +132,60 @@ Uygulamanın temel kullanıcı akışları, Sprint 1'de geliştirilen navigasyon
 
 > Not: `Routine`, `SkinAnalysis`, `ProgressEntry` ekranları Sprint 2–3 kapsamına ayrıldığı için bu Sprint 1 şemasında temel akış seviyesinde temsil edilmiştir.
 
+## Teknik Mimari
+
+Sprint 1'de mobil uygulama katmanlı bir yapı ile organize edilmiştir. Navigasyon, ekranlar, context state yönetimi ve servis katmanı birbirinden ayrılmıştır. Backend, database ve Gemini AI bağlantıları Sprint 2 entegrasyon hedefi olarak planlanmıştır.
+
+<img src="Project_Management_Files/Sprint_1/System_Design/skinshelf-technical-architecture.svg" width="720">
+
+**Kod yapısı:**
+
+- `src/screens`: Uygulama ekranları ve kullanıcı arayüzü akışları
+- `src/navigation`: Stack ve tab navigasyon yapısı
+- `src/context`: Kullanıcı profili ve ürün dolabı için global state yönetimi
+- `src/services`: Backend ve AI servislerine bağlanacak servis katmanı
+- `src/types.ts`: Ortak TypeScript veri modelleri ve navigation tipleri
+
+**Sprint 1 teknik kararları:**
+
+- Mobil istemci React Native, Expo SDK 54 ve TypeScript ile geliştirilecektir.
+- Frontend akışı önce tamamlanacak, backend entegrasyonu Sprint 2'de yapılacaktır.
+- Backend için Java/Spring seçeneği değerlendirilmiş ve uygun bulunmuştur.
+- AI analiz akışı Gemini 2.5 Flash entegrasyonuna uygun şekilde servis katmanı üzerinden planlanmıştır.
+
+AI servis planı: [AI_Service_Plan.md](Project_Management_Files/Sprint_1/System_Design/AI_Service_Plan.md)
+
+Ürün veri kaynağı planı: [Product_Data_Source_Plan.md](Project_Management_Files/Sprint_1/System_Design/Product_Data_Source_Plan.md)
+
+**Barkod / açık ürün verisi kararı:**
+
+- Barkod ile ürün tanıma için Open Beauty Facts açık kozmetik ürün verisi birincil kaynak olarak seçilmiştir.
+- `src/services/openBeautyFactsService.ts` ile barkoddan ürün adı, marka, içerik, kategori ve görsel alanlarını ProductReview ekranına taşıyacak servis iskeleti eklenmiştir.
+- Barkod bulunamadığında fotoğraf/etiket okuma, Gemini ile içerik çıkarımı ve kullanıcı onaylı manuel düzenleme fallback akışı Sprint 2 kapsamına alınmıştır.
+
+## Kurulum ve Çalıştırma
+
+Projeyi lokal ortamda çalıştırmak için:
+
+```bash
+npm install
+npm run dev
+```
+
+TypeScript build/type kontrolü için:
+
+```bash
+npm run build
+```
+
+Diğer Expo komutları:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
 
 ## 📌 Sprint - 1
 
@@ -147,24 +201,22 @@ Uygulamanın temel kullanıcı akışları, Sprint 1'de geliştirilen navigasyon
 
 ### Sprint İçinde Tamamlanması Tahmin Edilen Puan
 
-Sprint 1 puanlaması, Notion board üzerindeki kart sayıları baz alınarak kart bazlı puanlama mantığıyla yapılmıştır.
+Sprint 1 puanlaması Fibonacci benzeri story point yaklaşımıyla yapılmıştır.
 
-- Toplam board kapsamı: **36 kart**
-- Product backlog: **22 kart**
-- Sprint 1 hedefi: **14 kart**
-- Sprint 1 tamamlanan: **11 kart**
-- Sprint 1 kalan / To Do: **3 kart**
-- Sprint 1 tamamlanma oranı: **%79**
+- Sprint 1 hedefi: **115 SP**
+- Sprint 1 tamamlanan: **89 SP**
+- Sprint 1 kalan / To Do: **26 SP**
+- Sprint 1 tamamlanma oranı: **%77**
 
 Sprint 1 için hedeflenen ana kapsam; proje iskeleti, temel mobil ekranlar, onboarding akışı, ürün dolabı prototipi, AI analiz prototip ekranları ve proje dokümantasyonudur.
 
-Bu sprintte takip ve puanlama kart bazlı yapılmıştır.
+Story point dağılımı: [sprint1-story-points.md](Project_Management_Files/Sprint_1/Sprint_Board/sprint1-story-points.md)
 
 ### Puan Tamamlama Mantığı
 
 Backlog 3 sprintlik geliştirme sürecine göre parçalanmıştır. Sprint 1'de ürün fikrini somutlaştıran temel kullanıcı akışları, görsel tasarım, mobil mimari ve demo edilebilir prototip ekranlarına öncelik verilmiştir. AI servisleri, gerçek backend entegrasyonu, kalıcı veri katmanı ve gelişmiş rutin önerileri Sprint 2-3 kapsamına aktarılmıştır.
 
-Sprint 1 kart bazlı değerlendirmede 14 kartlık sprint kapsamının 11 kartı tamamlanmış, backend/database tarafındaki 3 kart sonraki geliştirme akışına bırakılmıştır.
+Sprint 1 story point değerlendirmesinde 115 SP'lik sprint kapsamının 89 SP'lik bölümü tamamlanmış, backend/database tarafındaki 26 SP'lik bölüm sonraki geliştirme akışına bırakılmıştır.
 
 ### Backlog Dağıtma Mantığı ve Story Seçimleri
 
@@ -223,15 +275,14 @@ Sprint 1 ilerleme kanıtı, Notion board son durum görüntüsü ve daily scrum 
 
 ### Sprint Burndown / Tamamlanma Özeti
 
-Sprint 1 sonunda kart bazlı ilerleme aşağıdaki gibidir:
+Sprint 1 sonunda story point bazlı ilerleme aşağıdaki gibidir:
 
-| Kapsam | Kart Sayısı |
+| Kapsam | Story Point |
 | --- | ---: |
-| Sprint 1 hedefi | 14 |
-| Tamamlanan | 11 |
-| Kalan / To Do | 3 |
-| Progress | 0 |
-| Tamamlanma oranı | %79 |
+| Sprint 1 hedefi | 115 SP |
+| Tamamlanan | 89 SP |
+| Kalan / To Do | 26 SP |
+| Tamamlanma oranı | %77 |
 
 <img src="Project_Management_Files/Sprint_1/Burndown_Chart/sprint1-completion-summary.svg" width="720">
 

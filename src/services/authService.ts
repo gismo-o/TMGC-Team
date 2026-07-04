@@ -2,17 +2,17 @@
 
 export const authService = {
   login: async (credentials: any) => {
-    // TODO: Implement actual API call to Spring Boot backend
+    // Sprint 2: Replace this prototype response with Spring Boot auth API.
     console.log('authService.login called with:', credentials);
     return Promise.resolve({ token: 'mock-jwt-token', user: { id: '1', name: 'Test User' } });
   },
   register: async (data: any) => {
-    // TODO: Implement actual API call to Spring Boot backend
+    // Sprint 2: Replace this prototype response with Spring Boot auth API.
     console.log('authService.register called with:', data);
     return Promise.resolve({ token: 'mock-jwt-token', user: { id: '1', name: 'Test User' } });
   },
   logout: async () => {
-    // TODO: Implement actual API call to Spring Boot backend (e.g. invalidate token)
+    // Sprint 2: Invalidate the persisted auth token through the backend API.
     console.log('authService.logout called');
     return Promise.resolve(true);
   }

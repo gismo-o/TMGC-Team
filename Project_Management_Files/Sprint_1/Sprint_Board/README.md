@@ -9,13 +9,13 @@ Product Backlog:
 ## Sprint 1 Board Kanitlari
 
 - [sprint1-board-end.png](sprint1-board-end.png): Sprint 1 son durum Notion board ekran goruntusu.
+- [sprint1-story-points.md](sprint1-story-points.md): Sprint 1 story point dagilimi.
 
-## Kart Bazli Sprint Durumu
+## Story Point Sprint Durumu
 
-- Product backlog: 22 kart
-- Sprint 1 hedefi: 14 kart
-- Sprint 1 tamamlanan: 11 kart
-- Sprint 1 kalan / To Do: 3 kart
-- Progress: 0 kart
+- Sprint 1 hedefi: 115 SP
+- Sprint 1 tamamlanan: 89 SP
+- Sprint 1 kalan / To Do: 26 SP
+- Tamamlanma orani: %77
 
-Sprint baslangic ve sprint ortasi ekran goruntuleri geriye donuk olarak alinmadigi icin, Sprint 1 ilerleme kaniti son durum board goruntusu ve README'deki yazili sprint ozeti ile desteklenmektedir.
+Sprint 1 ilerleme kaniti son durum board goruntusu, story point dagilimi ve README'deki yazili sprint ozeti ile desteklenmektedir.

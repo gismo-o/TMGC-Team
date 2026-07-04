@@ -2,27 +2,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, Category } from '../types';
+import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList, Category, ProductDraft } from '../types';
 import { ArrowLeft, Check, Sparkles, AlertCircle, AlertTriangle } from 'lucide-react-native';
 import { useProducts } from '../context/ProductContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ProductReview'>;
+  route: RouteProp<RootStackParamList, 'ProductReview'>;
 };
 
-export default function ProductReviewScreen({ navigation }: Props) {
+const defaultProductData: ProductDraft = {
+  name: 'Niacinamide 10% + Zinc 1%',
+  brand: 'The Ordinary',
+  category: 'Serum' as Category,
+  imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400',
+  description: 'Leke görünümünü azaltan ve sebum dengeleyen serum.',
+  activeIngredients: ['Niacinamide', 'Zinc PCA'],
+  expiryDate: '2027-01',
+  timeOfDay: 'both',
+};
+
+export default function ProductReviewScreen({ navigation, route }: Props) {
   const { addProduct } = useProducts();
   const [timeOfDay, setTimeOfDay] = useState<'morning' | 'evening' | 'both'>('morning');
   const [loading, setLoading] = useState(false);
-  const [productData, setProductData] = useState({
-    name: 'Niacinamide 10% + Zinc 1%',
-    brand: 'The Ordinary',
-    category: 'Serum' as Category,
-    imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400',
-    description: 'Leke görünümünü azaltan ve sebum dengeleyen serum.',
-    activeIngredients: ['Niacinamide', 'Zinc PCA'],
-    expiryDate: '2027-01'
-  });
+  const [productData] = useState<ProductDraft>(route.params?.scannedProduct || defaultProductData);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [conflictData, setConflictData] = useState<{ hasConflict: boolean, severity: 'high' | 'warning' | 'synergy', message: string, conflictingProduct?: string } | null>(null);
   const [aiSuggestedTime, setAiSuggestedTime] = useState<'morning' | 'evening' | 'both' | null>(null);
@@ -44,7 +49,7 @@ export default function ProductReviewScreen({ navigation }: Props) {
 
       const suggestedTime: 'morning' | 'evening' | 'both' = 'both';
       setAiSuggestedTime(suggestedTime);
-      setTimeOfDay(suggestedTime); // Automatically select AI suggestion
+      setTimeOfDay(productData.timeOfDay || suggestedTime);
     };
 
     fetchAiAnalysis();
@@ -53,7 +58,7 @@ export default function ProductReviewScreen({ navigation }: Props) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO (BACKEND NOTE): Supabase 'user_closet' tablosuna sadece { product_id, routine_time } kaydedilecek. Fotoğraf veritabanına gönderilmeyecektir.
+      // Sprint 2 backend note: Persist only structured product data and routine time; do not store raw camera images.
       const productToSave = {
         ...productData,
         timeOfDay,

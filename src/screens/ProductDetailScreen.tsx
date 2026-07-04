@@ -57,14 +57,13 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
   const remainingDays = getRemainingDays(product.expiryDate);
   const expired = isExpired(product.expiryDate);
 
-  // TODO / BACKEND NOTE: İleride Supabase'den çekilecek örnek veriler.
-  // product.ingredients veya benzer bir array'den beslenmeli.
+  // Sprint 2 backend note: This will be read from product ingredients returned by the product API.
   const sampleIngredients = ['C Vitamini', 'Ferulik Asit', 'E Vitamini'];
   
-  // TODO / BACKEND NOTE: product.description alanından dinamik olarak gelmeli.
+  // Sprint 2 backend note: This will be populated from product.description.
   const sampleDescription = 'Cilt tonunu eşitlemeye, leke görünümünü azaltmaya ve cilde daha aydınlık bir görünüm kazandırmaya yardımcı olan yoğun antioksidan serum.';
 
-  // TODO / BACKEND NOTE: user_custom_analysis veya AI generatif sonucundan dönen metin buraya basılmalı.
+  // Sprint 2 AI note: This will be populated from the generated compatibility analysis.
   const sampleAiAnalysis = 'Bu C Vitamini serumu lekelerinizi açmada çok etkilidir ancak profilinizde belirttiğiniz Roza hassasiyetiniz sebebiyle cildinizde hafif kızarıklık yapabilir. Haftada 2 gün ile başlayarak cildinizi alıştırmanız önerilir.';
 
   return (

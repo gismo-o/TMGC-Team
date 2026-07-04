@@ -120,15 +120,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleDeleteProduct = async (userProductId: string) => {
     try {
-      // TODO (BACKEND NOTE): Supabase'den ürün silme işlemi burada yapılacak.
-      // Örneğin:
-      // const { error } = await supabase
-      //   .from('user_closet')
-      //   .delete()
-      //   .eq('product_id', userProductId); // veya closet_item_id
-      // if (error) throw error;
-      
-      // Şimdilik sadece yerel state'i güncelliyoruz (anında arayüz tepkisi için)
+      // Sprint 2 backend note: Delete the product from the persisted closet through the product API.
       await deleteProduct(userProductId);
     } catch (error) {
       console.error('Error deleting product:', error);

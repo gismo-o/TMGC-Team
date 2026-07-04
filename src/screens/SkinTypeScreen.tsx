@@ -30,7 +30,7 @@ export default function SkinTypeScreen({ navigation }: Props) {
     if (!selected) return;
     setLoading(true);
     try {
-      // TODO: Replace 'current-user-id' with actual logged in user id
+      // Sprint 2 auth note: Replace prototype user id with authenticated user id.
       await userService.updateSkinType('current-user-id', selected);
       
       const selectedType = skinTypes.find(t => t.id === selected);
