@@ -16,4 +16,9 @@ Sprint 1 uygulama ekran goruntuleri su an ana asset klasorunde tutulmaktadir:
 - `assets/screenshots/urun_ekle2.png`
 - `assets/screenshots/profil.png`
 
+## Yeni Android Smoke Test Ekranlari
+
+- [android-dolabim-shelf.png](android-dolabim-shelf.png): Android emulator uzerinde rafli PNG urun dolabi.
+- [android-rutinim-plan.png](android-rutinim-plan.png): Android emulator uzerinde dolaptaki urunlerden olusan Rutinim AI plan ekrani.
+
 README'deki Sprint 1 Urun Durumu bolumu bu ekran goruntulerini kullanir.

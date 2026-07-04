@@ -207,7 +207,7 @@ Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_M
 - React Native, Expo SDK 54 ve TypeScript ile mobil uygulama iskeleti kuruldu.
 - `src/` altında `screens`, `navigation`, `services` ve `context` katmanları oluşturuldu.
 - Kullanıcının hesap oluşturma, giriş yapma, cilt tipi seçme ve özel cilt durumlarını belirtme akışları tasarlandı.
-- Kişisel ürün dolabı, ürün detay sayfası, ürün ekleme ve ürün inceleme ekranları hazırlandı.
+- Kişisel ürün dolabı raflı envanter ekranına ayrıldı; Rutinim sekmesi dolaptaki ürünlerden şikayete göre günlük ve haftalık rutin önerisi oluşturacak şekilde hazırlandı.
 - AI analiz, barkod tarama ve fotoğraf çekim akışları için prototip ekranlar oluşturuldu.
 - Form ekranlarında klavye odaklanma ve buton tıklama problemleri giderildi.
 - UML diyagramı ve kullanıcı akış şeması README'ye eklendi.
@@ -305,7 +305,7 @@ Sprint 1 ilerlemesi Notion board, daily scrum kayıtları ve sprint sonu tamamla
 
 ### Ürün Durumu
 
-Sprint 1 sonunda uygulama; giriş, hesap oluşturma, cilt profili oluşturma, AI analiz prototipi, barkod/fotoğraf tarama prototipi, dijital ürün dolabı, ürün detay ve profil ekranlarını gösterebilir durumdadır.
+Sprint 1 sonunda uygulama; giriş, hesap oluşturma, cilt profili oluşturma, AI analiz prototipi, barkod/fotoğraf tarama prototipi, raflı dijital ürün dolabı, Rutinim haftalık plan ekranı, ürün detay ve profil ekranlarını gösterebilir durumdadır.
 
 #### 1. Giriş ve Hesap Oluşturma Akışı
 
@@ -354,7 +354,7 @@ Tamamlanan başlıklar:
 - Temel navigasyon yapısı
 - Login, Sign In ve Sign Up ekranları
 - Cilt tipi ve özel durum onboarding ekranları
-- Ana ekran ve AI rutin sıralaması demo akışı
+- Rafli Dolabim envanteri ve Rutinim AI plan demo akışı
 - Ürün dolabı, ürün detay, ürün ekleme ve ürün inceleme ekranları
 - Scanner, barkod ve fotoğraf demo akışları
 - Profil ekranı

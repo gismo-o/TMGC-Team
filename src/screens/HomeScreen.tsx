@@ -1,12 +1,24 @@
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  Alert,
+  Image,
+  ImageSourcePropType,
+  PanResponder,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList, Product } from '../types';
 import { useProducts } from '../context/ProductContext';
-import { Camera, Droplets, Wind, Sun, Leaf, Sparkles, AlertCircle, User, ArrowDownUp, Trash2, Bell, Plus } from 'lucide-react-native';
+import { Camera, Droplets, Wind, Sun, Leaf, Sparkles, User, ArrowDownUp, Trash2, Bell, Plus } from 'lucide-react-native';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -15,6 +27,42 @@ type HomeScreenNavigationProp = CompositeNavigationProp<
 
 type Props = {
   navigation: HomeScreenNavigationProp;
+};
+
+type SortMode = 'category' | 'name' | 'expiryDate';
+type ShelfAccent = { soft: string; strong: string; shadow: string };
+
+const routineOrder: Product['category'][] = [
+  'Temizleyici',
+  'Tonik',
+  'Serum',
+  'Göz Kremi',
+  'Nemlendirici',
+  'Güneş Kremi',
+  'Maske',
+  'Diğer',
+];
+
+const categoryAccents: Record<Product['category'], ShelfAccent> = {
+  Temizleyici: { soft: '#dfecea', strong: '#53766e', shadow: '#b7d0ca' },
+  Tonik: { soft: '#e2edf5', strong: '#4d6f83', shadow: '#bbd2df' },
+  Serum: { soft: '#eef0dc', strong: '#6c7648', shadow: '#d2d7ab' },
+  'Göz Kremi': { soft: '#eee6f5', strong: '#725b86', shadow: '#d7c4e5' },
+  Nemlendirici: { soft: '#e7f0e4', strong: '#55734b', shadow: '#c7dabb' },
+  'Güneş Kremi': { soft: '#f8ecd2', strong: '#8a6a20', shadow: '#e8d09b' },
+  Maske: { soft: '#f1e7df', strong: '#7c604b', shadow: '#dfc8b6' },
+  Diğer: { soft: '#e9efea', strong: '#426447', shadow: '#c5d5c8' },
+};
+
+const productObjectAssets: Record<Product['category'], ImageSourcePropType> = {
+  Temizleyici: require('../../assets/products/cleanser-pump.png'),
+  Tonik: require('../../assets/products/toner-bottle.png'),
+  Serum: require('../../assets/products/serum-bottle.png'),
+  'Göz Kremi': require('../../assets/products/eye-cream-tube.png'),
+  Nemlendirici: require('../../assets/products/moisturizer-jar.png'),
+  'Güneş Kremi': require('../../assets/products/sunscreen-tube.png'),
+  Maske: require('../../assets/products/mask-jar.png'),
+  Diğer: require('../../assets/products/generic-bottle.png'),
 };
 
 const getRemainingDays = (dateString?: string) => {
@@ -35,87 +83,270 @@ const isExpired = (dateString?: string) => {
   return days !== null && days < 0;
 };
 
-
-const getCategoryIcon = (category: string) => {
+const getCategoryIcon = (category: Product['category'], size = 22, color = '#426447') => {
   switch (category) {
-    case 'Temizleyici': return <Wind size={24} color="#426447" />;
-    case 'Tonik': return <Droplets size={24} color="#426447" />;
-    case 'Serum': return <Droplets size={24} color="#426447" />;
-    case 'Nemlendirici': return <Leaf size={24} color="#426447" />;
-    case 'Güneş Kremi': return <Sun size={24} color="#426447" />;
-    default: return <Sparkles size={24} color="#426447" />;
+    case 'Temizleyici':
+      return <Wind size={size} color={color} />;
+    case 'Tonik':
+    case 'Serum':
+      return <Droplets size={size} color={color} />;
+    case 'Nemlendirici':
+      return <Leaf size={size} color={color} />;
+    case 'Güneş Kremi':
+      return <Sun size={size} color={color} />;
+    default:
+      return <Sparkles size={size} color={color} />;
   }
 };
 
-const ProductListItem = ({ product, index, onPress, onDelete, showNumber = false }: any) => {
-  const isExpiring = isExpiringSoon(product.expiryDate);
-  const expired = isExpired(product.expiryDate);
+const getRoutineIndex = (category: Product['category']) => {
+  const index = routineOrder.indexOf(category);
+  return index === -1 ? 99 : index;
+};
+
+const ProductFallbackShape = ({ category }: { category: Product['category'] }) => {
+  const accent = categoryAccents[category];
+
   return (
-    <View style={styles.routineItem}>
-      {showNumber && (
-        <View style={styles.routineNumber}>
-          <Text style={styles.routineNumberText}>{index + 1}</Text>
+    <View style={styles.fallbackObject}>
+      <View style={[styles.fallbackCap, { backgroundColor: accent.strong }]} />
+      <View style={[styles.fallbackBottle, { backgroundColor: accent.soft, borderColor: accent.strong }]}>
+        <View style={[styles.fallbackLabel, { backgroundColor: accent.strong }]}>
+          {getCategoryIcon(category, 15, '#ffffff')}
         </View>
-      )}
-      <View style={styles.routineItemContent}>
-        <TouchableOpacity style={styles.cardClickArea} onPress={onPress} activeOpacity={0.7}>
-          <View style={styles.iconContainer}>
-            {getCategoryIcon(product.category)}
-          </View>
-          <View style={styles.routineItemText}>
-            <Text style={styles.productBrandText} numberOfLines={1}>{product.brand}</Text>
-            <Text style={styles.productNameText} numberOfLines={1}>{product.name}</Text>
-            {(isExpiring || expired) && (
-               <Text style={[styles.expiryText, expired && styles.expiredText]}>
-                 {expired ? 'Süresi Doldu' : `${getRemainingDays(product.expiryDate)} gün kaldı`}
-               </Text>
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={(e) => { e.stopPropagation(); onDelete(); }} style={styles.deleteButton} activeOpacity={0.6}>
-          <Trash2 size={20} color="#BA1A1A" />
-        </TouchableOpacity>
       </View>
     </View>
   );
 };
+
+type ShelfProductProps = {
+  product: Product;
+  onDelete: () => void;
+  onPress: () => void;
+  onReorder: (productId: string, direction: -1 | 1, category: Product['category']) => void;
+};
+
+const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductProps) => {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const [dragging, setDragging] = useState(false);
+  const accent = categoryAccents[product.category];
+  const expiring = isExpiringSoon(product.expiryDate);
+  const expired = isExpired(product.expiryDate);
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8,
+        onPanResponderGrant: () => {
+          setDragging(true);
+        },
+        onPanResponderMove: (_, gesture) => {
+          pan.setValue({ x: gesture.dx, y: gesture.dy });
+        },
+        onPanResponderRelease: (_, gesture) => {
+          if (gesture.dx > 48) {
+            onReorder(product.id, 1, product.category);
+          } else if (gesture.dx < -48) {
+            onReorder(product.id, -1, product.category);
+          }
+
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 7,
+            tension: 80,
+            useNativeDriver: false,
+          }).start(() => setDragging(false));
+        },
+        onPanResponderTerminate: () => {
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 7,
+            tension: 80,
+            useNativeDriver: false,
+          }).start(() => setDragging(false));
+        },
+      }),
+    [onReorder, pan, product.category, product.id]
+  );
+
+  return (
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        styles.shelfProduct,
+        dragging && styles.shelfProductDragging,
+        { transform: pan.getTranslateTransform() },
+      ]}
+    >
+      <TouchableOpacity style={styles.productObjectButton} onPress={onPress} activeOpacity={0.78}>
+        <View style={[styles.productGlow, { backgroundColor: accent.shadow }]} />
+        <View style={styles.productVisualStage}>
+          <Image source={productObjectAssets[product.category]} style={styles.productPng} resizeMode="contain" />
+        </View>
+
+        <View style={styles.productShelfLabel}>
+          <Text style={[styles.shelfBrand, { color: accent.strong }]} numberOfLines={1}>
+            {product.brand}
+          </Text>
+          <Text style={styles.shelfName} numberOfLines={2}>
+            {product.name}
+          </Text>
+          {(expiring || expired) && (
+            <Text style={[styles.expiryText, expired && styles.expiredText]}>
+              {expired ? 'Süresi Doldu' : `${getRemainingDays(product.expiryDate)} gün kaldı`}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.dragHint}>
+        <ArrowDownUp size={13} color="#6c786f" />
+      </View>
+
+      <TouchableOpacity style={styles.deleteButton} onPress={onDelete} activeOpacity={0.7}>
+        <Trash2 size={16} color="#BA1A1A" />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+type ShelfSectionProps = {
+  category: Product['category'];
+  products: Product[];
+  onDelete: (product: Product) => void;
+  onOpen: (product: Product) => void;
+  onReorder: (productId: string, direction: -1 | 1, category: Product['category']) => void;
+};
+
+const ShelfSection = ({ category, products, onDelete, onOpen, onReorder }: ShelfSectionProps) => {
+  const accent = categoryAccents[category];
+
+  return (
+    <View style={styles.shelfSection}>
+      <View style={styles.shelfSectionHeader}>
+        <View style={[styles.shelfIcon, { backgroundColor: accent.soft }]}>
+          {getCategoryIcon(category, 18, accent.strong)}
+        </View>
+        <Text style={styles.shelfTitle}>{category}</Text>
+        <Text style={styles.shelfCount}>{products.length} ürün</Text>
+      </View>
+
+      <View style={[styles.shelfStage, { borderColor: accent.shadow }]}>
+        <View style={styles.shelfBackShine} />
+        <View style={styles.shelfProductRow}>
+          {products.map(product => (
+            <ShelfProduct
+              key={product.id}
+              product={product}
+              onPress={() => onOpen(product)}
+              onDelete={() => onDelete(product)}
+              onReorder={onReorder}
+            />
+          ))}
+        </View>
+        <View style={[styles.shelfBoard, { backgroundColor: accent.strong }]}>
+          <View style={styles.shelfBoardHighlight} />
+        </View>
+      </View>
+    </View>
+  );
+};
+
 export default function HomeScreen({ navigation }: Props) {
-  const { products, updateProduct, deleteProduct } = useProducts();
-  const [timeOfDay, setTimeOfDay] = useState<'morning' | 'evening'>('morning');
-  const [sortBy, setSortBy] = useState<'category' | 'name' | 'expiryDate'>('category');
+  const { products, deleteProduct } = useProducts();
+  const [sortBy, setSortBy] = useState<SortMode>('category');
+  const [shelfOrder, setShelfOrder] = useState<string[]>([]);
+  const [doorOpen, setDoorOpen] = useState(false);
+  const doorProgress = useRef(new Animated.Value(0)).current;
 
-  const filteredProducts = products.filter(p => p.timeOfDay === timeOfDay || p.timeOfDay === 'both');
+  useEffect(() => {
+    const productIds = products.map(product => product.id);
+    setShelfOrder(previousOrder => [
+      ...previousOrder.filter(productId => productIds.includes(productId)),
+      ...productIds.filter(productId => !previousOrder.includes(productId)),
+    ]);
+  }, [products]);
 
-  const groupedProducts = filteredProducts.reduce((acc, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = [];
-    }
-    acc[product.category].push(product);
-    return acc;
-  }, {} as Record<string, Product[]>);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDoorOpen(true);
+      Animated.timing(doorProgress, {
+        toValue: 1,
+        duration: 850,
+        useNativeDriver: false,
+      }).start();
+    }, 250);
 
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    return () => clearTimeout(timer);
+  }, [doorProgress]);
+
+  const displayedProducts = useMemo(() => {
+    const orderIndex = new Map(shelfOrder.map((productId, index) => [productId, index]));
+    const productsToDisplay = [...products];
+
     if (sortBy === 'name') {
-      return a.name.localeCompare(b.name);
-    } else if (sortBy === 'expiryDate') {
-      const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
-      const dateB = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity;
-      return dateA - dateB;
+      return productsToDisplay.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     }
-    return 0;
-  });
 
-  const routineOrder = ['Temizleyici', 'Tonik', 'Serum', 'Göz Kremi', 'Nemlendirici', 'Güneş Kremi', 'Maske', 'Diğer'];
-  const sortedRoutine = [...filteredProducts].sort((a, b) => {
-    return routineOrder.indexOf(a.category) - routineOrder.indexOf(b.category);
-  });
-
-  const handleFavoriteToggle = async (product: Product) => {
-    try {
-      await updateProduct(product.id, { isFavorite: !product.isFavorite });
-    } catch (error) {
-      Alert.alert('Hata', 'Favori durumu güncellenemedi.');
+    if (sortBy === 'expiryDate') {
+      return productsToDisplay.sort((a, b) => {
+        const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
+        const dateB = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity;
+        return dateA - dateB;
+      });
     }
+
+    return productsToDisplay.sort((a, b) => {
+      const routineDiff = getRoutineIndex(a.category) - getRoutineIndex(b.category);
+      if (routineDiff !== 0) return routineDiff;
+      return (orderIndex.get(a.id) ?? 999) - (orderIndex.get(b.id) ?? 999);
+    });
+  }, [products, shelfOrder, sortBy]);
+
+  const shelfGroups = useMemo(
+    () =>
+      routineOrder
+        .map(category => ({
+          category,
+          products: displayedProducts.filter(product => product.category === category),
+        }))
+        .filter(group => group.products.length > 0),
+    [displayedProducts]
+  );
+
+  const handleDoorToggle = () => {
+    const nextOpenState = !doorOpen;
+    setDoorOpen(nextOpenState);
+    Animated.spring(doorProgress, {
+      toValue: nextOpenState ? 1 : 0,
+      friction: 8,
+      tension: 72,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const handleShelfReorder = (productId: string, direction: -1 | 1, category: Product['category']) => {
+    const visibleCategoryIds = displayedProducts
+      .filter(product => product.category === category)
+      .map(product => product.id);
+
+    setShelfOrder(previousOrder => {
+      const currentOrder = previousOrder.length ? [...previousOrder] : products.map(product => product.id);
+      const localIndex = visibleCategoryIds.indexOf(productId);
+      const targetLocalIndex = localIndex + direction;
+      const targetId = visibleCategoryIds[targetLocalIndex];
+
+      if (localIndex === -1 || !targetId) return currentOrder;
+
+      const productIndex = currentOrder.indexOf(productId);
+      const targetIndex = currentOrder.indexOf(targetId);
+
+      if (productIndex === -1 || targetIndex === -1) return currentOrder;
+
+      [currentOrder[productIndex], currentOrder[targetIndex]] = [currentOrder[targetIndex], currentOrder[productIndex]];
+      return currentOrder;
+    });
   };
 
   const handleDeleteProduct = async (userProductId: string) => {
@@ -131,151 +362,150 @@ export default function HomeScreen({ navigation }: Props) {
   const handleDelete = (product: Product) => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const confirmed = window.confirm(`${product.brand} - ${product.name} dolabınızdan kaldırılsın mı?`);
-      if (confirmed) {
-        handleDeleteProduct(product.id);
-      }
-    } else {
-      Alert.alert(
-        'Ürünü Sil',
-        `${product.brand} - ${product.name} dolabınızdan kaldırılsın mı?`,
-        [
-          { text: 'Vazgeç', style: 'cancel' },
-          { 
-            text: 'Sil', 
-            style: 'destructive',
-            onPress: () => handleDeleteProduct(product.id)
-          }
-        ]
-      );
+      if (confirmed) handleDeleteProduct(product.id);
+      return;
     }
+
+    Alert.alert(
+      'Ürünü Sil',
+      `${product.brand} - ${product.name} dolabınızdan kaldırılsın mı?`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Sil',
+          style: 'destructive',
+          onPress: () => handleDeleteProduct(product.id),
+        },
+      ]
+    );
   };
+
+  const leftDoorTranslate = doorProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -780],
+  });
+
+  const rightDoorTranslate = doorProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 780],
+  });
+
+  const doorOpacity = doorProgress.interpolate({
+    inputRange: [0, 0.88, 1],
+    outputRange: [1, 0.18, 0],
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-           <User size={20} color="#426447" />
+          <User size={20} color="#426447" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SkinShelf</Text>
-        <TouchableOpacity onPress={() => {}}>
-           <Bell size={24} color="#426447" />
+        <TouchableOpacity style={styles.notificationButton} onPress={() => {}}>
+          <Bell size={24} color="#426447" />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity 
-            style={[styles.toggleButton, timeOfDay === 'morning' && styles.toggleButtonActive]} 
-            onPress={() => setTimeOfDay('morning')}
-          >
-            <Text style={[styles.toggleText, timeOfDay === 'morning' && styles.toggleTextActive]}>SABAH (AM)</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.toggleButton, timeOfDay === 'evening' && styles.toggleButtonActive]} 
-            onPress={() => setTimeOfDay('evening')}
-          >
-            <Text style={[styles.toggleText, timeOfDay === 'evening' && styles.toggleTextActive]}>AKŞAM (PM)</Text>
+        <View style={styles.sortContainer}>
+          <View style={styles.sortHeader}>
+            <ArrowDownUp size={16} color="#426447" />
+            <Text style={styles.sortLabel}>Sırala:</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortOptions}>
+            <TouchableOpacity
+              style={[styles.sortButton, sortBy === 'category' && styles.sortButtonActive]}
+              onPress={() => setSortBy('category')}
+            >
+              <Text style={[styles.sortButtonText, sortBy === 'category' && styles.sortButtonTextActive]}>Kategori</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.sortButton, sortBy === 'name' && styles.sortButtonActive]}
+              onPress={() => setSortBy('name')}
+            >
+              <Text style={[styles.sortButtonText, sortBy === 'name' && styles.sortButtonTextActive]}>İsim</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.sortButton, sortBy === 'expiryDate' && styles.sortButtonActive]}
+              onPress={() => setSortBy('expiryDate')}
+            >
+              <Text style={[styles.sortButtonText, sortBy === 'expiryDate' && styles.sortButtonTextActive]}>Son Kullanma</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        <View style={styles.cabinetHeaderRow}>
+          <View>
+            <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
+            <Text style={styles.cabinetSubtitle}>Kullandığın ve beklettiğin tüm ürünler burada. Rutinim sekmesi bu dolaptan ürün seçer.</Text>
+          </View>
+          <TouchableOpacity style={styles.doorToggleButton} onPress={handleDoorToggle}>
+            <Text style={styles.doorToggleText}>{doorOpen ? 'Kapat' : 'Aç'}</Text>
           </TouchableOpacity>
         </View>
 
-        {filteredProducts.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyImageContainer}>
-               <Image 
-                 source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxh_je3r9Elmpe-upqOCUu6Nq-2LMDPSIR0y8ZiXrcQ5g-8hr-JF4eKyt-t3grs3DG0NQzPIFGKrOT7W2oE3V3jftrISpmc7AsEa07tJRPIMfDefJ8rtkcOA9gENi1oUF6LJpyDnYXp2w1AnQp1rR07MAsYMgXqQOW5biiX3RDbUjYOw4tYiAWPc-A24w83sJxrjtz91HN3kAdCF9ASpgNP-yvLfsi6C5LhL7jJ15zNg2Na7vMttWf-w' }}
-                 style={styles.emptyImage}
-               />
-            </View>
-            <Text style={styles.emptyTitle}>Dolabınız Boş</Text>
-            <Text style={styles.emptyText}>
-              {timeOfDay === 'morning' ? 'Sabah rutininiz için henüz bir cilt bakım ürünü eklemediniz.' : 'Akşam rutininiz için henüz bir cilt bakım ürünü eklemediniz.'}
-            </Text>
-            <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scanner')}>
-              <Camera size={24} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={styles.scanButtonText}>Kamerayı Aç / Ürün Tara</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.productsContainer}>
-            <View style={styles.sortContainer}>
-              <View style={styles.sortHeader}>
-                <ArrowDownUp size={16} color="#426447" />
-                <Text style={styles.sortLabel}>Sırala:</Text>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortOptions}>
-                <TouchableOpacity 
-                  style={[styles.sortButton, sortBy === 'category' && styles.sortButtonActive]}
-                  onPress={() => setSortBy('category')}
-                >
-                  <Text style={[styles.sortButtonText, sortBy === 'category' && styles.sortButtonTextActive]}>Kategori</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.sortButton, sortBy === 'name' && styles.sortButtonActive]}
-                  onPress={() => setSortBy('name')}
-                >
-                  <Text style={[styles.sortButtonText, sortBy === 'name' && styles.sortButtonTextActive]}>İsim</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.sortButton, sortBy === 'expiryDate' && styles.sortButtonActive]}
-                  onPress={() => setSortBy('expiryDate')}
-                >
-                  <Text style={[styles.sortButtonText, sortBy === 'expiryDate' && styles.sortButtonTextActive]}>Son Kullanma</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
+        <View style={styles.cabinetShell}>
+          <View style={styles.cabinetTopLip} />
 
-            <View style={styles.routineSection} pointerEvents="box-none">
-              <View style={styles.routineHeader}>
-                <Sparkles size={20} color="#426447" />
-                <Text style={styles.routineTitle}>AI Rutin Sıralaması</Text>
-              </View>
-              <Text style={styles.routineSubtitle}>
-                {timeOfDay === 'morning' ? 'Sabah' : 'Akşam'} rutininiz için ürünleri bu sırayla uygulayın:
-              </Text>
-
-              <View style={styles.routineList} pointerEvents="box-none">
-                {sortBy === 'category' ? (
-                  Object.keys(groupedProducts).sort((a, b) => {
-                    const indexA = routineOrder.indexOf(a);
-                    const indexB = routineOrder.indexOf(b);
-                    return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
-                  }).map(category => {
-                    const productsInCategory = groupedProducts[category];
-                    if (!productsInCategory || productsInCategory.length === 0) return null;
-                    return (
-                      <View key={category} style={styles.categoryGroup}>
-                        <Text style={styles.categoryGroupTitle}>{category}</Text>
-                        {productsInCategory.map((product, index) => (
-                          <ProductListItem
-                            key={product.id}
-                            product={product}
-                            index={index}
-                            showNumber={false}
-                            onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
-                            onDelete={() => handleDelete(product)}
-                          />
-                        ))}
-                      </View>
-                    );
-                  })
-                ) : (
-                  sortedProducts.map((product, index) => (
-                    <ProductListItem
-                      key={product.id}
-                      product={product}
-                      index={index}
-                      showNumber={true}
-                      onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
-                      onDelete={() => handleDelete(product)}
-                    />
-                  ))
-                )}
-              </View>
+          {products.length === 0 ? (
+            <View style={styles.emptyCabinet}>
+              <View style={styles.emptyShelfLine} />
+              <View style={styles.emptyShelfLineShort} />
+              <Text style={styles.emptyTitle}>Dolabınız Boş</Text>
+              <Text style={styles.emptyText}>Ürün eklediğinizde AI rutininizi bu dolaptaki ürünlere göre oluşturur.</Text>
+              <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scanner')}>
+                <Camera size={22} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.scanButtonText}>Kamerayı Aç / Ürün Tara</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        )}
+          ) : (
+            <View style={styles.shelvesContainer}>
+              {shelfGroups.map(group => (
+                <ShelfSection
+                  key={group.category}
+                  category={group.category}
+                  products={group.products}
+                  onOpen={product => navigation.navigate('ProductDetail', { productId: product.id })}
+                  onDelete={handleDelete}
+                  onReorder={handleShelfReorder}
+                />
+              ))}
+            </View>
+          )}
+
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.doorPanel,
+              styles.leftDoor,
+              {
+                opacity: doorOpacity,
+                transform: [{ translateX: leftDoorTranslate }],
+              },
+            ]}
+          >
+            <View style={styles.doorInset} />
+            <View style={styles.doorHandleLeft} />
+          </Animated.View>
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.doorPanel,
+              styles.rightDoor,
+              {
+                opacity: doorOpacity,
+                transform: [{ translateX: rightDoorTranslate }],
+              },
+            ]}
+          >
+            <View style={styles.doorInset} />
+            <View style={styles.doorHandleRight} />
+          </Animated.View>
+        </View>
       </ScrollView>
-      {filteredProducts.length > 0 && (
+
+      {products.length > 0 && (
         <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Scanner')}>
           <Plus size={24} color="#ffffff" />
         </TouchableOpacity>
@@ -286,68 +516,356 @@ export default function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, height: 64, backgroundColor: 'rgba(250, 249, 245, 0.9)' },
-  profileButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f1ec', justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    height: 64,
+    backgroundColor: 'rgba(250, 249, 245, 0.96)',
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f1ec',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#426447' },
-  scrollContent: { paddingBottom: 140 },
-  toggleContainer: { flexDirection: 'row', backgroundColor: '#f0f1ec', borderRadius: 30, padding: 4, marginHorizontal: 20, marginVertical: 16 },
+  scrollContent: { paddingBottom: 150 },
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f1ec',
+    borderRadius: 30,
+    padding: 4,
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 12,
+  },
   toggleButton: { flex: 1, paddingVertical: 12, borderRadius: 26, alignItems: 'center' },
-  toggleButtonActive: { backgroundColor: '#ffffff', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
-  toggleText: { fontSize: 12, fontWeight: '600', color: '#707973' },
+  toggleButtonActive: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  toggleText: { fontSize: 12, fontWeight: '700', color: '#707973' },
   toggleTextActive: { color: '#426447' },
-  emptyContainer: { alignItems: 'center', paddingHorizontal: 20, marginTop: 40 },
-  emptyImageContainer: { width: 200, height: 200, backgroundColor: '#ffffff', borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5 },
-  emptyImage: { width: 160, height: 160, resizeMode: 'contain' },
-  emptyTitle: { fontSize: 24, fontWeight: '700', color: '#426447', marginBottom: 8 },
-  emptyText: { fontSize: 16, color: '#707973', textAlign: 'center', marginBottom: 40 },
-  scanButton: { flexDirection: 'row', backgroundColor: '#426447', paddingHorizontal: 32, paddingVertical: 16, borderRadius: 32, alignItems: 'center' },
-  scanButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  productsContainer: { paddingHorizontal: 20 },
-  categorySection: { marginBottom: 24 },
-  categoryTitle: { fontSize: 16, fontWeight: '600', color: '#404943', marginBottom: 12, borderLeftWidth: 4, borderLeftColor: '#cce8d0', paddingLeft: 8 },
-  categoryList: { paddingBottom: 8 },
-  productCard: { width: 140, backgroundColor: '#ffffff', borderRadius: 16, padding: 12, marginRight: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
-  alertBadge: { position: 'absolute', top: 8, right: 8, zIndex: 10, backgroundColor: '#ffdad6', borderRadius: 12, paddingHorizontal: 6, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 4 },
-  alertText: { fontSize: 10, fontWeight: '600', color: '#BA1A1A' },
-  productImageContainer: { width: '100%', aspectRatio: 1, backgroundColor: '#f0f1ec', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  productImage: { width: '80%', height: '80%', resizeMode: 'contain' },
-  productBrand: { fontSize: 10, fontWeight: '700', color: '#426447', textTransform: 'uppercase', marginBottom: 4 },
-  productName: { fontSize: 14, fontWeight: '500', color: '#1b1c1c' },
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#f0f1ec' },
-  actionButton: { padding: 4 },
-  routineSection: { backgroundColor: '#f0f1ec', borderRadius: 16, padding: 20, marginBottom: 24 },
-  routineHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  routineTitle: { fontSize: 16, fontWeight: '600', color: '#1b1c1c', marginLeft: 8 },
-  routineSubtitle: { fontSize: 14, color: '#707973', marginBottom: 16 },
-  routineList: { gap: 12 },
-  routineItem: { flexDirection: 'row', alignItems: 'center' },
-  routineNumber: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#cce8d0', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 2, borderColor: '#f0f1ec' },
-  routineNumberText: { fontSize: 14, fontWeight: '700', color: '#092011' },
-  routineItemContent: { flex: 1, backgroundColor: '#ffffff', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1, position: 'relative', overflow: 'hidden' },
-  cardClickArea: { flex: 1, flexDirection: 'row', padding: 12, alignItems: 'center', paddingRight: 60 },
-  routineItemImage: { width: 40, height: 40, resizeMode: 'contain', marginRight: 12 },
-  routineItemText: { flex: 1 },
-  routineItemCategory: { fontSize: 10, color: '#426447', textTransform: 'uppercase', fontWeight: '600' },
-  routineItemName: { fontSize: 14, fontWeight: '500', color: '#1b1c1c' },
-  addButton: { flexDirection: 'row', backgroundColor: '#cce8d0', alignSelf: 'center', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, alignItems: 'center' },
-  addButtonText: { color: '#092011', fontSize: 12, fontWeight: '600', marginLeft: 8 },
-  sortContainer: { marginBottom: 20 },
+  sortContainer: { paddingHorizontal: 20, marginBottom: 14 },
   sortHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  sortLabel: { fontSize: 14, fontWeight: '600', color: '#426447', marginLeft: 6 },
+  sortLabel: { fontSize: 14, fontWeight: '700', color: '#426447', marginLeft: 6 },
   sortOptions: { paddingBottom: 4 },
-  sortButton: { backgroundColor: '#f0f1ec', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
+  sortButton: {
+    backgroundColor: '#f0f1ec',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
   sortButtonActive: { backgroundColor: '#426447' },
-  sortButtonText: { fontSize: 12, fontWeight: '600', color: '#707973' },
+  sortButtonText: { fontSize: 12, fontWeight: '700', color: '#707973' },
   sortButtonTextActive: { color: '#ffffff' },
-  sortedListContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 },
-  sortedProductCard: { width: '48%', marginRight: 0, marginBottom: 16 },
-  categoryGroup: { marginBottom: 16 },
-  categoryGroupTitle: { fontSize: 16, fontWeight: '600', color: '#404943', marginBottom: 8, paddingLeft: 4 },
-  expiryText: { fontSize: 10, fontWeight: '600', color: '#BA1A1A', marginTop: 2 },
+  aiStrip: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: '#e9efea',
+    borderWidth: 1,
+    borderColor: '#d7e3d9',
+  },
+  aiStripHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  aiStripTitle: { fontSize: 15, fontWeight: '800', color: '#1b1c1c', marginLeft: 8 },
+  routinePreviewRow: { gap: 8, alignItems: 'center' },
+  routinePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#d8e0da',
+  },
+  routinePillIndex: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#426447',
+    color: '#ffffff',
+    textAlign: 'center',
+    lineHeight: 20,
+    fontSize: 11,
+    fontWeight: '800',
+    marginRight: 7,
+  },
+  routinePillText: { maxWidth: 110, color: '#404943', fontSize: 12, fontWeight: '700' },
+  routineEmptyText: { color: '#707973', fontSize: 13 },
+  cabinetHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    gap: 12,
+  },
+  cabinetTitle: { fontSize: 22, fontWeight: '800', color: '#14351f' },
+  cabinetSubtitle: { fontSize: 12, color: '#627168', marginTop: 3, maxWidth: 520 },
+  doorToggleButton: {
+    backgroundColor: '#426447',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+  },
+  doorToggleText: { color: '#ffffff', fontSize: 12, fontWeight: '800' },
+  cabinetShell: {
+    marginHorizontal: 20,
+    borderRadius: 24,
+    backgroundColor: '#eef4ef',
+    borderWidth: 1,
+    borderColor: '#c7d9ca',
+    overflow: 'hidden',
+    minHeight: 410,
+    shadowColor: '#21412a',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 4,
+  },
+  cabinetTopLip: {
+    height: 16,
+    backgroundColor: '#426447',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+  },
+  shelvesContainer: { padding: 16, paddingBottom: 24 },
+  shelfSection: { marginBottom: 22 },
+  shelfSectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  shelfIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  shelfTitle: { fontSize: 16, fontWeight: '800', color: '#1b1c1c', flex: 1 },
+  shelfCount: { fontSize: 12, color: '#65736a', fontWeight: '700' },
+  shelfStage: {
+    minHeight: 238,
+    borderRadius: 18,
+    borderWidth: 1,
+    backgroundColor: '#f8faf7',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  shelfBackShine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '58%',
+    backgroundColor: 'rgba(255,255,255,0.62)',
+  },
+  shelfProductRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-end',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 26,
+    zIndex: 2,
+  },
+  shelfBoard: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 18,
+  },
+  shelfBoardHighlight: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.34)',
+  },
+  shelfProduct: {
+    width: 142,
+    minHeight: 208,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  shelfProductDragging: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 9,
+  },
+  productObjectButton: { width: '100%', alignItems: 'center' },
+  productGlow: {
+    position: 'absolute',
+    top: 138,
+    width: 112,
+    height: 26,
+    borderRadius: 43,
+    opacity: 0.48,
+  },
+  productVisualStage: {
+    width: 132,
+    height: 158,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  productPng: {
+    width: 132,
+    height: 158,
+  },
+  productShelfLabel: {
+    marginTop: 2,
+    width: '100%',
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(225,232,227,0.74)',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  shelfBrand: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', marginBottom: 2 },
+  shelfName: { fontSize: 12, fontWeight: '700', color: '#1b1c1c', lineHeight: 15 },
+  dragHint: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.82)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  expiryText: { fontSize: 10, fontWeight: '800', color: '#BA1A1A', marginTop: 3 },
   expiredText: { color: '#BA1A1A' },
-  deleteButton: { position: 'absolute', right: 8, top: '50%', marginTop: -22, zIndex: 999, padding: 12, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },
-  fab: { position: 'absolute', bottom: 24, right: 24, width: 60, height: 60, borderRadius: 30, backgroundColor: '#426447', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
-  iconContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#f0f1ec', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  productBrandText: { fontSize: 14, fontWeight: '700', color: '#1b1c1c', marginBottom: 2 },
-  productNameText: { fontSize: 14, color: '#404943' },
+  fallbackObject: { width: 58, height: 92, alignItems: 'center', justifyContent: 'flex-end' },
+  fallbackCap: { width: 24, height: 12, borderTopLeftRadius: 5, borderTopRightRadius: 5 },
+  fallbackBottle: {
+    width: 48,
+    height: 74,
+    borderRadius: 13,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fallbackLabel: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  doorPanel: {
+    position: 'absolute',
+    top: 16,
+    bottom: 0,
+    width: '50%',
+    backgroundColor: '#dce8df',
+    borderColor: '#aac1ae',
+    shadowColor: '#12351f',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 5,
+  },
+  leftDoor: {
+    left: 0,
+    borderRightWidth: 1,
+  },
+  rightDoor: {
+    right: 0,
+    borderLeftWidth: 1,
+  },
+  doorInset: {
+    position: 'absolute',
+    top: 22,
+    left: 18,
+    right: 18,
+    bottom: 28,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(66,100,71,0.28)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  doorHandleLeft: {
+    position: 'absolute',
+    right: 16,
+    top: '48%',
+    width: 10,
+    height: 56,
+    borderRadius: 8,
+    backgroundColor: '#426447',
+  },
+  doorHandleRight: {
+    position: 'absolute',
+    left: 16,
+    top: '48%',
+    width: 10,
+    height: 56,
+    borderRadius: 8,
+    backgroundColor: '#426447',
+  },
+  emptyCabinet: {
+    minHeight: 394,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyShelfLine: { width: '84%', height: 14, borderRadius: 10, backgroundColor: '#426447', opacity: 0.78, marginBottom: 38 },
+  emptyShelfLineShort: { width: '58%', height: 12, borderRadius: 10, backgroundColor: '#abc3b0', marginBottom: 34 },
+  emptyTitle: { fontSize: 24, fontWeight: '800', color: '#426447', marginBottom: 8 },
+  emptyText: { fontSize: 15, color: '#707973', textAlign: 'center', marginBottom: 26, lineHeight: 21 },
+  scanButton: {
+    flexDirection: 'row',
+    backgroundColor: '#426447',
+    paddingHorizontal: 26,
+    paddingVertical: 15,
+    borderRadius: 28,
+    alignItems: 'center',
+  },
+  scanButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#426447',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
 });

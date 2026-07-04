@@ -11,7 +11,8 @@ Bu dosya Sprint 1 sonunda frontend tarafinda tamamlananlari ve sonraki sprintler
 | Sign Up | Hesap olusturma prototipi | Done |
 | Skin Type | Cilt tipi secimi | Done |
 | Skin Conditions | Hassasiyet ve ozel durum secimi | Done |
-| Home | Dijital urun dolabi ve rutin filtreleri | Done |
+| Home / Dolabim | Tum urunlerin rafli dolap gorunumunde listelendigi, PNG obje ve surukle-birak destekli envanter ekrani | Done |
+| Routine / Rutinim | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk sabah/aksam AI rutin plani olusturma | Done |
 | Scanner | Barkod/fotograf tarama prototipi | Done |
 | Product Review | Taranan urunu inceleme, marka/urun/kategori/icerik alanlarini duzenleme ve dolaba ekleme | Done |
 | Product Detail | Urun icerik, aciklama, AI analiz prototipi ve duzenleme akisina gecis | Done |
@@ -27,7 +28,7 @@ Tam puana yaklasmak icin sonraki sprintte frontend tarafinda asagidaki isler onc
 - Backend hata durumlari icin toast/alert ve retry durumlari
 - Auth token'a gore login/onboarding yonlendirmesi
 - Open Beauty Facts'te bulunamayan urunler icin manuel urun giris formu
-- AI analiz sonucunun loading/error/success durumlari
+- AI analiz ve rutin sonucunun gercek Gemini/backend cevabiyla loading/error/success durumlari
 
 ## Sprint 3 Frontend Icin Gerekenler
 

@@ -36,6 +36,28 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       description: 'Derinlemesine nemlendirici krem.',
       activeIngredients: ['Hyaluronic Acid'],
       expiryDate: '2027-10'
+    },
+    {
+      id: 'demo-3',
+      name: 'Niacinamide 10% + Zinc 1%',
+      brand: 'The Ordinary',
+      category: 'Serum',
+      timeOfDay: 'both',
+      imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400',
+      description: 'Sebum dengeleyen ve leke görünümünü azaltmaya yardımcı serum.',
+      activeIngredients: ['Niacinamide', 'Zinc PCA'],
+      expiryDate: '2027-01'
+    },
+    {
+      id: 'demo-4',
+      name: 'Anthelios Invisible Fluid SPF50+',
+      brand: 'La Roche-Posay',
+      category: 'Güneş Kremi',
+      timeOfDay: 'morning',
+      imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=400',
+      description: 'Günlük kullanıma uygun yüksek korumalı güneş kremi.',
+      activeIngredients: ['SPF 50+', 'Glycerin'],
+      expiryDate: '2026-11'
     }
   ]);
 

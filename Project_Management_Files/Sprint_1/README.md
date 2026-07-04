@@ -34,7 +34,8 @@ Sprint 1'in hedefi, SkinShelf icin demo edilebilir mobil uygulama iskeletini ve 
 
 - Login, Sign In, Sign Up ekranlari
 - Cilt tipi ve ozel cilt durumu onboarding ekranlari
-- Ana ekran ve dijital urun dolabi
+- Rafli Dolabim ekrani ve dijital urun envanteri
+- Rutinim sekmesi ile sikayete gore 7 gunluk AI rutin prototipi
 - Urun detay ekrani
 - Barkod / fotograf tarama ekrani
 - Urun inceleme ve dolaba ekleme ekrani

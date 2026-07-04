@@ -6,7 +6,8 @@ Sprint 1 kabul kriterleri, demo edilebilir mobil prototip ve Scrum kanitlari uze
 | --- | --- | --- | --- |
 | Kullanici uygulamaya baslayabilmeli | Login, Sign In ve Sign Up ekranlari goruntulenebilir olmali | Done | `src/screens/LoginScreen.tsx`, `SignInScreen.tsx`, `SignUpScreen.tsx` |
 | Kullanici cilt profilini olusturabilmeli | Cilt tipi ve ozel durum ekranlari akisa bagli olmali | Done | `SkinTypeScreen.tsx`, `SkinConditionsScreen.tsx` |
-| Kullanici urun dolabini gorebilmeli | Sabah/aksam rutin filtreleri ve urun kartlari gorunmeli | Done | `HomeScreen.tsx` |
+| Kullanici urun dolabini gorebilmeli | Tum urunler rafli dolapta PNG obje olarak gorunmeli | Done | `HomeScreen.tsx` |
+| Kullanici rutin planini gorebilmeli | Rutinim sekmesi dolaptaki urunlerden sikayete gore bugun ve 7 gunluk sabah/aksam plan olusturmali | Done | `RoutineScreen.tsx` |
 | Kullanici urun detayini inceleyebilmeli | Urun detay modalinde aktif icerik ve AI analiz alani yer almali | Done | `ProductDetailScreen.tsx` |
 | Kullanici urun ekleme akisina girebilmeli | Barkod ve fotograf modlari bulunan scanner ekrani olmali | Done | `ScannerScreen.tsx` |
 | Barkod akisi veri kaynagina hazir olmali | Barkod girdisi servis katmanindan Open Beauty Facts lookup'a gidebilmeli | Done | `openBeautyFactsService.ts` |

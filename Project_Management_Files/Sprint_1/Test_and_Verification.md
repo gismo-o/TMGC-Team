@@ -9,6 +9,7 @@ Bu dosya Sprint 1 sonunda yapilan teknik ve manuel dogrulamalari listeler.
 | Dependency kurulumu | `npm install` | Gecti |
 | TypeScript build kontrolu | `npm run build` | Gecti |
 | Expo web smoke test | `npm run dev` ve `http://localhost:3000` | Gecti |
+| Android emulator smoke test | `Medium_Phone` AVD, Expo Android bundle | Gecti |
 | Git durumu | `git status --short` | Temiz |
 | Barkod veri kaynagi testi | Open Beauty Facts API | Gecti |
 
@@ -37,7 +38,11 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 | Login -> Sign Up | Kullanici hesap olusturma formuna gecebilir | Gecti |
 | Sign Up -> SkinType | Onboarding akisi cilt tipi secimine devam eder | Gecti |
 | SkinType -> SkinConditions | Cilt tipi secimi sonraki adıma baglidir | Gecti |
-| Home | Urun dolabi ve rutin filtreleri gorunur | Gecti |
+| Home / Dolabim | Tum urunler rafli dolapta PNG obje olarak gorunur | Gecti |
+| Home shelf drag | Ayni raftaki urunler saga/sola suruklenerek siralanabilir | Gecti |
+| Routine tab | Alt navigasyonda Rutinim sekmesi acilir | Gecti |
+| Routine AI plan | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk plan olusur | Gecti |
+| Routine follow-up | Bir hafta sonrasi icin gecti/devam ediyor aksiyonlari gorunur | Gecti |
 | Scanner | Barkod ve fotograf modlari arasinda gecis vardir | Gecti |
 | Scanner -> ProductReview | Taranan urun review ekranina tasinir | Gecti |
 | ProductReview edit | Marka, urun adi, kategori ve icerik etiketleri onaydan once duzenlenebilir | Gecti |
@@ -51,5 +56,5 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 
 - Gercek cihaz kamera izni ve barkod okuyucu kutuphanesi Sprint 2 kapsamindadir.
 - Backend auth ve kalici veri kaydi Sprint 2 kapsamindadir.
-- Gemini AI cevabi Sprint 2'de backend uzerinden entegre edilecektir.
+- Gemini AI cevabi ve gercek haftalik rutin motoru Sprint 2'de backend uzerinden entegre edilecektir.
 - Bildirimler, analiz gecmisi ve gelismis rutin onerileri Sprint 3 kapsamindadir.

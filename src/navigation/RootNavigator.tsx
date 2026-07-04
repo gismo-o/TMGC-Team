@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, User } from 'lucide-react-native';
+import { Calendar, Home, User } from 'lucide-react-native';
 
 import { RootStackParamList, MainTabParamList } from '../types';
 
@@ -12,6 +12,7 @@ import SignUpScreen from '../screens/SignUpScreen';
 import SkinTypeScreen from '../screens/SkinTypeScreen';
 import SkinConditionsScreen from '../screens/SkinConditionsScreen';
 import HomeScreen from '../screens/HomeScreen';
+import RoutineScreen from '../screens/RoutineScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import ProductReviewScreen from '../screens/ProductReviewScreen';
@@ -49,6 +50,14 @@ function MainTabs() {
         options={{
           tabBarLabel: 'Dolabım',
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />
+        }}
+      />
+      <Tab.Screen
+        name="Routine"
+        component={RoutineScreen}
+        options={{
+          tabBarLabel: 'Rutinim',
+          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />
         }}
       />
       <Tab.Screen 
