@@ -116,20 +116,21 @@ Uygulamanın veri modelini ve sınıflar arası ilişkileri gösteren UML class 
 - `UserProfile` — cilt tipi, hassasiyetler, onboarding durumu (`UserContext`)
 - `Product` — dolaptaki ürün bilgisi (`ProductContext`, `productService`)
 
-**Planlanan varlıklar (Sprint 2–3 kapsamında, henüz kodda yok):** `Routine`, `SkinAnalysis`, `ProgressEntry`. Diyagramda bunlar kesikli çizgiyle gösterilmiştir; geliştirildikçe diyagram güncellenmelidir.
+**Sprint 2–3 kapsamına ayrılan varlıklar:** `Routine`, `SkinAnalysis`, `ProgressEntry`. Diyagramda bunlar kesikli çizgiyle gösterilmiştir; ilgili modüller geliştirildikçe diyagram güncellenecektir.
 
 ## Akış Şemaları (Flow Charts)
 
-Uygulamanın temel kullanıcı akışları, `RootNavigator.tsx` ve ekranlardaki `navigate()` / `replace()` çağrıları esas alınarak çıkarılmıştır — yani şema kod ile birebir doğrulanmıştır.
+Uygulamanın temel kullanıcı akışları, Sprint 1'de geliştirilen navigasyon yapısı ve Sprint 2–3 kapsamına ayrılan alt modüller birlikte düşünülerek çıkarılmıştır.
 
-<img width="1104" height="750" alt="Ekran Resmi 2026-07-04 10 30 11" src="https://github.com/user-attachments/assets/336c95cc-b0e5-4f4b-9801-77939c22e647" />
+<img src="Project_Management_Files/Sprint_1/System_Design/skinshelf-user-flow.png" width="720" />
 
 **Kapsanan akışlar:**
 1. **Kimlik Doğrulama & Onboarding** — Login → SignIn/SignUp → SkinType → SkinConditions → MainTabs
 2. **Ürün Tarama & Dolaba Ekleme** — Home → Scanner (Barkod | Fotoğraf) → `productService.scanProduct()` → ProductReview → MainTabs; ayrıca Home → ProductDetail
 3. **Profil Düzenleme & Çıkış** — Profile → Login (çıkış) veya Profile → SkinType → SkinConditions → MainTabs (cilt tipini düzenleme)
+4. **Sprint 2–3 Profil Alt Akışları** — hesap ayarları, gizlilik/güvenlik, yardım/destek ve gelişmiş profil yönetimi
 
-> Not: `Routine`, `SkinAnalysis`, `ProgressEntry` ekranları henüz kodda olmadığı için bu şemaya dahil edilmedi. Sprint 2–3'te bu ekranlar geliştirildiğinde şema güncellenmelidir.
+> Not: `Routine`, `SkinAnalysis`, `ProgressEntry` ekranları Sprint 2–3 kapsamına ayrıldığı için bu Sprint 1 şemasında temel akış seviyesinde temsil edilmiştir.
 
 
 ## 📌 Sprint - 1
@@ -146,17 +147,26 @@ Uygulamanın temel kullanıcı akışları, `RootNavigator.tsx` ve ekranlardaki 
 
 ### Sprint İçinde Tamamlanması Tahmin Edilen Puan
 
-> **Eklenecek:** Notion backlog üzerindeki story point değerleri netleştiğinde Sprint 1 hedef puanı buraya yazılacak.
+Sprint 1 puanlaması, Notion board üzerindeki kart sayıları baz alınarak kart bazlı puanlama mantığıyla yapılmıştır.
+
+- Toplam board kapsamı: **36 kart**
+- Product backlog: **22 kart**
+- Sprint 1 hedefi: **14 kart**
+- Sprint 1 tamamlanan: **11 kart**
+- Sprint 1 kalan / To Do: **3 kart**
+- Sprint 1 tamamlanma oranı: **%79**
 
 Sprint 1 için hedeflenen ana kapsam; proje iskeleti, temel mobil ekranlar, onboarding akışı, ürün dolabı prototipi, AI analiz prototip ekranları ve proje dokümantasyonudur.
+
+Bu sprintte takip ve puanlama kart bazlı yapılmıştır.
 
 ### Puan Tamamlama Mantığı
 
 Backlog 3 sprintlik geliştirme sürecine göre parçalanmıştır. Sprint 1'de ürün fikrini somutlaştıran temel kullanıcı akışları, görsel tasarım, mobil mimari ve demo edilebilir prototip ekranlarına öncelik verilmiştir. AI servisleri, gerçek backend entegrasyonu, kalıcı veri katmanı ve gelişmiş rutin önerileri Sprint 2-3 kapsamına aktarılmıştır.
 
-> **Eklenecek:** Toplam backlog puanı, Sprint 1 hedef puanı ve Sprint 1 tamamlanan puanı Notion board puanlarıyla birlikte güncellenecek.
+Sprint 1 kart bazlı değerlendirmede 14 kartlık sprint kapsamının 11 kartı tamamlanmış, backend/database tarafındaki 3 kart sonraki geliştirme akışına bırakılmıştır.
 
-### Backlog Düzeni ve Story Seçimleri
+### Backlog Dağıtma Mantığı ve Story Seçimleri
 
 Backlog story bazında düzenlenmiştir. Notion üzerindeki Product Backlog'da aşağıdaki ana kartlar bulunmaktadır:
 
@@ -187,11 +197,17 @@ Sprint 1'de öncelik; uygulama iskeleti, kullanıcı giriş/onboarding akışı,
 
 ### Daily Scrum
 
-Daily scrum toplantıları ekip uygunluğuna göre çevrim içi iletişim kanalları üzerinden yürütülecektir.
+Daily scrum toplantıları ekip uygunluğuna göre WhatsApp yazışmaları ve sesli görüşme üzerinden yürütülmüştür.
 
 - Daily scrum kanıt klasörü: [Project_Management_Files/Sprint_1/Daily_Scrum](Project_Management_Files/Sprint_1/Daily_Scrum)
-- **Eklenecek:** WhatsApp, Discord veya Slack daily scrum ekran görüntüleri.
-- **Eklenecek:** Günlük blocker ve karar notları.
+- Daily scrum özeti: [sprint1-daily-summary.md](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-summary.md)
+- Sesli görüşme kanıtı: [sprint1-daily-call.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-call.png)
+- Backend karar yazışması: [sprint1-backend-decision.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-backend-decision.png)
+- Prototip geri bildirimi: [sprint1-prototype-feedback.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-prototype-feedback.png)
+
+| Sesli Görüşme | Backend Kararı | Prototip Geri Bildirimi |
+| :---: | :---: | :---: |
+| <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-call.png" width="220"> | <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-backend-decision.png" width="220"> | <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-prototype-feedback.png" width="220"> |
 
 ### Sprint Board Update
 
@@ -199,9 +215,27 @@ Sprint board Notion Product Backlog üzerinden takip edilmektedir.
 
 - Product Backlog: [Notion Board](https://app.notion.com/p/38a7261335df8032a91bc8f9f21c1631?v=38a7261335df80499299000c888d5a9d)
 - Sprint board kanıt klasörü: [Project_Management_Files/Sprint_1/Sprint_Board](Project_Management_Files/Sprint_1/Sprint_Board)
-- **Eklenecek:** Sprint başlangıcı board ekran görüntüsü.
-- **Eklenecek:** Sprint ortası board ekran görüntüsü.
-- **Eklenecek:** Sprint sonu board ekran görüntüsü.
+- Sprint sonu board ekran görüntüsü: [sprint1-board-end.png](Project_Management_Files/Sprint_1/Sprint_Board/sprint1-board-end.png)
+
+<img src="Project_Management_Files/Sprint_1/Sprint_Board/sprint1-board-end.png" width="720">
+
+Sprint 1 ilerleme kanıtı, Notion board son durum görüntüsü ve daily scrum kayıtlarıyla birlikte belgelenmiştir.
+
+### Sprint Burndown / Tamamlanma Özeti
+
+Sprint 1 sonunda kart bazlı ilerleme aşağıdaki gibidir:
+
+| Kapsam | Kart Sayısı |
+| --- | ---: |
+| Sprint 1 hedefi | 14 |
+| Tamamlanan | 11 |
+| Kalan / To Do | 3 |
+| Progress | 0 |
+| Tamamlanma oranı | %79 |
+
+<img src="Project_Management_Files/Sprint_1/Burndown_Chart/sprint1-completion-summary.svg" width="720">
+
+Sprint 1 ilerlemesi Notion board, daily scrum kayıtları ve sprint sonu tamamlanma özeti üzerinden belgelenmiştir.
 
 ### Ürün Durumu
 
@@ -218,13 +252,13 @@ Kullanıcı kayıt aşamasında temel bilgilerini ve cilt hassasiyetlerini siste
 
 #### 2. Yapay Zeka Analiz ve Tarama Akışı
 
-Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yükledikleri ya da kozmetik ürün barkodlarını tarattıkları prototip akıştır.
+Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yükledikleri ya da kozmetik ürün barkodlarını tarattıkları Sprint 1 demo akışıdır.
 
 | AI Cilt Analizi | Barkod Tarayıcı | Fotoğraf Çekim |
 | :---: | :---: | :---: |
 | <img src="assets/screenshots/ai_analiz.png" width="200"> | <img src="assets/screenshots/barkod.png" width="200"> | <img src="assets/screenshots/foto_cek.png" width="200"> |
 
-> Sprint 1 teknik notu: Bu akışta servis katmanı şu an mock/prototip cevap üretmektedir. Gemini 2.5 Flash veya gerçek backend bağlantısı Sprint 2 kapsamına alınmıştır.
+> Sprint 1 teknik notu: Bu akışta servis katmanı arayüz doğrulaması için demo veri üretmektedir. Gemini 2.5 Flash ve gerçek backend bağlantısı Sprint 2 kapsamına alınmıştır.
 
 #### 3. Dijital Dolap ve Ürün Yönetimi Akışı
 
@@ -254,9 +288,9 @@ Tamamlanan başlıklar:
 - Temel navigasyon yapısı
 - Login, Sign In ve Sign Up ekranları
 - Cilt tipi ve özel durum onboarding ekranları
-- Ana ekran ve AI rutin sıralaması prototipi
+- Ana ekran ve AI rutin sıralaması demo akışı
 - Ürün dolabı, ürün detay, ürün ekleme ve ürün inceleme ekranları
-- Scanner, barkod ve fotoğraf prototip akışları
+- Scanner, barkod ve fotoğraf demo akışları
 - Profil ekranı
 - UML ve flow chart dokümantasyonu
 
@@ -284,17 +318,17 @@ Değerlendirilen konular:
 
 Zorlayanlar:
 
-- AI kapsamının geniş olması nedeniyle Sprint 1'de gerçek servis entegrasyonu yerine prototip akış önceliklendirildi.
-- Backend ve kalıcı veri katmanı henüz bağlanmadığı için bazı ekranlarda mock veri kullanılmaktadır.
-- Product Backlog puanları, daily scrum kanıtları ve sprint board görselleri README'ye henüz eklenmemiştir.
+- AI kapsamının geniş olması nedeniyle Sprint 1'de önce kullanıcı akışı ve arayüz doğrulaması önceliklendirildi.
+- Backend ve kalıcı veri katmanı Sprint 2 kapsamına ayrıldığı için Sprint 1'de demo veriyle ilerlenmiştir.
+- Sprint 2 itibarıyla sprint başı/ortası/sonu board görüntülerinin düzenli alınmasına karar verilmiştir.
 
 Sonraki sprint için kararlar:
 
 - Gemini 2.5 Flash veya seçilecek AI servisi gerçek analiz akışına bağlanacak.
-- Ürün tarama/ekleme akışında mock cevaplar gerçek servis cevabıyla değiştirilecek.
+- Ürün tarama/ekleme akışında demo cevaplar gerçek servis cevabıyla değiştirilecek.
 - Kullanıcı ürün dolabı için kalıcı veri katmanı tasarlanacak.
-- Product Backlog story point değerleri README'ye eklenecek.
-- Daily scrum ve sprint board kanıtları düzenli olarak GitHub'a yüklenecek.
+- Sprint 2'de kart bazlı puanlama daha detaylı story kırılımlarıyla sürdürülecek.
+- Daily scrum ve sprint board kanıtları Sprint 2 itibarıyla düzenli olarak GitHub'a yüklenecek.
 
 ### Sprint 2'ye Aktarılan İşler
 
@@ -312,7 +346,9 @@ Sonraki sprint için kararlar:
 
 - [Daily Scrum](Project_Management_Files/Sprint_1/Daily_Scrum)
 - [Sprint Board Updates](Project_Management_Files/Sprint_1/Sprint_Board)
+- [Burndown / Completion Summary](Project_Management_Files/Sprint_1/Burndown_Chart)
 - [Product Screenshots](Project_Management_Files/Sprint_1/Product_Screenshots)
+- [System Design](Project_Management_Files/Sprint_1/System_Design)
 - [Review and Retrospective](Project_Management_Files/Sprint_1/Review_and_Retrospective)
 
 ---

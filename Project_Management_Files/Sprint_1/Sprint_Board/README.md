@@ -6,11 +6,16 @@ Product Backlog:
 
 - https://app.notion.com/p/38a7261335df8032a91bc8f9f21c1631?v=38a7261335df80499299000c888d5a9d
 
-Eklenmesi beklenen dosyalar:
+## Sprint 1 Board Kanitlari
 
-- Sprint baslangic board goruntusu
-- Sprint ortasi board goruntusu
-- Sprint sonu board goruntusu
-- Tamamlanan, devam eden ve sonraki sprinte aktarilan islerin kaniti
+- [sprint1-board-end.png](sprint1-board-end.png): Sprint 1 son durum Notion board ekran goruntusu.
 
-README'de bu klasore link verilmistir. Gercek board goruntuleri eklendiginde bu dosya guncellenmelidir.
+## Kart Bazli Sprint Durumu
+
+- Product backlog: 22 kart
+- Sprint 1 hedefi: 14 kart
+- Sprint 1 tamamlanan: 11 kart
+- Sprint 1 kalan / To Do: 3 kart
+- Progress: 0 kart
+
+Sprint baslangic ve sprint ortasi ekran goruntuleri geriye donuk olarak alinmadigi icin, Sprint 1 ilerleme kaniti son durum board goruntusu ve README'deki yazili sprint ozeti ile desteklenmektedir.
