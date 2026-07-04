@@ -26,7 +26,7 @@ Beklenen ve alinan sonuc:
 - Marka: La Roche-Posay
 - Urun: Effaclar duo+
 - Icerik alani: Var
-- Gorsel alani: Var
+- Raf gorseli: Open Beauty Facts fotografi kullanilmaz; `productVisualCatalog` uzerinden lokal PNG/cutout veya kategori fallback PNG kullanilir.
 
 Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katmaninin kullanilabilir oldugunu gostermek icin yapilmistir.
 
@@ -39,10 +39,12 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 | Sign Up -> SkinType | Onboarding akisi cilt tipi secimine devam eder | Gecti |
 | SkinType -> SkinConditions | Cilt tipi secimi sonraki adıma baglidir | Gecti |
 | Home / Dolabim | Tum urunler rafli dolapta PNG obje olarak gorunur | Gecti |
+| Home / Product visual catalog | Cutout katalogda eslesen urun gercek PNG olarak, eslesmeyen urun kategori fallback PNG olarak gorunur | Gecti |
 | Home shelf drag | Ayni raftaki urunler saga/sola suruklenerek siralanabilir | Gecti |
 | Routine tab | Alt navigasyonda Rutinim sekmesi acilir | Gecti |
 | Routine AI plan | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk plan olusur | Gecti |
-| Routine follow-up | Bir hafta sonrasi icin gecti/devam ediyor aksiyonlari gorunur | Gecti |
+| Routine chat | AI bugunku sikayeti sohbet akisiyle sorar | Gecti |
+| Routine follow-up | Bir hafta sonrasi icin otomatik kontrol mesaji prototipi gorunur | Gecti |
 | Scanner | Barkod ve fotograf modlari arasinda gecis vardir | Gecti |
 | Scanner -> ProductReview | Taranan urun review ekranina tasinir | Gecti |
 | ProductReview edit | Marka, urun adi, kategori ve icerik etiketleri onaydan once duzenlenebilir | Gecti |

@@ -36,12 +36,13 @@ Sprint 1'in hedefi, SkinShelf icin demo edilebilir mobil uygulama iskeletini ve 
 - Cilt tipi ve ozel cilt durumu onboarding ekranlari
 - Rafli Dolabim ekrani ve dijital urun envanteri
 - Rutinim sekmesi ile sikayete gore 7 gunluk AI rutin prototipi
+- Urun gorseli icin ekip tarafindan buyutulecek PNG/cutout katalog altyapisi
 - Urun detay ekrani
 - Barkod / fotograf tarama ekrani
 - Urun inceleme ve dolaba ekleme ekrani
 - Profil ekrani
 - Context tabanli prototip state yonetimi
-- Open Beauty Facts barkod lookup servis iskeleti
+- Open Beauty Facts barkod lookup servis iskeleti; acik kaynaktan veri/icerik, gorsel icin ayri cutout katalog karari
 
 ## Sprint 2'ye Aktarilanlar
 

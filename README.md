@@ -160,7 +160,8 @@ AI servis planı: [AI_Service_Plan.md](Project_Management_Files/Sprint_1/System_
 **Barkod / açık ürün verisi kararı:**
 
 - Barkod ile ürün tanıma için Open Beauty Facts açık kozmetik ürün verisi birincil kaynak olarak seçilmiştir.
-- `src/services/openBeautyFactsService.ts` ile barkoddan ürün adı, marka, içerik, kategori ve görsel alanlarını ProductReview ekranına taşıyacak servis iskeleti eklenmiştir.
+- `src/services/openBeautyFactsService.ts` ile barkoddan ürün adı, marka, içerik ve kategori alanlarını ProductReview ekranına taşıyacak servis iskeleti eklenmiştir.
+- Ürün görselleri açık kaynak fotoğraf alanından bağımsız tutulmuştur. Raf görünümü için `src/services/productVisualCatalog.ts` üzerinden marka + ürün adına göre ekip tarafından hazırlanmış PNG/cutout katalog eşleşmesi yapılır; eşleşme yoksa kategori bazlı temsili PNG gösterilir.
 - Barkod bulunamadığında fotoğraf/etiket okuma, Gemini ile içerik çıkarımı ve kullanıcı onaylı manuel düzenleme fallback akışı Sprint 2 kapsamına alınmıştır.
 
 ## Kurulum ve Çalıştırma
@@ -208,6 +209,8 @@ Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_M
 - `src/` altında `screens`, `navigation`, `services` ve `context` katmanları oluşturuldu.
 - Kullanıcının hesap oluşturma, giriş yapma, cilt tipi seçme ve özel cilt durumlarını belirtme akışları tasarlandı.
 - Kişisel ürün dolabı raflı envanter ekranına ayrıldı; Rutinim sekmesi dolaptaki ürünlerden şikayete göre günlük ve haftalık rutin önerisi oluşturacak şekilde hazırlandı.
+- Dolap görsel altyapısı gerçek ürün PNG/cutout katalog mantığına ayrıldı; Sprint 1'de Effaclar örneği lokal cutout olarak, diğer ürünler temsili kategori PNG'leriyle gösterildi.
+- Açık ürün verisi entegrasyonu ürün adı/marka/içerik için tutuldu; ürün görsellerinin uygulama açılışı öncesi manuel DB/cutout katalog ile büyütülmesi Sprint 2-3 hedefi olarak ayrıldı.
 - AI analiz, barkod tarama ve fotoğraf çekim akışları için prototip ekranlar oluşturuldu.
 - Form ekranlarında klavye odaklanma ve buton tıklama problemleri giderildi.
 - UML diyagramı ve kullanıcı akış şeması README'ye eklendi.
@@ -334,7 +337,13 @@ Kullanıcıların sahip oldukları kozmetik ürünleri dijital ortama aktardıkl
 | :---: | :---: | :---: | :---: |
 | <img src="assets/screenshots/dolab.png" width="180"> | <img src="assets/screenshots/dolab_detay.png" width="180"> | <img src="assets/screenshots/urun_ekle.png" width="180"> | <img src="assets/screenshots/urun_ekle2.png" width="180"> |
 
-Kullanıcılar ürün kategorisi, kullanım zamanı, aktif içerikler ve ürün detaylarını görüntüleyebilir. AI analiz metinleri Sprint 1'de arayüz seviyesinde temsil edilmektedir.
+Dolap ekranı raflı dijital ürün dolabı olarak çalışır. Ürün görseli için önce ekip tarafından hazırlanan cutout katalog eşleşmesi kullanılır; katalogda ürün yoksa kategoriye göre temsili PNG gösterilir. Kullanıcılar ürün kategorisi, kullanım zamanı, aktif içerikler ve ürün detaylarını görüntüleyebilir. AI analiz metinleri Sprint 1'de arayüz seviyesinde temsil edilmektedir.
+
+| Android Dolabım Smoke Test | Android Rutinim Smoke Test | Android Profil Smoke Test |
+| :---: | :---: | :---: |
+| <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-dolabim-shelf.png" width="200"> | <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-rutinim-plan.png" width="200"> | <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-profile-fixed.png" width="200"> |
+
+Rutinim sekmesi, dolaptaki ürünleri kullanarak kullanıcının şikayetine göre bugünün sabah/akşam rutinini ve 7 günlük planı oluşturur. Şikayet alma ve 7. gün kontrolü Sprint 1'de sohbet akışı olarak prototiplenmiştir.
 
 #### 4. Profil ve Ayarlar
 

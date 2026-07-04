@@ -11,8 +11,8 @@ Bu dosya Sprint 1 sonunda frontend tarafinda tamamlananlari ve sonraki sprintler
 | Sign Up | Hesap olusturma prototipi | Done |
 | Skin Type | Cilt tipi secimi | Done |
 | Skin Conditions | Hassasiyet ve ozel durum secimi | Done |
-| Home / Dolabim | Tum urunlerin rafli dolap gorunumunde listelendigi, PNG obje ve surukle-birak destekli envanter ekrani | Done |
-| Routine / Rutinim | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk sabah/aksam AI rutin plani olusturma | Done |
+| Home / Dolabim | Tum urunlerin rafli dolap gorunumunde listelendigi, cutout katalog/fallback PNG ve surukle-birak destekli envanter ekrani | Done |
+| Routine / Rutinim | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk sabah/aksam AI rutin plani ve sohbet tipi sikayet akisi olusturma | Done |
 | Scanner | Barkod/fotograf tarama prototipi | Done |
 | Product Review | Taranan urunu inceleme, marka/urun/kategori/icerik alanlarini duzenleme ve dolaba ekleme | Done |
 | Product Detail | Urun icerik, aciklama, AI analiz prototipi ve duzenleme akisina gecis | Done |
@@ -25,6 +25,7 @@ Tam puana yaklasmak icin sonraki sprintte frontend tarafinda asagidaki isler onc
 - Gercek kamera ve barkod okuyucu entegrasyonu
 - Urun duzenleme akisinda backend update endpointini kullanmak
 - Open Beauty Facts icerik verisini normalize ederek AI analiz etiketleriyle eslestirmek
+- Ekip tarafindan hazirlanan gercek urun cutout PNG katalogunu backend/database ile eslestirmek
 - Backend hata durumlari icin toast/alert ve retry durumlari
 - Auth token'a gore login/onboarding yonlendirmesi
 - Open Beauty Facts'te bulunamayan urunler icin manuel urun giris formu
