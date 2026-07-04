@@ -13,8 +13,8 @@ Bu dosya Sprint 1 sonunda frontend tarafinda tamamlananlari ve sonraki sprintler
 | Skin Conditions | Hassasiyet ve ozel durum secimi | Done |
 | Home | Dijital urun dolabi ve rutin filtreleri | Done |
 | Scanner | Barkod/fotograf tarama prototipi | Done |
-| Product Review | Taranan urunu inceleme ve dolaba ekleme | Done |
-| Product Detail | Urun icerik ve AI analiz prototipi | Done |
+| Product Review | Taranan urunu inceleme, marka/urun/kategori/icerik alanlarini duzenleme ve dolaba ekleme | Done |
+| Product Detail | Urun icerik, aciklama, AI analiz prototipi ve duzenleme akisina gecis | Done |
 | Profile | Kullanici profili ve ayar girisleri | Done |
 
 ## Sprint 2 Frontend Icin Gerekenler
@@ -22,8 +22,8 @@ Bu dosya Sprint 1 sonunda frontend tarafinda tamamlananlari ve sonraki sprintler
 Tam puana yaklasmak icin sonraki sprintte frontend tarafinda asagidaki isler oncelikli olmalidir:
 
 - Gercek kamera ve barkod okuyucu entegrasyonu
-- ProductReview ekraninda marka, urun adi, kategori ve icerik alanlarini duzenlenebilir yapmak
-- Urun duzenleme ekranini gercek forma cevirmek
+- Urun duzenleme akisinda backend update endpointini kullanmak
+- Open Beauty Facts icerik verisini normalize ederek AI analiz etiketleriyle eslestirmek
 - Backend hata durumlari icin toast/alert ve retry durumlari
 - Auth token'a gore login/onboarding yonlendirmesi
 - Open Beauty Facts'te bulunamayan urunler icin manuel urun giris formu

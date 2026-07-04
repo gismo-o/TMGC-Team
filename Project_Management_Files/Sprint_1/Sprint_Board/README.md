@@ -10,6 +10,7 @@ Product Backlog:
 
 - [sprint1-board-end.png](sprint1-board-end.png): Sprint 1 son durum Notion board ekran goruntusu.
 - [sprint1-story-points.md](sprint1-story-points.md): Sprint 1 story point dagilimi.
+- [notion-point-update.md](notion-point-update.md): Notion board Point alani ve kart puanlari.
 
 ## Story Point Sprint Durumu
 

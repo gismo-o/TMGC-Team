@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
@@ -51,20 +51,17 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
   }
 
   const handleEdit = () => {
-    Alert.alert('Bilgi', 'Düzenleme ekranı yapım aşamasındadır.');
+    const { id, ...productDraft } = product;
+    navigation.navigate('ProductReview', { scannedProduct: productDraft, editingProductId: id });
   };
 
   const remainingDays = getRemainingDays(product.expiryDate);
   const expired = isExpired(product.expiryDate);
 
-  // Sprint 2 backend note: This will be read from product ingredients returned by the product API.
-  const sampleIngredients = ['C Vitamini', 'Ferulik Asit', 'E Vitamini'];
-  
-  // Sprint 2 backend note: This will be populated from product.description.
-  const sampleDescription = 'Cilt tonunu eşitlemeye, leke görünümünü azaltmaya ve cilde daha aydınlık bir görünüm kazandırmaya yardımcı olan yoğun antioksidan serum.';
+  const displayedIngredients = product.activeIngredients?.length ? product.activeIngredients : ['İçerik bilgisi bekleniyor'];
+  const productDescription = product.description || 'Bu ürün için açıklama bilgisi henüz eklenmedi.';
 
-  // Sprint 2 AI note: This will be populated from the generated compatibility analysis.
-  const sampleAiAnalysis = 'Bu C Vitamini serumu lekelerinizi açmada çok etkilidir ancak profilinizde belirttiğiniz Roza hassasiyetiniz sebebiyle cildinizde hafif kızarıklık yapabilir. Haftada 2 gün ile başlayarak cildinizi alıştırmanız önerilir.';
+  const productAiAnalysis = `${product.brand} ${product.name}, ${product.category.toLocaleLowerCase('tr-TR')} kategorisinde değerlendirildi. Öne çıkan içerikler ve kullanım zamanı, kullanıcının cilt profiliyle birlikte Sprint 2 AI servisinde ayrıntılı olarak analiz edilecek.`;
 
   return (
     <View style={styles.overlay}>
@@ -104,7 +101,7 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Öne Çıkan İçerikler</Text>
             <View style={styles.ingredientsContainer}>
-              {sampleIngredients.map((ing, idx) => (
+              {displayedIngredients.map((ing, idx) => (
                 <View key={idx} style={styles.ingredientBadge}>
                   <Text style={styles.ingredientText}>{ing}</Text>
                 </View>
@@ -115,16 +112,16 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
           {/* About */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ürün Hakkında</Text>
-            <Text style={styles.bodyText}>{sampleDescription}</Text>
+            <Text style={styles.bodyText}>{productDescription}</Text>
           </View>
 
           {/* AI Analysis */}
           <View style={styles.aiCard}>
             <View style={styles.aiCardHeader}>
               <Lightbulb size={20} color="#8a6100" style={{ marginRight: 8 }} />
-              <Text style={styles.aiCardTitle}>Cildinize Özel AI Analizi 💡</Text>
+              <Text style={styles.aiCardTitle}>Cildinize Özel AI Analizi</Text>
             </View>
-            <Text style={styles.aiCardText}>{sampleAiAnalysis}</Text>
+            <Text style={styles.aiCardText}>{productAiAnalysis}</Text>
           </View>
           
         </ScrollView>

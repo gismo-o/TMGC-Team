@@ -225,6 +225,8 @@ Sprint 1 için hedeflenen ana kapsam; proje iskeleti, temel mobil ekranlar, onbo
 
 Story point dağılımı: [sprint1-story-points.md](Project_Management_Files/Sprint_1/Sprint_Board/sprint1-story-points.md)
 
+Notion Point alanı güncellemesi: [notion-point-update.md](Project_Management_Files/Sprint_1/Sprint_Board/notion-point-update.md)
+
 ### Puan Tamamlama Mantığı
 
 Backlog 3 sprintlik geliştirme sürecine göre parçalanmıştır. Sprint 1'de ürün fikrini somutlaştıran temel kullanıcı akışları, görsel tasarım, mobil mimari ve demo edilebilir prototip ekranlarına öncelik verilmiştir. AI servisleri, gerçek backend entegrasyonu, kalıcı veri katmanı ve gelişmiş rutin önerileri Sprint 2-3 kapsamına aktarılmıştır.
@@ -431,7 +433,8 @@ Planlanan işler:
 - Ürün dolabı için kalıcı database modeli
 - Open Beauty Facts barkod verisinin gerçek kamera taramasıyla bağlanması
 - Gemini AI ingredient analiz endpointi
-- ProductReview ekranında otomatik gelen alanların düzenlenebilir hale getirilmesi
+- ProductReview düzenleme akışının backend update endpointiyle bağlanması
+- Open Beauty Facts'te bulunamayan ürünler için manuel ürün giriş formunun tamamlanması
 - Sprint 2 board, burndown, daily scrum ve ürün ekran kanıtlarının düzenli eklenmesi
 
 Sprint 2 plan dosyası: [Project_Management_Files/Sprint_2/README.md](Project_Management_Files/Sprint_2/README.md)

@@ -8,6 +8,7 @@ Bu dosya Sprint 1 sonunda yapilan teknik ve manuel dogrulamalari listeler.
 | --- | --- | --- |
 | Dependency kurulumu | `npm install` | Gecti |
 | TypeScript build kontrolu | `npm run build` | Gecti |
+| Expo web smoke test | `npm run dev` ve `http://localhost:3000` | Gecti |
 | Git durumu | `git status --short` | Temiz |
 | Barkod veri kaynagi testi | Open Beauty Facts API | Gecti |
 
@@ -39,8 +40,11 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 | Home | Urun dolabi ve rutin filtreleri gorunur | Gecti |
 | Scanner | Barkod ve fotograf modlari arasinda gecis vardir | Gecti |
 | Scanner -> ProductReview | Taranan urun review ekranina tasinir | Gecti |
+| ProductReview edit | Marka, urun adi, kategori ve icerik etiketleri onaydan once duzenlenebilir | Gecti |
+| ProductReview ingredient editor | Yeni icerik etiketi eklenebilir | Gecti |
 | ProductReview -> Home | Urun dolaba eklenip ana ekrana donulebilir | Gecti |
-| ProductDetail | Urun detay ve AI analiz prototipi gorunur | Gecti |
+| ProductDetail | Urun detay ve AI analiz prototipi secili urun verisiyle gorunur | Gecti |
+| ProductDetail edit | Edit ikonu ProductReview duzenleme moduna gider | Gecti |
 | Profile | Profil ve cikis aksiyonlari gorunur | Gecti |
 
 ## Bilinen Sinirlar

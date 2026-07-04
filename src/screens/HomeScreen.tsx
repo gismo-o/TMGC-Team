@@ -150,10 +150,6 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  const handleEdit = (product: Product) => {
-    Alert.alert('Bilgi', 'Düzenleme ekranı yapım aşamasındadır.');
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>

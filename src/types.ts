@@ -24,7 +24,7 @@ export type RootStackParamList = {
   SkinConditions: undefined;
   MainTabs: undefined; 
   Scanner: undefined;
-  ProductReview: { scannedProduct?: ProductDraft } | undefined;
+  ProductReview: { scannedProduct?: ProductDraft; editingProductId?: string } | undefined;
   ProductDetail: { productId: string };
 };
 

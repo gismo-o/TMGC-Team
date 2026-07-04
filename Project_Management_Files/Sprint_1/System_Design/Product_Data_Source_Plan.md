@@ -52,6 +52,7 @@ Open Beauty Facts topluluk katkılı bir kaynak olduğu için her ürünün veya
 | Barkod Open Beauty Facts'te yok | Otomatik ürün doldurma başarısız olur | Fotoğraf/OCR ve manuel düzenleme fallback'i |
 | İçerik listesi eksik veya farklı dilde | AI analizi zayıflayabilir | Kullanıcıdan içerik etiketi fotoğrafı isteme |
 | Ürün kategorisi hatalı gelebilir | Rutin önerisi yanlış olabilir | Kategori alanını ProductReview ekranında düzenlenebilir tutma |
+| İçerik listesi eksik veya hatalı gelebilir | AI uyumluluk analizi eksik kalabilir | İçerik etiketlerini ProductReview ekranında eklenebilir/silinebilir tutma |
 | Veri kaynağı çevrimdışı olabilir | Barkod akışı çalışmayabilir | Demo/fallback product response ve hata yönetimi |
 
 ## Sprint 2 Entegrasyon Hedefi

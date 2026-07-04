@@ -16,7 +16,7 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([
     {
-      id: 'mock-1',
+      id: 'demo-1',
       name: 'C-Firma Fresh Day Serum',
       brand: 'Drunk Elephant',
       category: 'Serum',
@@ -27,7 +27,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       expiryDate: '2026-08'
     },
     {
-      id: 'mock-2',
+      id: 'demo-2',
       name: 'Water Bank Blue Cream',
       brand: 'LANEIGE',
       category: 'Nemlendirici',
@@ -42,7 +42,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const loadProducts = async () => {
     try {
       const data = await productService.getProducts();
-      // Temporarily we are using mock state, so we won't overwrite the initial state for now
+      // Sprint 1 uses prototype state, so we won't overwrite the initial demo products for now.
       // setProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -91,4 +91,3 @@ export const useProducts = () => {
   if (!context) throw new Error('useProducts must be used within ProductProvider');
   return context;
 };
-

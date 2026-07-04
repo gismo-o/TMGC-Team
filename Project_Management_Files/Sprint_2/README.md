@@ -9,7 +9,9 @@ Sprint 2, Sprint 1'de hazirlanan mobil prototipi gercek veri ve AI servisleriyle
 - Urun dolabi icin kalici database modelini olusturmak
 - Open Beauty Facts barkod lookup akisini gercek kamera taramasina baglamak
 - Gemini AI ingredient analiz endpointini hazirlamak
-- ProductReview ekranini duzenlenebilir hale getirmek
+- ProductReview duzenleme akisini backend update endpointiyle baglamak
+- Open Beauty Facts'te bulunamayan urunler icin manuel urun giris formunu tamamlamak
+- Backend hata/loading durumlari icin kullanici geri bildirimlerini iyilestirmek
 
 ## Planlanan Kanitlar
 
