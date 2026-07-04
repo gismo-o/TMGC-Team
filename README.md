@@ -186,6 +186,19 @@ npm run ios
 npm run web
 ```
 
+## 📚 Sprintler
+
+Proje yönetimi dosyaları sprint bazlı olarak [Project_Management_Files](Project_Management_Files) klasöründe tutulmaktadır.
+
+<img src="Project_Management_Files/General_Documents/sprints-overview.svg" width="720">
+
+| Sprint | Durum | Odak | Kanıt |
+| --- | --- | --- | --- |
+| Sprint 1 | Tamamlandı | Mobil prototip, temel ekranlar, ürün dolabı, AI/tarama demo akışı, Scrum dokümantasyonu | [Sprint_1](Project_Management_Files/Sprint_1) |
+| Sprint 2 | Planlandı | Backend, database, Open Beauty Facts barkod akışı, Gemini AI analiz servisleri | [Sprint_2](Project_Management_Files/Sprint_2) |
+| Sprint 3 | Planlandı | Gelişmiş rutin önerileri, analiz geçmişi, bildirimler, final demo ve testler | [Sprint_3](Project_Management_Files/Sprint_3) |
+
+Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_Management_Files/Sprint_1/README.md)
 
 ## 📌 Sprint - 1
 
@@ -395,11 +408,48 @@ Sonraki sprint için kararlar:
 
 ### Sprint 1 Doküman Klasörleri
 
+- [Sprint 1 Evidence Index](Project_Management_Files/Sprint_1/README.md)
 - [Daily Scrum](Project_Management_Files/Sprint_1/Daily_Scrum)
 - [Sprint Board Updates](Project_Management_Files/Sprint_1/Sprint_Board)
 - [Burndown / Completion Summary](Project_Management_Files/Sprint_1/Burndown_Chart)
 - [Product Screenshots](Project_Management_Files/Sprint_1/Product_Screenshots)
 - [System Design](Project_Management_Files/Sprint_1/System_Design)
 - [Review and Retrospective](Project_Management_Files/Sprint_1/Review_and_Retrospective)
+- [Acceptance Criteria](Project_Management_Files/Sprint_1/Acceptance_Criteria.md)
+- [Definition of Done](Project_Management_Files/Sprint_1/Definition_of_Done.md)
+- [Test and Verification](Project_Management_Files/Sprint_1/Test_and_Verification.md)
+- [Frontend Scope](Project_Management_Files/Sprint_1/Frontend_Scope.md)
+
+## 📌 Sprint - 2 (Planlanan)
+
+Sprint 2'nin ana hedefi, Sprint 1'de hazırlanan mobil prototipi gerçek backend, database ve AI servisleriyle bağlamaktır.
+
+Planlanan işler:
+
+- Java/Spring backend API iskeleti
+- Authentication ve kullanıcı profil endpointleri
+- Ürün dolabı için kalıcı database modeli
+- Open Beauty Facts barkod verisinin gerçek kamera taramasıyla bağlanması
+- Gemini AI ingredient analiz endpointi
+- ProductReview ekranında otomatik gelen alanların düzenlenebilir hale getirilmesi
+- Sprint 2 board, burndown, daily scrum ve ürün ekran kanıtlarının düzenli eklenmesi
+
+Sprint 2 plan dosyası: [Project_Management_Files/Sprint_2/README.md](Project_Management_Files/Sprint_2/README.md)
+
+## 📌 Sprint - 3 (Planlanan)
+
+Sprint 3'ün ana hedefi final demo kalitesine ulaşmak, gelişmiş AI/rutin özelliklerini tamamlamak ve test/deployment hazırlığını yapmaktır.
+
+Planlanan işler:
+
+- Analiz geçmişi ekranı
+- Bildirim ve ürün bitiş hatırlatmaları
+- Gelişmiş rutin öneri ekranları
+- AI yanıtlarının kullanıcı dostu hale getirilmesi
+- Final mobil UI/UX kontrolleri
+- Final demo video/link ve sunum hazırlığı
+- Sprint 3 board, burndown, daily scrum ve final ürün kanıtlarının eklenmesi
+
+Sprint 3 plan dosyası: [Project_Management_Files/Sprint_3/README.md](Project_Management_Files/Sprint_3/README.md)
 
 ---

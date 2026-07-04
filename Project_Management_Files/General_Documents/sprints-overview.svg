@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="390" viewBox="0 0 1100 390" role="img" aria-labelledby="title desc">
+  <title id="title">SkinShelf Sprint Overview</title>
+  <desc id="desc">Sprint 1 completed, Sprint 2 planned, and Sprint 3 planned roadmap for SkinShelf.</desc>
+  <rect width="1100" height="390" fill="#f8fbf8"/>
+  <text x="50" y="58" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#14351f">SkinShelf Sprints</text>
+  <text x="50" y="88" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#51685a">Bootcamp roadmap and Sprint 1 evidence structure</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L10,3.5 z" fill="#45664c"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; }
+      .card { fill: #ffffff; stroke-width: 2; rx: 18; }
+      .done { stroke: #5f9d69; }
+      .planned { stroke: #d8a83f; stroke-dasharray: 8 5; }
+      .title { font-size: 22px; font-weight: 700; fill: #173820; }
+      .status { font-size: 13px; font-weight: 700; }
+      .text { font-size: 15px; fill: #34483b; }
+      .small { font-size: 13px; fill: #5c6f62; }
+      .arrow { stroke: #45664c; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="50" y="130" width="295" height="180" rx="18" class="card done"/>
+  <text x="78" y="168" class="title">Sprint 1</text>
+  <rect x="78" y="185" width="104" height="28" rx="14" fill="#e9f6eb" stroke="#5f9d69"/>
+  <text x="96" y="204" class="status" fill="#2f6d3a">DONE</text>
+  <text x="78" y="238" class="text">Mobile prototype</text>
+  <text x="78" y="264" class="text">Scrum evidence</text>
+  <text x="78" y="290" class="text">Architecture + AI plan</text>
+
+  <rect x="405" y="130" width="295" height="180" rx="18" class="card planned"/>
+  <text x="433" y="168" class="title">Sprint 2</text>
+  <rect x="433" y="185" width="126" height="28" rx="14" fill="#fffaf0" stroke="#d8a83f" stroke-dasharray="5 3"/>
+  <text x="451" y="204" class="status" fill="#875f08">PLANNED</text>
+  <text x="433" y="238" class="text">Backend + database</text>
+  <text x="433" y="264" class="text">Barcode data integration</text>
+  <text x="433" y="290" class="text">Gemini AI analysis</text>
+
+  <rect x="760" y="130" width="295" height="180" rx="18" class="card planned"/>
+  <text x="788" y="168" class="title">Sprint 3</text>
+  <rect x="788" y="185" width="126" height="28" rx="14" fill="#fffaf0" stroke="#d8a83f" stroke-dasharray="5 3"/>
+  <text x="806" y="204" class="status" fill="#875f08">PLANNED</text>
+  <text x="788" y="238" class="text">Advanced routines</text>
+  <text x="788" y="264" class="text">Notifications + history</text>
+  <text x="788" y="290" class="text">Final demo + testing</text>
+
+  <path d="M345 220 H405" class="arrow"/>
+  <path d="M700 220 H760" class="arrow"/>
+
+  <rect x="50" y="340" width="18" height="18" rx="4" fill="#ffffff" stroke="#5f9d69" stroke-width="2"/>
+  <text x="78" y="354" class="small">Completed sprint evidence</text>
+  <rect x="270" y="340" width="18" height="18" rx="4" fill="#fffaf0" stroke="#d8a83f" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="298" y="354" class="small">Planned sprint roadmap</text>
+</svg>
