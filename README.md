@@ -125,9 +125,9 @@ Uygulamanın temel kullanıcı akışları, Sprint 1'de geliştirilen navigasyon
 <img src="Project_Management_Files/Sprint_1/System_Design/skinshelf-user-flow.png" width="720" />
 
 **Kapsanan akışlar:**
-1. **Kimlik Doğrulama & Onboarding** — Login → SignIn/SignUp → SkinType → SkinConditions → MainTabs
+1. **Kimlik Doğrulama & Onboarding** — Login → SignIn/SignUp → Onboarding → MainTabs
 2. **Ürün Tarama & Dolaba Ekleme** — Home → Scanner (Barkod | Fotoğraf) → `productService.scanProduct()` → ProductReview → MainTabs; ayrıca Home → ProductDetail
-3. **Profil Düzenleme & Çıkış** — Profile → Login (çıkış) veya Profile → SkinType → SkinConditions → MainTabs (cilt tipini düzenleme)
+3. **Profil Düzenleme & Çıkış** — Profile → Login (çıkış) veya Profile → Onboarding → MainTabs (cilt profilini düzenleme)
 4. **Sprint 2–3 Profil Alt Akışları** — hesap ayarları, gizlilik/güvenlik, yardım/destek ve gelişmiş profil yönetimi
 
 > Not: `Routine`, `SkinAnalysis`, `ProgressEntry` ekranları Sprint 2–3 kapsamına ayrıldığı için bu Sprint 1 şemasında temel akış seviyesinde temsil edilmiştir.
@@ -207,8 +207,9 @@ Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_M
 
 - React Native, Expo SDK 54 ve TypeScript ile mobil uygulama iskeleti kuruldu.
 - `src/` altında `screens`, `navigation`, `services` ve `context` katmanları oluşturuldu.
-- Kullanıcının hesap oluşturma, giriş yapma, cilt tipi seçme ve özel cilt durumlarını belirtme akışları tasarlandı.
-- Kişisel ürün dolabı raflı envanter ekranına ayrıldı; Rutinim sekmesi dolaptaki ürünlerden şikayete göre günlük ve haftalık rutin önerisi oluşturacak şekilde hazırlandı.
+- Kullanıcının hesap oluşturma, giriş yapma ve 7 adımlı cilt profili onboarding akışları tasarlandı.
+- Kişisel ürün dolabı raflı envanter ekranına ayrıldı; Rutinim sekmesi dolaptaki ürünlerden bugünün ve haftanın sabah/akşam rutinini oluşturacak şekilde hazırlandı.
+- Shelly ekranı, boş chatbot yerine ürün/rutin/cilt değişimi odaklı hızlı aksiyonlar sunan cilt danışmanı olarak eklendi.
 - Dolap görsel altyapısı gerçek ürün PNG/cutout katalog mantığına ayrıldı; Sprint 1'de Effaclar örneği lokal cutout olarak, diğer ürünler temsili kategori PNG'leriyle gösterildi.
 - Açık ürün verisi entegrasyonu ürün adı/marka/içerik için tutuldu; ürün görsellerinin uygulama açılışı öncesi manuel DB/cutout katalog ile büyütülmesi Sprint 2-3 hedefi olarak ayrıldı.
 - AI analiz, barkod tarama ve fotoğraf çekim akışları için prototip ekranlar oluşturuldu.
@@ -308,16 +309,15 @@ Sprint 1 ilerlemesi Notion board, daily scrum kayıtları ve sprint sonu tamamla
 
 ### Ürün Durumu
 
-Sprint 1 sonunda uygulama; giriş, hesap oluşturma, cilt profili oluşturma, AI analiz prototipi, barkod/fotoğraf tarama prototipi, raflı dijital ürün dolabı, Rutinim haftalık plan ekranı, ürün detay ve profil ekranlarını gösterebilir durumdadır.
+Sprint 1 sonunda uygulama; animasyonlu giriş, hesap oluşturma, 7 adımlı onboarding, AI analiz prototipi, barkod/fotoğraf tarama prototipi, raflı dijital ürün dolabı, ürün detayında Shelly yorumu, Rutinim günlük/haftalık planı, Shelly danışman ekranı ve profil ekranlarını gösterebilir durumdadır.
 
 #### 1. Giriş ve Hesap Oluşturma Akışı
 
-Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını, cilt tipi ve özel hassasiyetlerini belirleyerek kişiselleştirilmiş bir deneyim başlatmasını sağlayan onboarding adımlarıdır.
+Kullanıcıların uygulamaya güvenli bir şekilde dahil olmasını ve Shelly'nin önerilerini kişiselleştirecek ilk profil girdilerini oluşturmasını sağlayan onboarding adımlarıdır.
 
 <img src="assets/screenshots/giris.png" width="200"> <img src="assets/screenshots/hesap_olustur.png" width="200"> <img src="assets/screenshots/cilt_tip.png" width="200">
-<img src="assets/screenshots/giris2.png" width="200"> <img src="assets/screenshots/ozel_durum.png" width="200"> <img src="assets/screenshots/ozel_durum2.png" width="200">
 
-Kullanıcı kayıt aşamasında temel bilgilerini ve cilt hassasiyetlerini sisteme ekleyerek sonraki AI analizleri için profil girdisi oluşturur.
+Kullanıcı kayıt aşamasında ad, yaş aralığı, cilt bakım deneyimi, cilt hissi, ana hedef, hassasiyet, mevcut rutin ve bildirim tercihlerini sisteme ekleyerek sonraki Shelly analizleri için profil girdisi oluşturur.
 
 #### 2. Yapay Zeka Analiz ve Tarama Akışı
 
@@ -333,17 +333,17 @@ Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yü
 
 Kullanıcıların sahip oldukları kozmetik ürünleri dijital ortama aktardıkları ve ürün detaylarını inceledikleri yönetim panelidir.
 
-| Dijital Dolabım | Ürün Detay & Analiz | Ürün Ekleme | Ürün Detay Girişi |
+| Dijital Dolabım | Ürün Detay & Shelly Yorumu | Ürün Ekleme | Ürün Detay Girişi |
 | :---: | :---: | :---: | :---: |
 | <img src="assets/screenshots/dolab.png" width="180"> | <img src="assets/screenshots/dolab_detay.png" width="180"> | <img src="assets/screenshots/urun_ekle.png" width="180"> | <img src="assets/screenshots/urun_ekle2.png" width="180"> |
 
-Dolap ekranı raflı dijital ürün dolabı olarak çalışır. Ürün görseli için önce ekip tarafından hazırlanan cutout katalog eşleşmesi kullanılır; katalogda ürün yoksa kategoriye göre temsili PNG gösterilir. Kullanıcılar ürün kategorisi, kullanım zamanı, aktif içerikler ve ürün detaylarını görüntüleyebilir. AI analiz metinleri Sprint 1'de arayüz seviyesinde temsil edilmektedir.
+Dolap ekranı raflı dijital ürün dolabı olarak çalışır. Ürün görseli için önce ekip tarafından hazırlanan cutout katalog eşleşmesi kullanılır; katalogda ürün yoksa kategoriye göre temsili PNG gösterilir. Raf ekranı sade tutulur; ürünün aktif içerik, durum etiketi ve Shelly yorumu ürün detay ekranında gösterilir.
 
-| Android Dolabım Smoke Test | Android Rutinim Smoke Test | Android Profil Smoke Test |
-| :---: | :---: | :---: |
-| <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-dolabim-shelf.png" width="200"> | <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-rutinim-plan.png" width="200"> | <img src="Project_Management_Files/Sprint_1/Product_Screenshots/android-profile-fixed.png" width="200"> |
+| Android Dolabım | Android Haftalık Plan | Android Shelly | Android Profil |
+| :---: | :---: | :---: | :---: |
+| <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-dolabim-shelf.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-rutinim-plan.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-shelly-assistant.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-profile-fixed.png" width="180"> |
 
-Rutinim sekmesi, dolaptaki ürünleri kullanarak kullanıcının şikayetine göre bugünün sabah/akşam rutinini ve 7 günlük planı oluşturur. Şikayet alma ve 7. gün kontrolü Sprint 1'de sohbet akışı olarak prototiplenmiştir.
+Rutinim sekmesi, dolaptaki ürünleri kullanarak bugünün sabah/akşam rutinini ve tam ekran haftalık planı oluşturur. Shelly ekranı, “Rutinimi kontrol et”, “Yeni ürün ekledim”, “Cildim tepki verdi” ve “İçerik analizi yap” aksiyonlarıyla ürün/rutin uyumu danışmanı olarak prototiplenmiştir.
 
 #### 4. Profil ve Ayarlar
 
@@ -362,8 +362,8 @@ Tamamlanan başlıklar:
 - React Native/Expo proje kurulumu
 - Temel navigasyon yapısı
 - Login, Sign In ve Sign Up ekranları
-- Cilt tipi ve özel durum onboarding ekranları
-- Rafli Dolabim envanteri ve Rutinim AI plan demo akışı
+- 7 adımlı cilt profili onboarding ekranı
+- Rafli Dolabim envanteri, Rutinim haftalık planı ve Shelly danışman demo akışı
 - Ürün dolabı, ürün detay, ürün ekleme ve ürün inceleme ekranları
 - Scanner, barkod ve fotoğraf demo akışları
 - Profil ekranı
@@ -425,6 +425,8 @@ Sonraki sprint için kararlar:
 - [Burndown / Completion Summary](Project_Management_Files/Sprint_1/Burndown_Chart)
 - [Product Screenshots](Project_Management_Files/Sprint_1/Product_Screenshots)
 - [System Design](Project_Management_Files/Sprint_1/System_Design)
+- [Code Architecture](Project_Management_Files/Sprint_1/Code_Architecture.md)
+- [Example Repo Comparison](Project_Management_Files/Sprint_1/Example_Repo_Comparison.md)
 - [Review and Retrospective](Project_Management_Files/Sprint_1/Review_and_Retrospective)
 - [Acceptance Criteria](Project_Management_Files/Sprint_1/Acceptance_Criteria.md)
 - [Definition of Done](Project_Management_Files/Sprint_1/Definition_of_Done.md)

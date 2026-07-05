@@ -24,6 +24,8 @@ Sprint 1'in hedefi, SkinShelf icin demo edilebilir mobil uygulama iskeletini ve 
 | Burndown / Completion | [Burndown_Chart](Burndown_Chart) |
 | Product Screenshots | [Product_Screenshots](Product_Screenshots) |
 | System Design | [System_Design](System_Design) |
+| Code Architecture | [Code_Architecture.md](Code_Architecture.md) |
+| Example Repo Comparison | [Example_Repo_Comparison.md](Example_Repo_Comparison.md) |
 | Review & Retrospective | [Review_and_Retrospective](Review_and_Retrospective) |
 | Acceptance Criteria | [Acceptance_Criteria.md](Acceptance_Criteria.md) |
 | Definition of Done | [Definition_of_Done.md](Definition_of_Done.md) |
@@ -33,9 +35,10 @@ Sprint 1'in hedefi, SkinShelf icin demo edilebilir mobil uygulama iskeletini ve 
 ## Sprint 1 Frontend Teslimleri
 
 - Login, Sign In, Sign Up ekranlari
-- Cilt tipi ve ozel cilt durumu onboarding ekranlari
+- 7 adimli cilt profili ve Shelly onboarding akisi
 - Rafli Dolabim ekrani ve dijital urun envanteri
-- Rutinim sekmesi ile sikayete gore 7 gunluk AI rutin prototipi
+- Rutinim sekmesi ile bugun ve haftalik Shelly rutin prototipi
+- Shelly ekraninda urun/rutin odakli hizli aksiyonlar
 - Urun gorseli icin ekip tarafindan buyutulecek PNG/cutout katalog altyapisi
 - Urun detay ekrani
 - Barkod / fotograf tarama ekrani

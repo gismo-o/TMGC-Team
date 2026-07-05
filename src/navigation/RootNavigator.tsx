@@ -9,10 +9,10 @@ import { RootStackParamList, MainTabParamList } from '../types';
 import LoginScreen from '../screens/LoginScreen';
 import SignInScreen from '../screens/SignInScreen';
 import SignUpScreen from '../screens/SignUpScreen';
-import SkinTypeScreen from '../screens/SkinTypeScreen';
-import SkinConditionsScreen from '../screens/SkinConditionsScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RoutineScreen from '../screens/RoutineScreen';
+import AssistantScreen from '../screens/AssistantScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import ProductReviewScreen from '../screens/ProductReviewScreen';
@@ -32,15 +32,22 @@ function MainTabs() {
           backgroundColor: '#FAF9F5',
           borderTopWidth: 1,
           borderTopColor: '#e9efea',
-          elevation: 0,
-          shadowOpacity: 0,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          elevation: 12,
+          shadowColor: '#14351f',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 14,
+          height: 68,
+          paddingBottom: 10,
+          paddingTop: 9,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '500',
+          fontWeight: '800',
+        },
+        tabBarItemStyle: {
+          borderRadius: 18,
+          marginHorizontal: 8,
         }
       }}
     >
@@ -82,8 +89,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="SkinType" component={SkinTypeScreen} />
-        <Stack.Screen name="SkinConditions" component={SkinConditionsScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen 
           name="Scanner" 
@@ -95,6 +101,7 @@ export default function RootNavigator() {
           component={ProductReviewScreen}
           options={{ presentation: 'modal' }} 
         />
+        <Stack.Screen name="Assistant" component={AssistantScreen} options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ presentation: 'transparentModal', animation: 'slide_from_bottom', contentStyle: { backgroundColor: 'transparent' } }} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -8,10 +8,5 @@ export const userService = {
     // Sprint 2: Persist profile changes through Spring Boot profile API.
     console.log('userService.updateProfile called with userId:', userId, 'data:', data);
     return Promise.resolve({ id: userId, ...data });
-  },
-  updateSkinType: async (userId: string, skinType: string) => {
-    // Sprint 2: Persist skin profile changes through Spring Boot profile API.
-    console.log('userService.updateSkinType called with userId:', userId, 'skinType:', skinType);
-    return Promise.resolve(true);
   }
 };

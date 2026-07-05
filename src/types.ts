@@ -21,12 +21,12 @@ export type RootStackParamList = {
   Login: undefined;
   SignIn: undefined;
   SignUp: undefined;
-  SkinType: undefined;
-  SkinConditions: undefined;
+  Onboarding: undefined;
   MainTabs: undefined; 
   Scanner: undefined;
   ProductReview: { scannedProduct?: ProductDraft; editingProductId?: string } | undefined;
   ProductDetail: { productId: string };
+  Assistant: undefined;
 };
 
 export type MainTabParamList = {

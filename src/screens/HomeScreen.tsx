@@ -18,7 +18,7 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList, Product } from '../types';
 import { useProducts } from '../context/ProductContext';
-import { Camera, User, ArrowDownUp, Bell, Plus } from 'lucide-react-native';
+import { User, ArrowDownUp, Bell, Plus, ScanLine } from 'lucide-react-native';
 import { getProductVisualSource } from '../services/productVisualCatalog';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
@@ -166,6 +166,9 @@ const ShelfProduct = ({ product, onDelete, onPress, onReorder }: ShelfProductPro
       <Text style={styles.productShelfName} numberOfLines={1}>
         {product.brand}
       </Text>
+      <Text style={styles.productShelfType} numberOfLines={2}>
+        {product.name}
+      </Text>
     </Animated.View>
   );
 };
@@ -239,7 +242,6 @@ export default function HomeScreen({ navigation }: Props) {
   }, [products, shelfOrder, sortBy]);
 
   const shelfRows = useMemo(() => buildShelfRows(displayedProducts), [displayedProducts]);
-
   const handleDoorToggle = () => {
     const nextOpenState = !doorOpen;
     setDoorOpen(nextOpenState);
@@ -324,7 +326,13 @@ export default function HomeScreen({ navigation }: Props) {
           <User size={21} color="#426447" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SkinShelf</Text>
-        <TouchableOpacity style={styles.notificationButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.notificationButton}
+          onPress={() => Alert.alert(
+            'Biliyor musun?',
+            'Retinol ve peeling gibi güçlü aktifleri aynı gece kullanmamak cildi daha az yorabilir. Shelly haftalık plan hazırlarken bu bilgiyi dikkate alır.'
+          )}
+        >
           <Bell size={24} color="#426447" />
         </TouchableOpacity>
       </View>
@@ -333,7 +341,7 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.sortContainer}>
           <View style={styles.sortHeader}>
             <ArrowDownUp size={16} color="#426447" />
-            <Text style={styles.sortLabel}>Sırala:</Text>
+            <Text style={styles.sortLabel}>Dolap düzeni</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortOptions}>
             <TouchableOpacity
@@ -358,10 +366,23 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.cabinetHeaderRow}>
-          <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
-          <Text style={styles.cabinetSubtitle}>
-            Rutinim sekmesi bu raftaki gerçek ürün görselleri ve içerik bilgilerine göre seçim yapar.
-          </Text>
+          <View style={styles.cabinetTitleLine}>
+            <View>
+              <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
+              <Text style={styles.cabinetSubtitle}>
+                Cilt bakım ürünlerini dijital rafında sakla, içeriklerini ve rutin uyumunu Shelly ile kontrol et.
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.doorToggleButton} onPress={() => navigation.navigate('Scanner')} activeOpacity={0.78}>
+              <Plus size={16} color="#ffffff" />
+              <Text style={styles.doorToggleText}>Ürün Ekle</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.cabinetMetaRow}>
+            <View style={styles.cabinetMetaPill}>
+              <Text style={styles.cabinetMetaText}>{products.length} ürün</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.cabinetShell}>
@@ -375,11 +396,11 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.emptyCabinet}>
               <View style={styles.emptyShelfLine} />
               <View style={styles.emptyShelfLineShort} />
-              <Text style={styles.emptyTitle}>Dolabınız Boş</Text>
-              <Text style={styles.emptyText}>Ürün eklediğinizde AI rutininizi bu dolaptaki ürünlere göre oluşturur.</Text>
+              <Text style={styles.emptyTitle}>Ürünlerini rafa ekle</Text>
+              <Text style={styles.emptyText}>İlk ürününü barkodla ya da manuel ekle. Shelly cildinle uyumunu ve rutinindeki yerini takip etsin.</Text>
               <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scanner')}>
-                <Camera size={22} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={styles.scanButtonText}>Kamerayı Aç / Ürün Tara</Text>
+                <ScanLine size={22} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.scanButtonText}>Barkod Okut / Ürün Ekle</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -426,6 +447,7 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.doorHandleRight} />
           </Animated.View>
         </View>
+
       </ScrollView>
 
       {products.length > 0 && (
@@ -466,7 +488,16 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 25, fontWeight: '800', color: '#426447' },
   scrollContent: { paddingBottom: 150 },
-  sortContainer: { paddingHorizontal: 20, marginTop: 10, marginBottom: 20 },
+  sortContainer: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 18,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#edf1ee',
+    padding: 12,
+  },
   sortHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   sortLabel: { fontSize: 14, fontWeight: '800', color: '#426447', marginLeft: 6 },
   sortOptions: { paddingBottom: 4 },
@@ -474,26 +505,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f1ec',
     paddingHorizontal: 16,
     paddingVertical: 9,
-    borderRadius: 20,
+    borderRadius: 16,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8e2',
   },
-  sortButtonActive: { backgroundColor: '#426447' },
+  sortButtonActive: { backgroundColor: '#426447', borderColor: '#426447' },
   sortButtonText: { fontSize: 12, fontWeight: '800', color: '#707973' },
   sortButtonTextActive: { color: '#ffffff' },
   cabinetHeaderRow: {
     marginHorizontal: 20,
     marginBottom: 12,
   },
+  cabinetTitleLine: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   cabinetTitle: { fontSize: 24, fontWeight: '900', color: '#14351f' },
-  cabinetSubtitle: { fontSize: 13, color: '#627168', marginTop: 5, lineHeight: 18, maxWidth: 620 },
+  cabinetSubtitle: { fontSize: 13, color: '#627168', marginTop: 5, lineHeight: 18, maxWidth: 260 },
+  doorToggleButton: {
+    minWidth: 102,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 16,
+    backgroundColor: '#14351f',
+    shadowColor: '#14351f',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  doorToggleText: { color: '#ffffff', fontSize: 12, fontWeight: '900' },
+  cabinetMetaRow: { flexDirection: 'row', gap: 8, marginTop: 11 },
+  cabinetMetaPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 14, backgroundColor: '#426447' },
+  cabinetMetaText: { color: '#ffffff', fontSize: 12, fontWeight: '900' },
   cabinetShell: {
     marginHorizontal: 18,
     borderRadius: 22,
-    backgroundColor: '#f2f4ef',
+    backgroundColor: '#f8f9f5',
     borderWidth: 1,
     borderColor: '#d9e0d9',
     overflow: 'hidden',
-    minHeight: 760,
+    minHeight: 820,
     position: 'relative',
     shadowColor: '#21412a',
     shadowOffset: { width: 0, height: 14 },
@@ -609,7 +663,7 @@ const styles = StyleSheet.create({
   },
   productTapArea: {
     width: 112,
-    height: 176,
+    height: 158,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
@@ -628,12 +682,21 @@ const styles = StyleSheet.create({
   productShelfName: {
     maxWidth: 102,
     minHeight: 16,
-    marginTop: 1,
+    marginTop: 2,
     color: '#435248',
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '900',
     textAlign: 'center',
     textTransform: 'uppercase',
+  },
+  productShelfType: {
+    width: 106,
+    minHeight: 27,
+    color: '#17251b',
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   expiryBadge: {
     position: 'absolute',

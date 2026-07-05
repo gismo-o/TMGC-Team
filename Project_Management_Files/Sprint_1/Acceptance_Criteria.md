@@ -5,10 +5,11 @@ Sprint 1 kabul kriterleri, demo edilebilir mobil prototip ve Scrum kanitlari uze
 | User Story / Is | Kabul Kriteri | Durum | Kanit |
 | --- | --- | --- | --- |
 | Kullanici uygulamaya baslayabilmeli | Login, Sign In ve Sign Up ekranlari goruntulenebilir olmali | Done | `src/screens/LoginScreen.tsx`, `SignInScreen.tsx`, `SignUpScreen.tsx` |
-| Kullanici cilt profilini olusturabilmeli | Cilt tipi ve ozel durum ekranlari akisa bagli olmali | Done | `SkinTypeScreen.tsx`, `SkinConditionsScreen.tsx` |
+| Kullanici cilt profilini olusturabilmeli | 7 adimli onboarding; ad, yas, deneyim, cilt hissi, hedef, hassasiyet, mevcut rutin ve bildirim tercihlerini alabilmeli | Done | `OnboardingScreen.tsx`, `UserContext.tsx` |
 | Kullanici urun dolabini gorebilmeli | Tum urunler rafli dolapta PNG obje olarak gorunmeli | Done | `HomeScreen.tsx` |
-| Kullanici rutin planini gorebilmeli | Rutinim sekmesi dolaptaki urunlerden sikayete gore bugun ve 7 gunluk sabah/aksam plan olusturmali | Done | `RoutineScreen.tsx` |
-| Kullanici urun detayini inceleyebilmeli | Urun detay modalinde aktif icerik ve AI analiz alani yer almali | Done | `ProductDetailScreen.tsx` |
+| Kullanici rutin planini gorebilmeli | Rutinim sekmesi dolaptaki urunlerden bugun ve haftalik sabah/aksam Shelly plani olusturmali | Done | `RoutineScreen.tsx`, `routinePlanner.ts` |
+| Kullanici Shelly'ye soru sorabilmeli | Shelly ekrani urun/rutin/cilt degisimi odakli hizli aksiyonlar sunmali | Done | `AssistantScreen.tsx`, `shellyInsights.ts` |
+| Kullanici urun detayini inceleyebilmeli | Urun detay modalinde aktif icerik, durum etiketi ve Shelly yorumu yer almali | Done | `ProductDetailScreen.tsx` |
 | Kullanici urun ekleme akisina girebilmeli | Barkod ve fotograf modlari bulunan scanner ekrani olmali | Done | `ScannerScreen.tsx` |
 | Barkod akisi veri kaynagina hazir olmali | Barkod girdisi servis katmanindan Open Beauty Facts lookup'a gidebilmeli | Done | `openBeautyFactsService.ts` |
 | Kullanici taranan urunu onaylayabilmeli | ProductReview ekranina urun adi, marka, kategori ve rutin zamani tasinabilmeli | Done | `ProductReviewScreen.tsx` |

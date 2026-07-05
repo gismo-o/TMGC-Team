@@ -25,7 +25,7 @@ export default function SignUpScreen({ navigation }: Props) {
     try {
       const response = await authService.register({ name, email, password });
       console.log('Registration successful', response);
-      navigation.navigate('SkinType');
+      navigation.navigate('Onboarding');
     } catch (error) {
       console.error('Registration error:', error);
       Alert.alert('Hata', 'Kayıt işlemi başarısız oldu.');

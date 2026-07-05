@@ -1,10 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { Sparkles, Droplets, Wind, Sun, Leaf, Edit2, Lightbulb } from 'lucide-react-native';
+import { Sparkles, Droplets, Wind, Sun, Leaf, Edit2, Lightbulb, CheckCircle2, ThumbsDown, ThumbsUp, X } from 'lucide-react-native';
 import { useProducts } from '../context/ProductContext';
+import { getProductVisualSource } from '../services/productVisualCatalog';
+import { getProductShellyComment, getProductStatus } from '../services/shellyInsights';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ProductDetail'>;
@@ -37,6 +39,8 @@ const isExpired = (dateString?: string) => {
 
 export default function ProductDetailScreen({ navigation, route }: Props) {
   const { products } = useProducts();
+  const [imageFailed, setImageFailed] = useState(false);
+  const [feedback, setFeedback] = useState<'good' | 'bad' | null>(null);
   const product = products.find(p => p.id === route.params.productId);
 
   if (!product) {
@@ -55,24 +59,37 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
     navigation.navigate('ProductReview', { scannedProduct: productDraft, editingProductId: id });
   };
 
+  const handleClose = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('MainTabs');
+  };
+
   const remainingDays = getRemainingDays(product.expiryDate);
   const expired = isExpired(product.expiryDate);
 
   const displayedIngredients = product.activeIngredients?.length ? product.activeIngredients : ['İçerik bilgisi bekleniyor'];
   const productDescription = product.description || 'Bu ürün için açıklama bilgisi henüz eklenmedi.';
 
-  const productAiAnalysis = `${product.brand} ${product.name}, ${product.category.toLocaleLowerCase('tr-TR')} kategorisinde değerlendirildi. Öne çıkan içerikler ve kullanım zamanı, kullanıcının cilt profiliyle birlikte Sprint 2 AI servisinde ayrıntılı olarak analiz edilecek.`;
+  const shellyComment = getProductShellyComment(product);
+  const productStatus = getProductStatus(product);
+  const usageLabel = product.timeOfDay === 'morning' ? 'Sabah' : product.timeOfDay === 'evening' ? 'Akşam' : 'Sabah / Akşam';
 
   return (
     <View style={styles.overlay}>
-      <Pressable style={styles.backdrop} onPress={() => navigation.goBack()} />
+        <Pressable style={styles.backdrop} onPress={handleClose} />
       <View style={styles.sheet}>
         {/* Modal Handle */}
         <View style={styles.handle} />
         
         {/* Header & Edit Button */}
         <View style={styles.sheetHeader}>
-          <View style={styles.headerSpacer} />
+          <TouchableOpacity style={styles.editIconButton} onPress={handleClose}>
+            <X size={20} color="#707973" />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.editIconButton} onPress={handleEdit}>
             <Edit2 size={20} color="#707973" />
           </TouchableOpacity>
@@ -81,12 +98,28 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Icon & Title */}
           <View style={styles.topSection}>
-            <View style={styles.iconWrapper}>
-              {getCategoryIcon(product.category)}
+            <View style={styles.visualStage}>
+              <View style={styles.iconWrapper}>
+                {getCategoryIcon(product.category)}
+              </View>
+              <Image
+                source={getProductVisualSource(product, imageFailed)}
+                style={styles.productImage}
+                resizeMode="contain"
+                onError={() => setImageFailed(true)}
+              />
             </View>
 
             <Text style={styles.brand}>{product.brand}</Text>
             <Text style={styles.name}>{product.name}</Text>
+            <View style={styles.statusRow}>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusBadgeText}>{productStatus.label}</Text>
+              </View>
+              <View style={styles.usageBadge}>
+                <Text style={styles.usageBadgeText}>{usageLabel}</Text>
+              </View>
+            </View>
             
             {(remainingDays !== null || expired) && (
               <View style={[styles.expiryBadge, expired && styles.expiredBadge]}>
@@ -95,6 +128,17 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
                 </Text>
               </View>
             )}
+          </View>
+
+          <View style={styles.infoGrid}>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Kategori</Text>
+              <Text style={styles.infoValue}>{product.category}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Kullanım</Text>
+              <Text style={styles.infoValue}>{usageLabel}</Text>
+            </View>
           </View>
 
           {/* Ingredients */}
@@ -115,13 +159,39 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
             <Text style={styles.bodyText}>{productDescription}</Text>
           </View>
 
-          {/* AI Analysis */}
+          {/* Shelly Comment */}
           <View style={styles.aiCard}>
             <View style={styles.aiCardHeader}>
               <Lightbulb size={20} color="#8a6100" style={{ marginRight: 8 }} />
-              <Text style={styles.aiCardTitle}>Cildinize Özel AI Analizi</Text>
+              <Text style={styles.aiCardTitle}>Shelly’nin Yorumu</Text>
             </View>
-            <Text style={styles.aiCardText}>{productAiAnalysis}</Text>
+            <Text style={styles.aiCardText}>{shellyComment}</Text>
+          </View>
+
+          <View style={styles.feedbackCard}>
+            <View style={styles.feedbackHeader}>
+              <CheckCircle2 size={18} color="#426447" />
+              <Text style={styles.feedbackTitle}>Kullanım geri bildirimi</Text>
+            </View>
+            <Text style={styles.feedbackText}>Shelly zamanla ürünün cildindeki etkisini bu kayıtlardan öğrenir.</Text>
+            <View style={styles.feedbackActions}>
+              <TouchableOpacity
+                style={[styles.feedbackButton, feedback === 'good' && styles.feedbackButtonActive]}
+                onPress={() => setFeedback('good')}
+                activeOpacity={0.78}
+              >
+                <ThumbsUp size={16} color={feedback === 'good' ? '#ffffff' : '#426447'} />
+                <Text style={[styles.feedbackButtonText, feedback === 'good' && styles.feedbackButtonTextActive]}>İyi geldi</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.feedbackButton, feedback === 'bad' && styles.feedbackButtonDanger]}
+                onPress={() => setFeedback('bad')}
+                activeOpacity={0.78}
+              >
+                <ThumbsDown size={16} color={feedback === 'bad' ? '#ffffff' : '#BA1A1A'} />
+                <Text style={[styles.feedbackButtonTextDanger, feedback === 'bad' && styles.feedbackButtonTextActive]}>Kötü geldi</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           
         </ScrollView>
@@ -166,9 +236,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 8,
   },
-  headerSpacer: {
-    width: 40,
-  },
   editIconButton: {
     width: 40,
     height: 40,
@@ -184,16 +251,37 @@ const styles = StyleSheet.create({
   topSection: {
     alignItems: 'center',
     width: '100%',
-    marginBottom: 32,
+    marginBottom: 20,
   },
-  iconWrapper: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#e9efea',
+  visualStage: {
+    width: 176,
+    height: 176,
+    borderRadius: 38,
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#edf1ee',
+    shadowColor: '#14351f',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  iconWrapper: {
+    position: 'absolute',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: '#e9efea',
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.22,
+  },
+  productImage: {
+    width: 132,
+    height: 154,
   },
   brand: {
     fontSize: 24,
@@ -210,6 +298,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12,
   },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  statusBadge: { backgroundColor: '#fff4f2', borderWidth: 1, borderColor: '#ecd4d3', borderRadius: 15, paddingHorizontal: 12, paddingVertical: 6 },
+  statusBadgeText: { color: '#8a4f4d', fontSize: 12, fontWeight: '900' },
+  usageBadge: { backgroundColor: '#e9efea', borderWidth: 1, borderColor: '#d4e2d6', borderRadius: 15, paddingHorizontal: 12, paddingVertical: 6 },
+  usageBadgeText: { color: '#426447', fontSize: 12, fontWeight: '900' },
   expiryBadge: {
     backgroundColor: '#ffdad6',
     paddingHorizontal: 12,
@@ -230,6 +323,21 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
   },
+  infoGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 24,
+  },
+  infoCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#edf1ee',
+  },
+  infoLabel: { color: '#68746b', fontSize: 11, fontWeight: '800', marginBottom: 5 },
+  infoValue: { color: '#14351f', fontSize: 14, fontWeight: '900' },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -280,4 +388,32 @@ const styles = StyleSheet.create({
     color: '#713f12',
     lineHeight: 22,
   },
+  feedbackCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#edf1ee',
+  },
+  feedbackHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  feedbackTitle: { color: '#14351f', fontSize: 16, fontWeight: '900' },
+  feedbackText: { color: '#68746b', fontSize: 13, lineHeight: 18, fontWeight: '700', marginBottom: 12 },
+  feedbackActions: { flexDirection: 'row', gap: 10 },
+  feedbackButton: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 7,
+    borderRadius: 15,
+    paddingVertical: 12,
+    backgroundColor: '#f6f7f3',
+    borderWidth: 1,
+    borderColor: '#dbe2dd',
+  },
+  feedbackButtonActive: { backgroundColor: '#426447', borderColor: '#426447' },
+  feedbackButtonDanger: { backgroundColor: '#BA1A1A', borderColor: '#BA1A1A' },
+  feedbackButtonText: { color: '#426447', fontSize: 13, fontWeight: '900' },
+  feedbackButtonTextDanger: { color: '#BA1A1A', fontSize: 13, fontWeight: '900' },
+  feedbackButtonTextActive: { color: '#ffffff' },
 });

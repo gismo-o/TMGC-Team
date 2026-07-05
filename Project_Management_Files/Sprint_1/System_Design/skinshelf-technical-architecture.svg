@@ -36,8 +36,8 @@
   <rect x="390" y="180" width="320" height="175" rx="16" class="box"/>
   <text x="416" y="213" class="title">Screen Layer</text>
   <text x="416" y="243" class="text">Login / SignIn / SignUp</text>
-  <text x="416" y="267" class="text">SkinType / SkinConditions</text>
-  <text x="416" y="291" class="text">Home / Profile</text>
+  <text x="416" y="267" class="text">Onboarding / Shelly</text>
+  <text x="416" y="291" class="text">Home / Routine / Profile</text>
   <text x="416" y="315" class="text">Scanner / ProductReview</text>
   <text x="416" y="339" class="text">ProductDetail</text>
 
@@ -49,7 +49,7 @@
 
   <rect x="390" y="380" width="320" height="75" rx="16" class="box"/>
   <text x="416" y="411" class="title">Service Layer</text>
-  <text x="416" y="438" class="text">authService / userService / productService</text>
+  <text x="416" y="438" class="text">productService / routinePlanner / shellyInsights</text>
 
   <rect x="50" y="520" width="1100" height="250" rx="28" class="external"/>
   <text x="82" y="558" class="title">External Data and Sprint 2 Integration Targets</text>
@@ -63,7 +63,7 @@
   <rect x="370" y="595" width="250" height="115" rx="16" class="data"/>
   <text x="396" y="628" class="title">Open Beauty Facts</text>
   <text x="396" y="658" class="text">Barcode product lookup</text>
-  <text x="396" y="682" class="text">Brand, name, ingredients, image</text>
+  <text x="396" y="682" class="text">Brand, name, ingredients</text>
   <text x="396" y="704" class="small">Open cosmetics data source</text>
 
   <rect x="665" y="595" width="240" height="115" rx="16" class="ai"/>

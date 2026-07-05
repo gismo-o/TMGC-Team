@@ -36,15 +36,15 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 | --- | --- | --- |
 | Login -> Sign In | Kullanici giris formuna gecebilir | Gecti |
 | Login -> Sign Up | Kullanici hesap olusturma formuna gecebilir | Gecti |
-| Sign Up -> SkinType | Onboarding akisi cilt tipi secimine devam eder | Gecti |
-| SkinType -> SkinConditions | Cilt tipi secimi sonraki adıma baglidir | Gecti |
+| Sign Up -> Onboarding | Hesap olusturma akisi 7 adimli Shelly onboarding ekranina devam eder | Gecti |
+| Profile -> Onboarding | Cilt profili duzenleme mevcut onboarding akisina gider | Gecti |
 | Home / Dolabim | Tum urunler rafli dolapta PNG obje olarak gorunur | Gecti |
 | Home / Product visual catalog | Cutout katalogda eslesen urun gercek PNG olarak, eslesmeyen urun kategori fallback PNG olarak gorunur | Gecti |
 | Home shelf drag | Ayni raftaki urunler saga/sola suruklenerek siralanabilir | Gecti |
 | Routine tab | Alt navigasyonda Rutinim sekmesi acilir | Gecti |
-| Routine AI plan | Dolaptaki urunlerden sikayete gore bugun ve 7 gunluk plan olusur | Gecti |
-| Routine chat | AI bugunku sikayeti sohbet akisiyle sorar | Gecti |
-| Routine follow-up | Bir hafta sonrasi icin otomatik kontrol mesaji prototipi gorunur | Gecti |
+| Routine Shelly plan | Dolaptaki urunlerden bugun ve haftalik sabah/aksam plan olusur | Gecti |
+| Routine weekly modal | Haftalik plan tam ekran acilir; bottom tab bar gorunmez | Gecti |
+| Shelly assistant | Shelly ekraninda urun/rutin odakli hizli aksiyonlar ve mesaj alani gorunur | Gecti |
 | Scanner | Barkod ve fotograf modlari arasinda gecis vardir | Gecti |
 | Scanner -> ProductReview | Taranan urun review ekranina tasinir | Gecti |
 | ProductReview edit | Marka, urun adi, kategori ve icerik etiketleri onaydan once duzenlenebilir | Gecti |
@@ -59,4 +59,4 @@ Bu dogrulama, Sprint 2'de gercek kamera barkod okuyucu eklendiginde servis katma
 - Gercek cihaz kamera izni ve barkod okuyucu kutuphanesi Sprint 2 kapsamindadir.
 - Backend auth ve kalici veri kaydi Sprint 2 kapsamindadir.
 - Gemini AI cevabi ve gercek haftalik rutin motoru Sprint 2'de backend uzerinden entegre edilecektir.
-- Bildirimler, analiz gecmisi ve gelismis rutin onerileri Sprint 3 kapsamindadir.
+- Bildirimler, analiz gecmisi ve gelismis takip ozeti Sprint 3 kapsamindadir.
