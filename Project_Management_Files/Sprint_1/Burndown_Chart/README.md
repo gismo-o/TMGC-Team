@@ -5,9 +5,9 @@ Sprint 1 icin ilerleme story point ve Notion board durumlari ile takip edilmisti
 ## Story Point Durumu
 
 - Sprint 1 hedefi: 115 SP
-- Tamamlanan: 89 SP
-- Kalan / To Do: 26 SP
-- Tamamlanma orani: %77
+- Tamamlanan: 97 SP
+- Kalan / To Do: 18 SP
+- Tamamlanma orani: %84
 
 ## Dosyalar
 

@@ -7,9 +7,9 @@ Sprint 1'in hedefi, SkinShelf icin demo edilebilir mobil uygulama iskeletini ve 
 | Baslik | Deger |
 | --- | --- |
 | Sprint hedefi | 115 SP |
-| Tamamlanan | 89 SP |
-| Kalan / Sprint 2'ye aktarilan | 26 SP |
-| Tamamlanma orani | %77 |
+| Tamamlanan | 97 SP |
+| Kalan / Sprint 2'ye aktarilan | 18 SP |
+| Tamamlanma orani | %84 |
 | Ana teknoloji | React Native / Expo / TypeScript |
 | AI hedefi | Gemini 2.5 Flash entegrasyonu |
 | Barkod veri kaynagi | Open Beauty Facts |

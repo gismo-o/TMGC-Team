@@ -15,8 +15,8 @@ Product Backlog:
 ## Story Point Sprint Durumu
 
 - Sprint 1 hedefi: 115 SP
-- Sprint 1 tamamlanan: 89 SP
-- Sprint 1 kalan / To Do: 26 SP
-- Tamamlanma orani: %77
+- Sprint 1 tamamlanan: 97 SP
+- Sprint 1 kalan / To Do: 18 SP
+- Tamamlanma orani: %84
 
 Sprint 1 ilerleme kaniti son durum board goruntusu, story point dagilimi ve README'deki yazili sprint ozeti ile desteklenmektedir.

@@ -221,9 +221,9 @@ Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_M
 Sprint 1 puanlaması Fibonacci benzeri story point yaklaşımıyla yapılmıştır.
 
 - Sprint 1 hedefi: **115 SP**
-- Sprint 1 tamamlanan: **89 SP**
-- Sprint 1 kalan / To Do: **26 SP**
-- Sprint 1 tamamlanma oranı: **%77**
+- Sprint 1 tamamlanan: **97 SP**
+- Sprint 1 kalan / To Do: **18 SP**
+- Sprint 1 tamamlanma oranı: **%84**
 
 Sprint 1 için hedeflenen ana kapsam; proje iskeleti, temel mobil ekranlar, onboarding akışı, ürün dolabı prototipi, AI analiz prototip ekranları ve proje dokümantasyonudur.
 
@@ -235,7 +235,7 @@ Notion Point alanı güncellemesi: [notion-point-update.md](Project_Management_F
 
 Backlog 3 sprintlik geliştirme sürecine göre parçalanmıştır. Sprint 1'de ürün fikrini somutlaştıran temel kullanıcı akışları, görsel tasarım, mobil mimari ve demo edilebilir prototip ekranlarına öncelik verilmiştir. AI servisleri, gerçek backend entegrasyonu, kalıcı veri katmanı ve gelişmiş rutin önerileri Sprint 2-3 kapsamına aktarılmıştır.
 
-Sprint 1 story point değerlendirmesinde 115 SP'lik sprint kapsamının 89 SP'lik bölümü tamamlanmış, backend/database tarafındaki 26 SP'lik bölüm sonraki geliştirme akışına bırakılmıştır.
+Sprint 1 story point değerlendirmesinde 115 SP'lik sprint kapsamının 97 SP'lik bölümü tamamlanmış, backend/database tarafındaki 18 SP'lik bölüm sonraki geliştirme akışına bırakılmıştır.
 
 ### Backlog Dağıtma Mantığı ve Story Seçimleri
 
@@ -299,9 +299,9 @@ Sprint 1 sonunda story point bazlı ilerleme aşağıdaki gibidir:
 | Kapsam | Story Point |
 | --- | ---: |
 | Sprint 1 hedefi | 115 SP |
-| Tamamlanan | 89 SP |
-| Kalan / To Do | 26 SP |
-| Tamamlanma oranı | %77 |
+| Tamamlanan | 97 SP |
+| Kalan / To Do | 18 SP |
+| Tamamlanma oranı | %84 |
 
 <img src="Project_Management_Files/Sprint_1/Burndown_Chart/sprint1-completion-summary.svg" width="720">
 
