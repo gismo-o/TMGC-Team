@@ -25,6 +25,8 @@ export interface UserProfile {
 interface UserContextType {
   profile: UserProfile;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  activeIssue: string | null;
+  setActiveIssue: (issue: string | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -56,8 +58,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setProfile(prev => ({ ...prev, ...updates }));
   };
 
+  const [activeIssue, setActiveIssue] = useState<string | null>(null);
+
   return (
-    <UserContext.Provider value={{ profile, updateUserProfile }}>
+    <UserContext.Provider value={{ profile, updateUserProfile, activeIssue, setActiveIssue }}>
       {children}
     </UserContext.Provider>
   );

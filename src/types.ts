@@ -34,3 +34,16 @@ export type MainTabParamList = {
   Routine: undefined;
   Profile: undefined;
 };
+
+// ============ ASSISTANT / CHAT TYPES ============
+export type Message = {
+  id: string;
+  from: 'user' | 'ai';
+  text: string;
+};
+
+export type GeminiBotResponse = {
+  intent_type: 'INFO' | 'ISSUE';
+  detected_issue: string | null;
+  ai_response: string;
+};
