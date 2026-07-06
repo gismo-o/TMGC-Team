@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bot, Calendar, CheckCircle2, MessageCircle, Moon, Send, Sparkles, Sun, X } from 'lucide-react-native';
+import { AlertTriangle, Bot, Calendar, CheckCircle2, MessageCircle, Moon, Send, Sparkles, Sun, X } from 'lucide-react-native';
 import { MainTabParamList, Product, RootStackParamList } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useUser } from '../context/UserContext';
 import { buildWeekPlan, RoutineSlot } from '../services/routinePlanner';
-import { getRoutineReview } from '../services/shellyInsights';
+import { getRoutineReview, getProductRole } from '../services/shellyInsights';
 
 type RoutineScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Routine'>,
@@ -50,44 +50,64 @@ const RoutineBlock = ({
   products,
   note,
   navigation,
+  isSafeMode,
 }: {
   title: string;
   slot: RoutineSlot;
   products: Product[];
   note: string;
   navigation: RoutineScreenNavigationProp;
-}) => (
-  <View style={styles.routineBlock}>
-    <View style={styles.routineBlockHeader}>
-      <View style={styles.routineTitleWrap}>
-        {slot === 'morning' ? <Sun size={19} color="#8a6a20" /> : <Moon size={19} color="#426447" />}
-        <Text style={styles.routineBlockTitle}>{title}</Text>
+  isSafeMode?: boolean;
+}) => {
+  // Güvenli modda agresif aktifler filtreleme
+  const filteredProducts = useMemo(() => {
+    if (!isSafeMode) return products;
+    
+    return products.filter(product => {
+      const role = getProductRole(product);
+      // Sadece güvenli kategoriler: barrier, hydration, spf, basic
+      return !['retinol', 'peeling', 'vitaminC', 'acne'].includes(role);
+    });
+  }, [products, isSafeMode]);
+
+  return (
+    <View style={styles.routineBlock}>
+      <View style={styles.routineBlockHeader}>
+        <View style={styles.routineTitleWrap}>
+          {slot === 'morning' ? <Sun size={19} color="#8a6a20" /> : <Moon size={19} color="#426447" />}
+          <Text style={styles.routineBlockTitle}>{title}</Text>
+        </View>
+        <View style={styles.statusPill}>
+          <Text style={styles.statusPillText}>{slot === 'morning' ? 'SPF kontrolü' : 'Aktifler ayrıldı'}</Text>
+        </View>
       </View>
-      <View style={styles.statusPill}>
-        <Text style={styles.statusPillText}>{slot === 'morning' ? 'SPF kontrolü' : 'Aktifler ayrıldı'}</Text>
+      <View style={styles.routineNote}>
+        <CheckCircle2 size={15} color="#426447" />
+        <Text style={styles.routineNoteText}>{note}</Text>
       </View>
+      {filteredProducts.length ? (
+        filteredProducts.map(product => (
+          <ProductRoutineRow
+            key={product.id}
+            product={product}
+            onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
+          />
+        ))
+      ) : (
+        <Text style={styles.emptyRoutineText}>Dolabında bu adım için uygun ürün yok.</Text>
+      )}
+      {isSafeMode && products.length > filteredProducts.length && (
+        <View style={styles.safeModeBadge}>
+          <Text style={styles.safeModeBadgeText}>⚠️ Agresif aktifler gizlendi</Text>
+        </View>
+      )}
     </View>
-    <View style={styles.routineNote}>
-      <CheckCircle2 size={15} color="#426447" />
-      <Text style={styles.routineNoteText}>{note}</Text>
-    </View>
-    {products.length ? (
-      products.map(product => (
-        <ProductRoutineRow
-          key={product.id}
-          product={product}
-          onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
-        />
-      ))
-    ) : (
-      <Text style={styles.emptyRoutineText}>Dolabında bu adım için uygun ürün yok.</Text>
-    )}
-  </View>
-);
+  );
+};
 
 export default function RoutineScreen({ navigation }: Props) {
   const { products } = useProducts();
-  const { profile } = useUser();
+  const { profile, activeIssue, setActiveIssue } = useUser();
   const [isWeekPlanVisible, setIsWeekPlanVisible] = useState(false);
 
   const weekPlan = useMemo(() => buildWeekPlan(products, 'standard'), [products]);
@@ -96,6 +116,14 @@ export default function RoutineScreen({ navigation }: Props) {
     () => getRoutineReview(todayPlan?.morning || [], todayPlan?.evening || []),
     [todayPlan]
   );
+
+  const handleRecovery = () => {
+    Alert.alert(
+      '✅ Tebrikler!',
+      'Cildinizdeki sorun çözülmüş gibi görünüyor. Normal rutine dönüyorsunuz.',
+      [{ text: 'Tamam', onPress: () => setActiveIssue(null) }]
+    );
+  };
 
   useEffect(() => {
     const tabNavigation = navigation as any;
@@ -111,6 +139,26 @@ export default function RoutineScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 🔴 SAFE MODE BANNER */}
+      {activeIssue && (
+        <View style={styles.safeModeWarningBanner}>
+          <View style={styles.safeModeWarningContent}>
+            <AlertTriangle size={20} color="#ffffff" />
+            <View style={styles.safeModeWarningText}>
+              <Text style={styles.safeModeWarningTitle}>⚠️ Güvenli Mod Aktif</Text>
+              <Text style={styles.safeModeWarningMessage}>Cildinizdeki <Text style={{ fontWeight: 'bold' }}>{activeIssue}</Text> nedeniyle rutininiz optimize edilmiştir.</Text>
+            </View>
+          </View>
+          <TouchableOpacity 
+            style={styles.safeModeRecoveryButton}
+            onPress={handleRecovery}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.safeModeRecoveryButtonText}>🟢 İyileşti</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.header}>
         <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Rutinim</Text>
@@ -164,6 +212,7 @@ export default function RoutineScreen({ navigation }: Props) {
                 products={todayPlan.morning}
                 note={routineReview.morningNote}
                 navigation={navigation}
+                isSafeMode={activeIssue !== null}
               />
               <RoutineBlock
                 title="Akşam rutini"
@@ -171,6 +220,7 @@ export default function RoutineScreen({ navigation }: Props) {
                 products={todayPlan.evening}
                 note={routineReview.eveningNote}
                 navigation={navigation}
+                isSafeMode={activeIssue !== null}
               />
             </View>
           </View>
@@ -401,4 +451,61 @@ const styles = StyleSheet.create({
   daySlot: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 6, marginBottom: 5 },
   slotLabel: { fontSize: 12, fontWeight: '900', color: '#6b765d', textTransform: 'uppercase' },
   dayProduct: { fontSize: 13, color: '#1b1c1c', fontWeight: '700', marginBottom: 4 },
+  // Safe Mode Styles
+  safeModeWarningBanner: {
+    backgroundColor: '#e8543c',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 2,
+    borderBottomColor: '#d43b27',
+  },
+  safeModeWarningContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  safeModeWarningText: {
+    flex: 1,
+  },
+  safeModeWarningTitle: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  safeModeWarningMessage: {
+    color: '#fff5f3',
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  safeModeRecoveryButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  safeModeRecoveryButtonText: {
+    color: '#e8543c',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  safeModeBadge: {
+    backgroundColor: '#fff0ee',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#f0d5d0',
+  },
+  safeModeBadgeText: {
+    color: '#8a4f4d',
+    fontSize: 11,
+    fontWeight: '800',
+  },
 });
