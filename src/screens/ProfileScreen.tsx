@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Platform, StatusBar } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,8 +12,8 @@ type Props = {
 };
 
 export default function ProfileScreen({ navigation }: Props) {
-  const { profile } = useUser();
-  const { products } = useProducts();
+  const { profile, clearProfile } = useUser();
+  const { products, clearProducts } = useProducts();
   const menuItems = [
     { icon: Settings, label: 'Hesap Ayarları' },
     { icon: Shield, label: 'Gizlilik ve Güvenlik' },
@@ -24,7 +23,8 @@ export default function ProfileScreen({ navigation }: Props) {
   const handleLogout = async () => {
     try {
       await authService.logout();
-      console.log('Logged out successfully');
+      clearProfile();
+      clearProducts();
       navigation.replace('Login');
     } catch (error) {
       console.error('Logout error:', error);

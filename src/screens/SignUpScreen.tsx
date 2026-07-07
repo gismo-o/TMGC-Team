@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, SafeAreaView, TextInput, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { User, Mail, Lock, ArrowLeft } from 'lucide-react-native';
 import { authService } from '../services/authService';
+import { useUser } from '../context/UserContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'SignUp'>;
@@ -15,6 +15,7 @@ export default function SignUpScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { loadProfile } = useUser();
 
   const handleSignUp = async () => {
     if (!name || !email || !password) {
@@ -24,7 +25,13 @@ export default function SignUpScreen({ navigation }: Props) {
     setLoading(true);
     try {
       const response = await authService.register({ name, email, password });
-      console.log('Registration successful', response);
+      if (response.user?.id) {
+        try {
+          await loadProfile(response.user.id);
+        } catch (profileError) {
+          console.warn('Profil henüz çekilemedi (e-posta onayı bekleniyor olabilir):', profileError);
+        }
+      }
       navigation.navigate('Onboarding');
     } catch (error) {
       console.error('Registration error:', error);

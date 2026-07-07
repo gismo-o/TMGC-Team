@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, SafeAreaView, TextInput, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { Mail, Lock, ArrowLeft } from 'lucide-react-native';
 import { authService } from '../services/authService';
+import { useUser } from '../context/UserContext';
+import { useProducts } from '../context/ProductContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
@@ -14,6 +15,8 @@ export default function SignInScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { loadProfile } = useUser();
+  const { loadProducts } = useProducts();
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -23,7 +26,10 @@ export default function SignInScreen({ navigation }: Props) {
     setLoading(true);
     try {
       const response = await authService.login({ email, password });
-      console.log('Login successful', response);
+      if (response.user?.id) {
+        await loadProfile(response.user.id);
+        await loadProducts();
+      }
       navigation.replace('MainTabs');
     } catch (error) {
       console.error('Login error:', error);
@@ -34,7 +40,6 @@ export default function SignInScreen({ navigation }: Props) {
   };
 
   const handleForgotPassword = () => {
-    // Sprint 2: Connect this action to the backend password reset endpoint.
     console.log('Forgot password clicked');
     Alert.alert('Bilgi', 'Şifre sıfırlama linki e-posta adresinize gönderilecektir.');
   };

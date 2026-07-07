@@ -1,19 +1,36 @@
-// authService.ts
+import { supabase } from './supabaseClient';
 
 export const authService = {
-  login: async (credentials: any) => {
-    // Sprint 2: Replace this prototype response with Spring Boot auth API.
-    console.log('authService.login called with:', credentials);
-    return Promise.resolve({ token: 'demo-jwt-token', user: { id: '1', name: 'Demo User' } });
+  login: async (credentials: { email: string; password: string }) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+    if (error) throw error;
+    return { token: data.session?.access_token, user: data.user };
   },
-  register: async (data: any) => {
-    // Sprint 2: Replace this prototype response with Spring Boot auth API.
-    console.log('authService.register called with:', data);
-    return Promise.resolve({ token: 'demo-jwt-token', user: { id: '1', name: 'Demo User' } });
+
+  register: async (data: { email: string; password: string; name?: string }) => {
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: { display_name: data.name },
+      },
+    });
+    if (error) throw error;
+    return { token: signUpData.session?.access_token, user: signUpData.user };
   },
+
   logout: async () => {
-    // Sprint 2: Invalidate the persisted auth token through the backend API.
-    console.log('authService.logout called');
-    return Promise.resolve(true);
-  }
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    return true;
+  },
+
+  getSession: async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data.session;
+  },
 };
