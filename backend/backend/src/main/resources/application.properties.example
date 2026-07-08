@@ -1,0 +1,17 @@
+spring.application.name=backend
+
+# 1. Veritabanı Bağlantı Adresi
+spring.datasource.url=jdbc:postgresql://db.hqlhidqnzprzigmzyuub.supabase.co:5432/postgres
+
+# 2. Veritabanı Kullanıcı Adı
+spring.datasource.username=postgres
+
+# 3. Veritabanı Şifreniz (Buraya kendi şifrenizi yazın)
+spring.datasource.password=BURAYA_KENDI_SUPABASE_SIFRENIZI_YAZIN
+
+# 4. PostgreSQL Sürücü Sınıfı
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# 5. Hibernate/JPA Ayarları
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true

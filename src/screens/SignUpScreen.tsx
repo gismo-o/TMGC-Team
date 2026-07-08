@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, SafeAreaView, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, SafeAreaView, TextInput, Alert, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { User, Mail, Lock, ArrowLeft } from 'lucide-react-native';
@@ -23,9 +22,31 @@ export default function SignUpScreen({ navigation }: Props) {
     }
     setLoading(true);
     try {
-      const response = await authService.register({ name, email, password });
+      // Ad Soyad bilgisini boşluklardan bölerek firstName ve lastName oluşturuyoruz
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Backend API'sinin beklediği formatta kayıt isteği atıyoruz
+      const response = await authService.register({ 
+        firstName, 
+        lastName, 
+        email, 
+        password 
+      });
+      
       console.log('Registration successful', response);
-      navigation.navigate('Onboarding');
+      
+      // Kayıt olan yeni kullanıcının id değerini her iki platformda da parametre olarak Onboarding'e taşıyoruz
+      if (Platform.OS === 'web') {
+        alert('Hesabınız başarıyla oluşturuldu!');
+        // (navigation as any) ekleyerek TypeScript engelini aşıyoruz
+        (navigation as any).navigate('Onboarding', { userId: (response as any).id });
+      } else {
+        Alert.alert('Başarılı', 'Hesabınız oluşturuldu!', [
+          { text: 'Tamam', onPress: () => (navigation as any).navigate('Onboarding', { userId: (response as any).id }) }
+        ]);
+      }
     } catch (error) {
       console.error('Registration error:', error);
       Alert.alert('Hata', 'Kayıt işlemi başarısız oldu.');
