@@ -4,6 +4,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, ArrowRight, Camera, Check, PenLine, Sparkles } from 'lucide-react-native';
 import { ProductDraft, RootStackParamList } from '../types';
 import { useUser } from '../context/UserContext';
+import { useRoute } from '@react-navigation/native';
+// KRAVAT IMPORT: authService import edildi
+import { authService } from '../services/authService'; 
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
@@ -59,6 +62,11 @@ const OptionButton = ({
 
 export default function OnboardingScreen({ navigation }: Props) {
   const { profile, updateUserProfile } = useUser();
+  const route = useRoute<any>();
+  
+  // YÖNLENDİRME KORUMASI: Önce route parametresine, bulamazsa aktif oturum belleğine bakar
+  const userId = route.params?.userId || authService.getUserId(); 
+
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [ageRange, setAgeRange] = useState(profile.ageRange || '');
@@ -87,7 +95,51 @@ export default function OnboardingScreen({ navigation }: Props) {
     setSelected(withoutExclusive.includes(value) ? withoutExclusive.filter(item => item !== value) : [...withoutExclusive, value]);
   };
 
-  const saveProfile = () => {
+  // Veritabanına kaydetme metodu
+  const saveProfile = async () => {
+    // EĞER KULLANICI ID BULUNAMAZSA İŞLEMİ İPTAL EDER
+    if (!userId) {
+      console.warn('Oturum açmış kullanıcı ID bilgisi bulunamadı!');
+      alert('Lütfen önce giriş yapın.');
+      return;
+    }
+
+    const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL; 
+    const PROFILES_API_URL = API_BASE_URL ? API_BASE_URL.replace('/auth', '/profiles') : '';
+
+    const profileData = {
+      userId: userId, // DÜZELTİLDİ: Yukarıda güvenle okuduğumuz yerel değişken bağlandı
+      nickname: displayName.trim() || 'SkinShelf kullanıcısı',
+      ageRange: ageRange,
+      experience: experienceLevel,
+      sensitivity: sensitivityLevel,
+      skinTypeGuess: inferredSkinType,
+      concerns: [mainGoal], 
+      lifestyleFactors: trackingPreferences,
+      notifPref: reminderPreferences.join(', ') 
+    };
+
+    try {
+      console.log('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
+      const response = await fetch(`${PROFILES_API_URL}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Profil sunucuya kaydedilemedi.');
+      }
+
+      const result = await response.json();
+      console.log('Profil başarıyla veritabanına kaydedildi:', result);
+    } catch (error) {
+      console.error('Cilt profili kaydedilirken hata oluştu:', error);
+    }
+
+    // Yerel cihaz hafızasını/state'ini güncellemeye devam ediyoruz
     updateUserProfile({
       displayName: displayName.trim() || 'SkinShelf kullanıcısı',
       ageRange,
@@ -107,18 +159,19 @@ export default function OnboardingScreen({ navigation }: Props) {
     });
   };
 
-  const completeToMain = () => {
-    saveProfile();
+  // Yönlendirme buton metotları
+  const completeToMain = async () => {
+    await saveProfile();
     navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
   };
 
-  const completeToScanner = () => {
-    saveProfile();
+  const completeToScanner = async () => {
+    await saveProfile();
     navigation.navigate('Scanner');
   };
 
-  const completeToManualProduct = () => {
-    saveProfile();
+  const completeToManualProduct = async () => {
+    await saveProfile();
     navigation.navigate('ProductReview', { scannedProduct: manualProductDraft });
   };
 
@@ -202,7 +255,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       return (
         <>
           <Text style={styles.stepTitle}>Şu an rafında neler var?</Text>
-          <Text style={styles.stepText}>İstersen sonra ürünleri barkodla da ekleyebilirsin. Bu adım sadece başlangıç tahmini için.</Text>
+          <Text style={styles.stepText}>İstersen sonra ürünleri barkodla juga ekleyebilirsin. Bu adım sadece başlangıç tahmini için.</Text>
           {routineOptions.map(item => (
             <OptionButton
               key={item}
