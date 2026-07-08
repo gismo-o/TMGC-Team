@@ -1,4 +1,4 @@
-// authService.ts
+import { supabase } from './supabaseClient';
 
 // .env dosyasındaki EXPO_PUBLIC_API_URL değerini okur
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL; 

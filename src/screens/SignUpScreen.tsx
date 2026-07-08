@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { User, Mail, Lock, ArrowLeft } from 'lucide-react-native';
 import { authService } from '../services/authService';
+import { useUser } from '../context/UserContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'SignUp'>;
@@ -14,6 +15,7 @@ export default function SignUpScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { loadProfile } = useUser();
 
   const handleSignUp = async () => {
     if (!name || !email || !password) {

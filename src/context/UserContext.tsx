@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { userService } from '../services/userService';
 
 export interface UserProfile {
   displayName?: string;
@@ -22,9 +23,22 @@ export interface UserProfile {
   isOnboarded: boolean;
 }
 
+const emptyProfile: UserProfile = {
+  displayName: undefined,
+  skinType: '',
+  gender: null,
+  isPregnant: false,
+  conditions: [],
+  allergens: [],
+  isOnboarded: false,
+};
+
 interface UserContextType {
   profile: UserProfile;
+  userId: string | null;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  loadProfile: (userId: string) => Promise<void>;
+  clearProfile: () => void;
   activeIssue: string | null;
   setActiveIssue: (issue: string | null) => void;
 }
@@ -32,36 +46,39 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [profile, setProfile] = useState<UserProfile>({
-    displayName: 'Gizem',
-    ageRange: '18-24',
-    experienceLevel: 'Birkaç ürün kullanıyorum',
-    skinFeel: 'T bölgem yağlı, yanaklarım daha kuru',
-    postWashFeel: 'Bazı bölgeler yağlı, bazı bölgeler kuru',
-    mainGoal: 'Ürünlerim bana uygun mu?',
-    productFitIntent: 'Evet, ürünlerimi analiz et',
-    sensitivityLevel: 'Bazen',
-    reactionHistory: 'Emin değilim',
-    currentRoutine: ['Temizleyici', 'Nemlendirici', 'Güneş kremi', 'Serum'],
-    recentActives: ['Niacinamide', 'C vitamini'],
-    trackingPreferences: ['Stres', 'Güneşe maruz kalma'],
-    reminderPreferences: ['Akşam rutinim için'],
-    skinType: 'Karma Cilt',
-    gender: null,
-    isPregnant: false,
-    conditions: [],
-    allergens: [],
-    isOnboarded: false,
-  });
+  const [profile, setProfile] = useState<UserProfile>(emptyProfile);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [activeIssue, setActiveIssue] = useState<string | null>(null);
 
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
+    if (userId) {
+      userService.updateProfile(userId, updates).catch(error => {
+        console.error('Profil güncellenemedi:', error);
+      });
+    }
   };
 
-  const [activeIssue, setActiveIssue] = useState<string | null>(null);
+  const loadProfile = async (id: string) => {
+    setUserId(id);
+    try {
+      const data = await userService.getProfile(id);
+      setProfile(data);
+    } catch (error) {
+      console.error('Profil yüklenemedi:', error);
+      setProfile(emptyProfile);
+    }
+  };
+
+  const clearProfile = () => {
+    setUserId(null);
+    setProfile(emptyProfile);
+  };
 
   return (
-    <UserContext.Provider value={{ profile, updateUserProfile, activeIssue, setActiveIssue }}>
+    <UserContext.Provider
+      value={{ profile, userId, updateUserProfile, loadProfile, clearProfile, activeIssue, setActiveIssue }}
+    >
       {children}
     </UserContext.Provider>
   );
