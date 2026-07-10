@@ -184,6 +184,11 @@ const upsertProduct = async (headers, product) => {
 };
 
 const verified = [];
+const health = await request('/health');
+
+if (health?.status !== 'ok') {
+  throw new Error(`Health check failed: ${JSON.stringify(health)}`);
+}
 
 for (const scenario of scenarios) {
   const { auth, mode } = await getSession(scenario);
@@ -233,4 +238,4 @@ for (const scenario of scenarios) {
   });
 }
 
-console.log(JSON.stringify({ apiBaseUrl, verified }, null, 2));
+console.log(JSON.stringify({ apiBaseUrl, health, verified }, null, 2));
