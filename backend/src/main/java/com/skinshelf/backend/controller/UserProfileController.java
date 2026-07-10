@@ -1,20 +1,34 @@
 package com.skinshelf.backend.controller;
 
 import com.skinshelf.backend.dto.UserProfileRequest;
+import com.skinshelf.backend.dto.UserProfileResponse;
+import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.entity.UserProfile;
 import com.skinshelf.backend.service.UserProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/profiles")
-@CrossOrigin(origins = "*") // Mobil ve web platformlarından erişim için CORS'u açıyoruz
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
 
     public UserProfileController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(userProfileService.getProfile(currentUser));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserProfileResponse> updateMyProfile(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody UserProfileRequest request) {
+        return ResponseEntity.ok(userProfileService.saveOrUpdateProfile(currentUser, request));
     }
 
     // Onboarding verilerini veritabanına kaydetmek için POST isteği

@@ -33,11 +33,19 @@ const emptyProfile: UserProfile = {
   isOnboarded: false,
 };
 
+export interface UserAccount {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 interface UserContextType {
   profile: UserProfile;
   userId: string | null;
-  updateUserProfile: (updates: Partial<UserProfile>) => void;
-  loadProfile: (userId: string) => Promise<void>;
+  account: UserAccount | null;
+  setAccount: (account: UserAccount | null) => void;
+  updateUserProfile: (updates: Partial<UserProfile>, options?: { persist?: boolean }) => Promise<void>;
+  loadProfile: (userId: string) => Promise<UserProfile | null>;
   clearProfile: () => void;
   activeIssue: string | null;
   setActiveIssue: (issue: string | null) => void;
@@ -48,14 +56,17 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile>(emptyProfile);
   const [userId, setUserId] = useState<string | null>(null);
+  const [account, setAccount] = useState<UserAccount | null>(null);
   const [activeIssue, setActiveIssue] = useState<string | null>(null);
 
-  const updateUserProfile = (updates: Partial<UserProfile>) => {
+  const updateUserProfile = async (updates: Partial<UserProfile>, options: { persist?: boolean } = {}) => {
     setProfile(prev => ({ ...prev, ...updates }));
-    if (userId) {
-      userService.updateProfile(userId, updates).catch(error => {
+    if (userId && options.persist !== false) {
+      try {
+        await userService.updateProfile(userId, updates);
+      } catch (error) {
         console.error('Profil güncellenemedi:', error);
-      });
+      }
     }
   };
 
@@ -64,20 +75,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await userService.getProfile(id);
       setProfile(data);
+      return data;
     } catch (error) {
       console.error('Profil yüklenemedi:', error);
       setProfile(emptyProfile);
+      return null;
     }
   };
 
   const clearProfile = () => {
     setUserId(null);
     setProfile(emptyProfile);
+    setAccount(null);
   };
 
   return (
     <UserContext.Provider
-      value={{ profile, userId, updateUserProfile, loadProfile, clearProfile, activeIssue, setActiveIssue }}
+      value={{ profile, userId, account, setAccount, updateUserProfile, loadProfile, clearProfile, activeIssue, setActiveIssue }}
     >
       {children}
     </UserContext.Provider>

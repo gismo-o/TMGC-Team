@@ -24,9 +24,10 @@ export type RootStackParamList = {
   Onboarding: undefined;
   MainTabs: undefined; 
   Scanner: undefined;
-  ProductReview: { scannedProduct?: ProductDraft; editingProductId?: string } | undefined;
+  ProductReview: { scannedProduct?: ProductDraft; editingProductId?: string; source?: 'barcode' | 'manual' } | undefined;
   ProductDetail: { productId: string };
   Assistant: undefined;
+  Notifications: undefined;
 };
 
 export type MainTabParamList = {

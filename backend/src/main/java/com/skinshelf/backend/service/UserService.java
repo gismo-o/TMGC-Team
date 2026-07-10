@@ -1,45 +1,77 @@
 package com.skinshelf.backend.service;
 
+import com.skinshelf.backend.dto.AuthResponse;
 import com.skinshelf.backend.dto.LoginRequest;
 import com.skinshelf.backend.dto.RegisterRequest;
+import com.skinshelf.backend.dto.UserResponse;
 import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.repository.UserRepository;
+import com.skinshelf.backend.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     // Kayıt Metodu
-    public User register(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+    public AuthResponse register(RegisterRequest request) {
+        String email = normalizeEmail(request.getEmail());
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Bu e-posta adresi zaten kullanımda.");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // Şimdilik düz metin olarak kaydediyoruz
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName() == null ? "" : request.getLastName().trim());
 
-        return userRepository.save(user);
+        return toAuthResponse(userRepository.save(user));
     }
 
     // Giriş Metodu
-    public User login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(normalizeEmail(request.getEmail()))
                 .orElseThrow(() -> new RuntimeException("E-posta veya şifre hatalı."));
 
-        // Şifre kontrolü
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!passwordMatches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("E-posta veya şifre hatalı.");
         }
 
-        return user;
+        if (!isBCryptHash(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user = userRepository.save(user);
+        }
+
+        return toAuthResponse(user);
+    }
+
+    private AuthResponse toAuthResponse(User user) {
+        return new AuthResponse(jwtService.generateToken(user), UserResponse.from(user));
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (isBCryptHash(storedPassword)) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword != null && storedPassword.equals(rawPassword);
+    }
+
+    private boolean isBCryptHash(String value) {
+        return value != null && (value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$"));
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
     }
 }

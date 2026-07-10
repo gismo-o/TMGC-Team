@@ -15,16 +15,36 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.skinshelf.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.skinshelf.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SkinShelf barkod okutmak ve ürün ekleme akışında kamerayı kullanmak için izin ister."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "07ea635b-2467-4813-a2e3-a6d5ee49eae0"
+      }
+    },
+    "owner": "cernsvr"
   }
 }

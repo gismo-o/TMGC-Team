@@ -13,13 +13,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList, Product } from '../types';
 import { useProducts } from '../context/ProductContext';
-import { User, ArrowDownUp, Bell, Plus, ScanLine } from 'lucide-react-native';
+import { useUser } from '../context/UserContext';
+import { ArrowDownUp, Bell, Plus, ScanLine, Sparkles } from 'lucide-react-native';
 import { getProductVisualSource } from '../services/productVisualCatalog';
+import { colors, fonts, radius, shadows } from '../theme';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -75,6 +78,14 @@ const buildShelfRows = (products: Product[]) => {
     products.slice(firstRowCount, firstRowCount + secondRowCount),
     products.slice(firstRowCount + secondRowCount),
   ];
+};
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 6) return 'İyi geceler';
+  if (hour < 12) return 'Günaydın';
+  if (hour < 18) return 'İyi günler';
+  return 'İyi akşamlar';
 };
 
 type ShelfProductProps = {
@@ -205,6 +216,7 @@ const CabinetShelfRow = ({ products, index, onDelete, onOpen, onReorder }: Cabin
 
 export default function HomeScreen({ navigation }: Props) {
   const { products, deleteProduct } = useProducts();
+  const { profile } = useUser();
   const [sortBy, setSortBy] = useState<SortMode>('category');
   const [shelfOrder, setShelfOrder] = useState<string[]>([]);
   const [doorOpen, setDoorOpen] = useState(true);
@@ -319,70 +331,79 @@ export default function HomeScreen({ navigation }: Props) {
     outputRange: [0.96, 0.34],
   });
 
+  const firstName = profile.displayName?.trim().split(' ')[0];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-          <User size={21} color="#426447" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>SkinShelf</Text>
+        <View>
+          <Text style={styles.greeting}>{getGreeting()}{firstName ? `, ${firstName}` : ''}</Text>
+          <Text style={styles.headerTitle}>SkinShelf</Text>
+        </View>
         <TouchableOpacity
           style={styles.notificationButton}
+          activeOpacity={0.8}
           onPress={() => Alert.alert(
             'Biliyor musun?',
             'Retinol ve peeling gibi güçlü aktifleri aynı gece kullanmamak cildi daha az yorabilir. Shelly haftalık plan hazırlarken bu bilgiyi dikkate alır.'
           )}
         >
-          <Bell size={24} color="#426447" />
+          <Bell size={20} color={colors.forest} />
+          <View style={styles.notificationDot} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.sortContainer}>
-          <View style={styles.sortHeader}>
-            <ArrowDownUp size={16} color="#426447" />
-            <Text style={styles.sortLabel}>Dolap düzeni</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortOptions}>
-            <TouchableOpacity
-              style={[styles.sortButton, sortBy === 'category' && styles.sortButtonActive]}
-              onPress={() => setSortBy('category')}
-            >
-              <Text style={[styles.sortButtonText, sortBy === 'category' && styles.sortButtonTextActive]}>Kategori</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.sortButton, sortBy === 'name' && styles.sortButtonActive]}
-              onPress={() => setSortBy('name')}
-            >
-              <Text style={[styles.sortButtonText, sortBy === 'name' && styles.sortButtonTextActive]}>İsim</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.sortButton, sortBy === 'expiryDate' && styles.sortButtonActive]}
-              onPress={() => setSortBy('expiryDate')}
-            >
-              <Text style={[styles.sortButtonText, sortBy === 'expiryDate' && styles.sortButtonTextActive]}>Son Kullanma</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.cabinetHeaderRow}>
           <View style={styles.cabinetTitleLine}>
-            <View>
+            <View style={styles.cabinetTitleBlock}>
+              <Text style={styles.cabinetOverline}>DİJİTAL RAFIN</Text>
               <Text style={styles.cabinetTitle}>Cilt Bakım Dolabı</Text>
               <Text style={styles.cabinetSubtitle}>
-                Cilt bakım ürünlerini dijital rafında sakla, içeriklerini ve rutin uyumunu Shelly ile kontrol et.
+                Ürünlerini rafında sakla; içeriklerini ve rutin uyumunu Shelly ile kontrol et.
               </Text>
             </View>
-            <TouchableOpacity style={styles.doorToggleButton} onPress={() => navigation.navigate('Scanner')} activeOpacity={0.78}>
-              <Plus size={16} color="#ffffff" />
-              <Text style={styles.doorToggleText}>Ürün Ekle</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Scanner')} activeOpacity={0.85}>
+              <LinearGradient
+                colors={['#1C4630', '#0F2919']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.addButton}
+              >
+                <Plus size={15} color={colors.onDark} />
+                <Text style={styles.addButtonText}>Ürün Ekle</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
           <View style={styles.cabinetMetaRow}>
             <View style={styles.cabinetMetaPill}>
-              <Text style={styles.cabinetMetaText}>{products.length} ürün</Text>
+              <Sparkles size={12} color={colors.gold} />
+              <Text style={styles.cabinetMetaText}>{products.length} ürün rafında</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.sortContainer}>
+          <View style={styles.sortHeader}>
+            <ArrowDownUp size={15} color={colors.sage} />
+            <Text style={styles.sortLabel}>Dolap düzeni</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortOptions}>
+            {([
+              ['category', 'Kategori'],
+              ['name', 'İsim'],
+              ['expiryDate', 'Son Kullanma'],
+            ] as [SortMode, string][]).map(([mode, label]) => (
+              <TouchableOpacity
+                key={mode}
+                style={[styles.sortButton, sortBy === mode && styles.sortButtonActive]}
+                onPress={() => setSortBy(mode)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.sortButtonText, sortBy === mode && styles.sortButtonTextActive]}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         <View style={styles.cabinetShell}>
@@ -396,11 +417,20 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.emptyCabinet}>
               <View style={styles.emptyShelfLine} />
               <View style={styles.emptyShelfLineShort} />
-              <Text style={styles.emptyTitle}>Ürünlerini rafa ekle</Text>
-              <Text style={styles.emptyText}>İlk ürününü barkodla ya da manuel ekle. Shelly cildinle uyumunu ve rutinindeki yerini takip etsin.</Text>
-              <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scanner')}>
-                <ScanLine size={22} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={styles.scanButtonText}>Barkod Okut / Ürün Ekle</Text>
+              <Text style={styles.emptyTitle}>Rafın seni bekliyor</Text>
+              <Text style={styles.emptyText}>
+                İlk ürününü barkodla ya da manuel ekle. Shelly cildinle uyumunu ve rutinindeki yerini takip etsin.
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Scanner')} activeOpacity={0.88}>
+                <LinearGradient
+                  colors={['#1C4630', '#0F2919']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.scanButton}
+                >
+                  <ScanLine size={20} color={colors.onDark} style={{ marginRight: 9 }} />
+                  <Text style={styles.scanButtonText}>Barkod Okut / Ürün Ekle</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           ) : (
@@ -451,8 +481,15 @@ export default function HomeScreen({ navigation }: Props) {
       </ScrollView>
 
       {products.length > 0 && (
-        <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Scanner')}>
-          <Plus size={25} color="#ffffff" />
+        <TouchableOpacity onPress={() => navigation.navigate('Scanner')} activeOpacity={0.88} style={styles.fabWrapper}>
+          <LinearGradient
+            colors={['#1C4630', '#0F2919']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.fab}
+          >
+            <Plus size={24} color={colors.onDark} />
+          </LinearGradient>
         </TouchableOpacity>
       )}
     </SafeAreaView>
@@ -462,109 +499,160 @@ export default function HomeScreen({ navigation }: Props) {
 const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 12;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
+  safeArea: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: androidHeaderPadding,
     paddingBottom: 14,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(250, 249, 245, 0.98)',
+    paddingHorizontal: 22,
   },
-  profileButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#f0f1ec',
-    justifyContent: 'center',
-    alignItems: 'center',
+  greeting: {
+    fontFamily: fonts.sansBold,
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: colors.gold,
+    marginBottom: 3,
+  },
+  headerTitle: {
+    fontFamily: fonts.display,
+    fontSize: 27,
+    color: colors.forest,
   },
   notificationButton: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
-  headerTitle: { fontSize: 25, fontWeight: '800', color: '#426447' },
-  scrollContent: { paddingBottom: 150 },
-  sortContainer: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 18,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#edf1ee',
-    padding: 12,
+  notificationDot: {
+    position: 'absolute',
+    top: 11,
+    right: 12,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.gold,
   },
-  sortHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  sortLabel: { fontSize: 14, fontWeight: '800', color: '#426447', marginLeft: 6 },
-  sortOptions: { paddingBottom: 4 },
-  sortButton: {
-    backgroundColor: '#f0f1ec',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 16,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8e2',
-  },
-  sortButtonActive: { backgroundColor: '#426447', borderColor: '#426447' },
-  sortButtonText: { fontSize: 12, fontWeight: '800', color: '#707973' },
-  sortButtonTextActive: { color: '#ffffff' },
+  scrollContent: { paddingBottom: 170 },
   cabinetHeaderRow: {
-    marginHorizontal: 20,
-    marginBottom: 12,
+    marginHorizontal: 22,
+    marginTop: 8,
+    marginBottom: 14,
   },
   cabinetTitleLine: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  cabinetTitle: { fontSize: 24, fontWeight: '900', color: '#14351f' },
-  cabinetSubtitle: { fontSize: 13, color: '#627168', marginTop: 5, lineHeight: 18, maxWidth: 260 },
-  doorToggleButton: {
-    minWidth: 102,
-    alignItems: 'center',
+  cabinetTitleBlock: { flex: 1, paddingRight: 4 },
+  cabinetOverline: {
+    fontFamily: fonts.sansExtraBold,
+    fontSize: 10,
+    letterSpacing: 2,
+    color: colors.sage,
+    marginBottom: 6,
+  },
+  cabinetTitle: {
+    fontFamily: fonts.display,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.ink,
+  },
+  cabinetSubtitle: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.inkMuted,
+    marginTop: 6,
+    lineHeight: 19,
+    maxWidth: 260,
+  },
+  addButton: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 16,
-    backgroundColor: '#14351f',
-    shadowColor: '#14351f',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: radius.pill,
+    ...shadows.card,
   },
-  doorToggleText: { color: '#ffffff', fontSize: 12, fontWeight: '900' },
-  cabinetMetaRow: { flexDirection: 'row', gap: 8, marginTop: 11 },
-  cabinetMetaPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 14, backgroundColor: '#426447' },
-  cabinetMetaText: { color: '#ffffff', fontSize: 12, fontWeight: '900' },
-  cabinetShell: {
-    marginHorizontal: 18,
-    borderRadius: 22,
-    backgroundColor: '#f8f9f5',
+  addButtonText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 12.5,
+    letterSpacing: 0.2,
+    color: colors.onDark,
+  },
+  cabinetMetaRow: { flexDirection: 'row', gap: 8, marginTop: 13 },
+  cabinetMetaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#d9e0d9',
+    borderColor: colors.lineGold,
+  },
+  cabinetMetaText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  sortContainer: {
+    marginHorizontal: 22,
+    marginBottom: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 13,
+    ...shadows.soft,
+  },
+  sortHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  sortLabel: {
+    fontFamily: fonts.sansBold,
+    fontSize: 13,
+    color: colors.forest,
+    marginLeft: 7,
+  },
+  sortOptions: { paddingBottom: 2 },
+  sortButton: {
+    backgroundColor: colors.surfaceMuted,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  sortButtonActive: { backgroundColor: colors.forest, borderColor: colors.forest },
+  sortButtonText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 12,
+    color: colors.inkMuted,
+  },
+  sortButtonTextActive: { color: colors.onDark },
+  cabinetShell: {
+    marginHorizontal: 20,
+    borderRadius: radius.xl,
+    backgroundColor: '#F7F6EF',
+    borderWidth: 1,
+    borderColor: colors.line,
     overflow: 'hidden',
     minHeight: 820,
     position: 'relative',
-    shadowColor: '#21412a',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.16,
-    shadowRadius: 26,
-    elevation: 5,
+    ...shadows.floating,
   },
   cabinetTopLip: {
     height: 22,
-    backgroundColor: '#fdfdfb',
+    backgroundColor: '#FDFCF8',
     borderBottomWidth: 1,
-    borderBottomColor: '#dde2dd',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    borderBottomColor: colors.line,
   },
   backGlowTop: {
     position: 'absolute',
@@ -580,7 +668,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 170,
-    backgroundColor: 'rgba(215,218,212,0.36)',
+    backgroundColor: 'rgba(222,220,208,0.32)',
   },
   leftWallShadow: {
     position: 'absolute',
@@ -588,7 +676,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     width: 28,
-    backgroundColor: 'rgba(42,49,43,0.06)',
+    backgroundColor: 'rgba(26,33,28,0.05)',
   },
   rightWallShadow: {
     position: 'absolute',
@@ -596,7 +684,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     width: 28,
-    backgroundColor: 'rgba(42,49,43,0.06)',
+    backgroundColor: 'rgba(26,33,28,0.05)',
   },
   referenceShelvesContainer: {
     paddingTop: 20,
@@ -621,21 +709,21 @@ const styles = StyleSheet.create({
   },
   referenceShelfBoard: {
     height: 18,
-    borderRadius: 4,
-    backgroundColor: '#ffffff',
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#e4e6e1',
-    shadowColor: '#31372f',
+    borderColor: colors.line,
+    shadowColor: '#2A2F2A',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.14,
     shadowRadius: 9,
     elevation: 3,
   },
   referenceShelfHighlight: {
     height: 4,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   emptyShelfHint: {
     position: 'absolute',
@@ -644,7 +732,7 @@ const styles = StyleSheet.create({
     width: '54%',
     height: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(196,207,197,0.42)',
+    backgroundColor: 'rgba(206,212,201,0.4)',
   },
   emptyShelfHintShort: { width: '38%' },
   shelfProduct: {
@@ -673,7 +761,7 @@ const styles = StyleSheet.create({
     width: 82,
     height: 14,
     borderRadius: 50,
-    backgroundColor: 'rgba(82,91,83,0.16)',
+    backgroundColor: 'rgba(74,86,78,0.14)',
   },
   productPhoto: {
     width: 110,
@@ -681,21 +769,22 @@ const styles = StyleSheet.create({
   },
   productShelfName: {
     maxWidth: 102,
-    minHeight: 16,
-    marginTop: 2,
-    color: '#435248',
-    fontSize: 10,
-    fontWeight: '900',
+    minHeight: 15,
+    marginTop: 4,
+    fontFamily: fonts.sansExtraBold,
+    color: colors.inkMuted,
+    fontSize: 9,
+    letterSpacing: 0.8,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   productShelfType: {
     width: 106,
     minHeight: 27,
-    color: '#17251b',
-    fontSize: 10,
-    lineHeight: 13,
-    fontWeight: '800',
+    fontFamily: fonts.sansBold,
+    color: colors.ink,
+    fontSize: 10.5,
+    lineHeight: 14,
     textAlign: 'center',
   },
   expiryBadge: {
@@ -704,21 +793,26 @@ const styles = StyleSheet.create({
     right: 2,
     minWidth: 30,
     height: 22,
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     borderRadius: 11,
-    backgroundColor: '#BA1A1A',
+    backgroundColor: colors.danger,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
-  expiryBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
+  expiryBadgeText: {
+    fontFamily: fonts.sansExtraBold,
+    color: colors.onDark,
+    fontSize: 10,
+  },
   doorPanel: {
     position: 'absolute',
     top: 22,
     bottom: 0,
     width: '50%',
-    backgroundColor: '#e8eee9',
-    borderColor: '#bdcabe',
-    shadowColor: '#12351f',
+    backgroundColor: '#EBEFE8',
+    borderColor: '#C9D2C6',
+    shadowColor: colors.forestDeep,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.22,
     shadowRadius: 18,
@@ -741,60 +835,74 @@ const styles = StyleSheet.create({
     bottom: 32,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(66,100,71,0.28)',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(66,101,74,0.26)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
   },
   doorHandleLeft: {
     position: 'absolute',
     right: 14,
     top: '48%',
-    width: 9,
+    width: 8,
     height: 58,
     borderRadius: 8,
-    backgroundColor: '#426447',
+    backgroundColor: colors.sage,
   },
   doorHandleRight: {
     position: 'absolute',
     left: 14,
     top: '48%',
-    width: 9,
+    width: 8,
     height: 58,
     borderRadius: 8,
-    backgroundColor: '#426447',
+    backgroundColor: colors.sage,
   },
   emptyCabinet: {
     minHeight: 710,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
   },
-  emptyShelfLine: { width: '84%', height: 14, borderRadius: 10, backgroundColor: '#ffffff', marginBottom: 38 },
-  emptyShelfLineShort: { width: '58%', height: 12, borderRadius: 10, backgroundColor: '#d8ded8', marginBottom: 34 },
-  emptyTitle: { fontSize: 24, fontWeight: '800', color: '#426447', marginBottom: 8 },
-  emptyText: { fontSize: 15, color: '#707973', textAlign: 'center', marginBottom: 26, lineHeight: 21 },
+  emptyShelfLine: { width: '84%', height: 14, borderRadius: 10, backgroundColor: '#FFFFFF', marginBottom: 38 },
+  emptyShelfLineShort: { width: '58%', height: 12, borderRadius: 10, backgroundColor: '#E2E0D4', marginBottom: 34 },
+  emptyTitle: {
+    fontFamily: fonts.display,
+    fontSize: 26,
+    color: colors.forest,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.inkMuted,
+    textAlign: 'center',
+    marginBottom: 26,
+    lineHeight: 21,
+  },
   scanButton: {
     flexDirection: 'row',
-    backgroundColor: '#426447',
-    paddingHorizontal: 26,
-    paddingVertical: 15,
-    borderRadius: 28,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: radius.pill,
     alignItems: 'center',
+    ...shadows.card,
   },
-  scanButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
-  fab: {
+  scanButtonText: {
+    fontFamily: fonts.sansBold,
+    color: colors.onDark,
+    fontSize: 14.5,
+    letterSpacing: 0.2,
+  },
+  fabWrapper: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 96,
     right: 24,
+  },
+  fab: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#426447',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    ...shadows.floating,
   },
 });

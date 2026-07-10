@@ -1,0 +1,25 @@
+import { ProductDraft } from '../types';
+import { apiFetch } from './apiClient';
+import { API_BASE_URL } from './apiConfig';
+
+export type ProductIngredientAnalysis = {
+  summary: string;
+  compatibilityLevel: 'high' | 'warning' | 'synergy';
+  compatibilityMessage: string;
+  suggestedTimeOfDay: 'morning' | 'evening' | 'both';
+  notableIngredients: string[];
+  warnings: string[];
+};
+
+export const analyzeProductIngredients = async (product: ProductDraft): Promise<ProductIngredientAnalysis> => {
+  return apiFetch<ProductIngredientAnalysis>(`${API_BASE_URL}/assistant/analyze-ingredients`, {
+    method: 'POST',
+    body: {
+      name: product.name,
+      brand: product.brand,
+      category: product.category,
+      description: product.description,
+      activeIngredients: product.activeIngredients ?? [],
+    },
+  });
+};

@@ -1,134 +1,326 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { Camera, X, Image as ImageIcon, Barcode, ScanLine } from 'lucide-react-native';
+import { RootStackParamList, ProductDraft } from '../types';
+import { X, Barcode, ScanLine, Sparkles, PenLine, CameraOff } from 'lucide-react-native';
 import { productService } from '../services/productService';
+import { fonts, radius } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Scanner'>;
 };
 
-export default function ScannerScreen({ navigation }: Props) {
-  const [isScanning, setIsScanning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'barcode' | 'photo'>('barcode');
+const GOLD = '#D8C39A';
 
-  const handleScan = async () => {
+const manualProductDraft: ProductDraft = {
+  brand: '',
+  name: '',
+  category: 'Diğer',
+  timeOfDay: 'both',
+  imageUrl: '',
+  description: '',
+  activeIngredients: [],
+  expiryDate: '',
+};
+
+export default function ScannerScreen({ navigation }: Props) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [isScanning, setIsScanning] = useState(false);
+  const [lastCode, setLastCode] = useState<string | null>(null);
+
+  const openManualForm = useCallback(() => {
+    navigation.replace('ProductReview', { scannedProduct: manualProductDraft, source: 'manual' });
+  }, [navigation]);
+
+  const lookupBarcode = useCallback(async (barcode: string) => {
     setIsScanning(true);
+    setLastCode(barcode);
+
     try {
-      let result;
-      if (activeTab === 'barcode') {
-        const demoBarcode = '3337875863377'; // La Roche-Posay Effaclar Duo+ sample from Open Beauty Facts.
-        result = await productService.scanProduct({ barcode: demoBarcode });
-      } else {
-        // Sprint 2 backend note: Send the photo to Vision AI without storing raw camera images.
-        console.log('Fotoğraf geçici hafızada, Vision AI\'a gönderiliyor');
-        result = await productService.scanProduct({ imageData: 'demo-photo' });
+      const result = await productService.scanProduct({ barcode });
+      if (result) {
+        navigation.replace('ProductReview', { scannedProduct: result, source: 'barcode' });
+        return;
       }
 
-      setTimeout(() => {
-        setIsScanning(false);
-        navigation.replace('ProductReview', { scannedProduct: result });
-      }, 1500);
+      Alert.alert(
+        'Ürün bulunamadı',
+        'Open Beauty Facts üzerinde bu barkod için ürün bilgisi bulunamadı. Bilgileri manuel ekleyebilirsin.',
+        [{ text: 'Manuel ekle', onPress: openManualForm }]
+      );
     } catch (error) {
       console.error('Scan error:', error);
-      Alert.alert('Hata', 'Ürün taranamadı.');
+      Alert.alert('Hata', 'Ürün bilgisi alınamadı. Manuel giriş ekranını açabilirsin.', [
+        { text: 'Manuel ekle', onPress: openManualForm },
+        { text: 'Tekrar dene', style: 'cancel', onPress: () => setLastCode(null) },
+      ]);
+    } finally {
       setIsScanning(false);
     }
-  };
+  }, [navigation, openManualForm]);
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-          <X size={24} color="#ffffff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{activeTab === 'barcode' ? 'Barkod Tara' : 'Ürün Tara'}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+  const handleBarcodeScanned = useCallback((result: BarcodeScanningResult) => {
+    const code = result.data?.trim();
+    if (!code || isScanning || code === lastCode) {
+      return;
+    }
 
-      <View style={styles.scannerArea}>
+    void lookupBarcode(code);
+  }, [isScanning, lastCode, lookupBarcode]);
+
+  const renderScannerContent = () => {
+    if (!permission) {
+      return (
+        <View style={styles.permissionPanel}>
+          <ActivityIndicator color={GOLD} />
+          <Text style={styles.permissionText}>Kamera izni kontrol ediliyor...</Text>
+        </View>
+      );
+    }
+
+    if (!permission.granted) {
+      return (
+        <View style={styles.permissionPanel}>
+          <CameraOff size={36} color={GOLD} />
+          <Text style={styles.permissionTitle}>Kamera izni gerekli</Text>
+          <Text style={styles.permissionText}>Barkodu okutmak için kameraya izin ver.</Text>
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission} activeOpacity={0.85}>
+            <Text style={styles.permissionButtonText}>İzin ver</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <CameraView
+        style={styles.camera}
+        facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'],
+        }}
+        onBarcodeScanned={isScanning ? undefined : handleBarcodeScanned}
+      >
         <View style={styles.scannerFrame}>
           <View style={[styles.corner, styles.topLeft]} />
           <View style={[styles.corner, styles.topRight]} />
           <View style={[styles.corner, styles.bottomLeft]} />
           <View style={[styles.corner, styles.bottomRight]} />
-          
+
           {isScanning ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#ffffff" />
-              <Text style={styles.loadingText}>Yapay Zeka Analiz Ediyor...</Text>
+              <ActivityIndicator size="large" color={GOLD} />
+              <View style={styles.loadingBadge}>
+                <Sparkles size={14} color={GOLD} />
+                <Text style={styles.loadingText}>Ürün bilgisi alınıyor...</Text>
+              </View>
             </View>
           ) : (
-            <Text style={styles.instruction}>
-              {activeTab === 'barcode' ? 'Barkodu çerçevenin içine hizalayın' : 'Kozmetik ürününü çerçevenin içine yerleştirin'}
-            </Text>
+            <Text style={styles.instruction}>Barkodu çerçevenin içine hizalayın</Text>
           )}
         </View>
+      </CameraView>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <X size={22} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Barkod Tara</Text>
+        <View style={{ width: 44 }} />
+      </View>
+
+      <View style={styles.scannerArea}>
+        {renderScannerContent()}
       </View>
 
       <View style={styles.tabsContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'barcode' && styles.activeTab]}
-          onPress={() => !isScanning && setActiveTab('barcode')}
+        <View style={[styles.tab, styles.activeTab]}>
+          <Barcode size={19} color="#10130F" />
+          <Text style={[styles.tabText, styles.activeTabText]}>Barkod Tara</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={openManualForm}
+          disabled={isScanning}
+          activeOpacity={0.8}
         >
-          <Barcode size={20} color={activeTab === 'barcode' ? '#000000' : '#ffffff'} />
-          <Text style={[styles.tabText, activeTab === 'barcode' && styles.activeTabText]}>Barkod Tara</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'photo' && styles.activeTab]}
-          onPress={() => !isScanning && setActiveTab('photo')}
-        >
-          <Camera size={20} color={activeTab === 'photo' ? '#000000' : '#ffffff'} />
-          <Text style={[styles.tabText, activeTab === 'photo' && styles.activeTabText]}>Fotoğraf Çek</Text>
+          <PenLine size={19} color="#ffffff" />
+          <Text style={styles.tabText}>Manuel Ekle</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.galleryButton} onPress={() => {}}>
-          <ImageIcon size={24} color="#ffffff" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.captureButton, isScanning && styles.captureButtonDisabled]} 
-          onPress={handleScan}
+        <TouchableOpacity
+          style={[styles.captureButton, isScanning && styles.captureButtonDisabled]}
+          onPress={() => {
+            if (!permission?.granted) {
+              void requestPermission();
+              return;
+            }
+            Alert.alert('Barkod bekleniyor', 'Barkod kamerada göründüğünde otomatik okutulur.');
+          }}
           disabled={isScanning}
+          activeOpacity={0.85}
         >
           <View style={styles.captureInner}>
-             {activeTab === 'barcode' && <ScanLine size={32} color="#000000" />}
+            <ScanLine size={30} color="#10130F" />
           </View>
         </TouchableOpacity>
-        
-        <View style={{ width: 48 }} />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000000' },
+  safeArea: { flex: 1, backgroundColor: '#0C0F0C' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
-  closeButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { color: '#ffffff', fontSize: 18, fontWeight: '600' },
-  scannerArea: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scannerFrame: { width: '80%', aspectRatio: 3/4, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
-  corner: { position: 'absolute', width: 40, height: 40, borderColor: '#ffffff', borderWidth: 0 },
-  topLeft: { top: -2, left: -2, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 24 },
-  topRight: { top: -2, right: -2, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 24 },
-  bottomLeft: { bottom: -2, left: -2, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 24 },
-  bottomRight: { bottom: -2, right: -2, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 24 },
-  instruction: { color: '#ffffff', fontSize: 14, textAlign: 'center', paddingHorizontal: 20, backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 8, borderRadius: 16 },
-  loadingContainer: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.7)', ...StyleSheet.absoluteFillObject, borderRadius: 24 },
-  loadingText: { color: '#ffffff', marginTop: 12, fontSize: 16, fontWeight: '600' },
+  closeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontFamily: fonts.display,
+    color: '#ffffff',
+    fontSize: 21,
+  },
+  scannerArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 22 },
+  camera: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  scannerFrame: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  corner: { position: 'absolute', width: 42, height: 42, borderColor: GOLD, borderWidth: 0 },
+  topLeft: { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: radius.xl },
+  topRight: { top: 16, right: 16, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: radius.xl },
+  bottomLeft: { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: radius.xl },
+  bottomRight: { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: radius.xl },
+  instruction: {
+    fontFamily: fonts.sansSemiBold,
+    color: '#ffffff',
+    fontSize: 13.5,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.72)',
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: radius.xl,
+  },
+  loadingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(216,195,154,0.35)',
+  },
+  loadingText: {
+    fontFamily: fonts.sansBold,
+    color: '#ffffff',
+    fontSize: 13.5,
+  },
+  permissionPanel: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  permissionTitle: {
+    fontFamily: fonts.sansBold,
+    color: '#ffffff',
+    fontSize: 18,
+    marginTop: 16,
+  },
+  permissionText: {
+    fontFamily: fonts.sans,
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 13.5,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  permissionButton: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: radius.pill,
+    backgroundColor: GOLD,
+  },
+  permissionButtonText: {
+    fontFamily: fonts.sansBold,
+    color: '#10130F',
+    fontSize: 13.5,
+  },
   tabsContainer: { flexDirection: 'row', justifyContent: 'center', paddingVertical: 16, gap: 12 },
-  tab: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)' },
-  activeTab: { backgroundColor: '#ffffff' },
-  tabText: { color: '#ffffff', marginLeft: 8, fontSize: 14, fontWeight: '600' },
-  activeTabText: { color: '#000000' },
-  footer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 40, paddingTop: 10 },
-  galleryButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
-  captureButton: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: '#ffffff' },
-  captureInner: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  captureButtonDisabled: { opacity: 0.5 }
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  activeTab: { backgroundColor: GOLD, borderColor: GOLD },
+  tabText: {
+    fontFamily: fonts.sansBold,
+    color: '#ffffff',
+    marginLeft: 8,
+    fontSize: 13.5,
+  },
+  activeTabText: { color: '#10130F' },
+  footer: { alignItems: 'center', paddingBottom: 40, paddingTop: 10 },
+  captureButton: {
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    backgroundColor: 'rgba(216,195,154,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: GOLD,
+  },
+  captureInner: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F4EBDB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonDisabled: { opacity: 0.5 },
 });

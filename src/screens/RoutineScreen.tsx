@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,6 +10,7 @@ import { useProducts } from '../context/ProductContext';
 import { useUser } from '../context/UserContext';
 import { buildWeekPlan, RoutineSlot } from '../services/routinePlanner';
 import { getRoutineReview, getProductRole } from '../services/shellyInsights';
+import { colors, fonts, radius, shadows, tabBarStyle } from '../theme';
 
 type RoutineScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Routine'>,
@@ -17,20 +19,6 @@ type RoutineScreenNavigationProp = CompositeNavigationProp<
 
 type Props = {
   navigation: RoutineScreenNavigationProp;
-};
-
-const defaultTabBarStyle = {
-  backgroundColor: '#FAF9F5',
-  borderTopWidth: 1,
-  borderTopColor: '#e9efea',
-  elevation: 12,
-  shadowColor: '#14351f',
-  shadowOffset: { width: 0, height: -4 },
-  shadowOpacity: 0.06,
-  shadowRadius: 14,
-  height: 68,
-  paddingBottom: 10,
-  paddingTop: 9,
 };
 
 const ProductRoutineRow = ({ product, onPress }: { product: Product; onPress: () => void }) => (
@@ -62,10 +50,9 @@ const RoutineBlock = ({
   // Güvenli modda agresif aktifler filtreleme
   const filteredProducts = useMemo(() => {
     if (!isSafeMode) return products;
-    
+
     return products.filter(product => {
       const role = getProductRole(product);
-      // Sadece güvenli kategoriler: barrier, hydration, spf, basic
       return !['retinol', 'peeling', 'vitaminC', 'acne'].includes(role);
     });
   }, [products, isSafeMode]);
@@ -74,7 +61,9 @@ const RoutineBlock = ({
     <View style={styles.routineBlock}>
       <View style={styles.routineBlockHeader}>
         <View style={styles.routineTitleWrap}>
-          {slot === 'morning' ? <Sun size={19} color="#8a6a20" /> : <Moon size={19} color="#426447" />}
+          <View style={[styles.slotIcon, slot === 'morning' ? styles.slotIconMorning : styles.slotIconEvening]}>
+            {slot === 'morning' ? <Sun size={17} color={colors.warning} /> : <Moon size={17} color={colors.sage} />}
+          </View>
           <Text style={styles.routineBlockTitle}>{title}</Text>
         </View>
         <View style={styles.statusPill}>
@@ -82,7 +71,7 @@ const RoutineBlock = ({
         </View>
       </View>
       <View style={styles.routineNote}>
-        <CheckCircle2 size={15} color="#426447" />
+        <CheckCircle2 size={15} color={colors.sage} />
         <Text style={styles.routineNoteText}>{note}</Text>
       </View>
       {filteredProducts.length ? (
@@ -98,7 +87,7 @@ const RoutineBlock = ({
       )}
       {isSafeMode && products.length > filteredProducts.length && (
         <View style={styles.safeModeBadge}>
-          <Text style={styles.safeModeBadgeText}>⚠️ Agresif aktifler gizlendi</Text>
+          <Text style={styles.safeModeBadgeText}>Agresif aktifler geçici olarak gizlendi</Text>
         </View>
       )}
     </View>
@@ -119,7 +108,7 @@ export default function RoutineScreen({ navigation }: Props) {
 
   const handleRecovery = () => {
     Alert.alert(
-      '✅ Tebrikler!',
+      'Tebrikler!',
       'Cildinizdeki sorun çözülmüş gibi görünüyor. Normal rutine dönüyorsunuz.',
       [{ text: 'Tamam', onPress: () => setActiveIssue(null) }]
     );
@@ -129,32 +118,33 @@ export default function RoutineScreen({ navigation }: Props) {
     const tabNavigation = navigation as any;
 
     tabNavigation.setOptions({
-      tabBarStyle: isWeekPlanVisible ? { display: 'none' } : defaultTabBarStyle,
+      tabBarStyle: isWeekPlanVisible ? { display: 'none' } : tabBarStyle,
     });
 
     return () => {
-      tabNavigation.setOptions({ tabBarStyle: defaultTabBarStyle });
+      tabNavigation.setOptions({ tabBarStyle });
     };
   }, [isWeekPlanVisible, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 🔴 SAFE MODE BANNER */}
       {activeIssue && (
         <View style={styles.safeModeWarningBanner}>
           <View style={styles.safeModeWarningContent}>
-            <AlertTriangle size={20} color="#ffffff" />
+            <AlertTriangle size={20} color={colors.onDark} />
             <View style={styles.safeModeWarningText}>
-              <Text style={styles.safeModeWarningTitle}>⚠️ Güvenli Mod Aktif</Text>
-              <Text style={styles.safeModeWarningMessage}>Cildinizdeki <Text style={{ fontWeight: 'bold' }}>{activeIssue}</Text> nedeniyle rutininiz optimize edilmiştir.</Text>
+              <Text style={styles.safeModeWarningTitle}>Güvenli Mod Aktif</Text>
+              <Text style={styles.safeModeWarningMessage}>
+                Cildinizdeki <Text style={{ fontFamily: fonts.sansExtraBold }}>{activeIssue}</Text> nedeniyle rutininiz optimize edildi.
+              </Text>
             </View>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.safeModeRecoveryButton}
             onPress={handleRecovery}
             activeOpacity={0.8}
           >
-            <Text style={styles.safeModeRecoveryButtonText}>🟢 İyileşti</Text>
+            <Text style={styles.safeModeRecoveryButtonText}>İyileşti</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -163,36 +153,41 @@ export default function RoutineScreen({ navigation }: Props) {
         <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Rutinim</Text>
         <TouchableOpacity style={styles.headerIconButton} onPress={() => navigation.navigate('Assistant')} activeOpacity={0.75}>
-          <Bot size={22} color="#426447" />
+          <Bot size={21} color={colors.forest} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.summaryCard}>
+        <LinearGradient
+          colors={['#1C4630', '#0F2919']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.summaryCard}
+        >
           <View style={styles.summaryHeader}>
             <View style={styles.summaryIcon}>
-              <Sparkles size={20} color="#ffffff" />
+              <Sparkles size={19} color={colors.gold} />
             </View>
             <View style={styles.summaryTextBlock}>
-              <Text style={styles.summaryTitle}>Shelly’nin Yorumu</Text>
-              <Text style={styles.summarySubtitle}>Cilt tipi: {profile.skinType} • Kaynak: Dolabım</Text>
+              <Text style={styles.summaryTitle}>Shelly'nin Yorumu</Text>
+              <Text style={styles.summarySubtitle}>Cilt tipi: {profile.skinType || 'Belirlenmedi'} • Kaynak: Dolabım</Text>
             </View>
           </View>
           <Text style={styles.summaryText}>
             {routineReview.morningNote} {routineReview.eveningNote}
           </Text>
-        </View>
+        </LinearGradient>
 
         <TouchableOpacity style={styles.assistantComposer} onPress={() => navigation.navigate('Assistant')} activeOpacity={0.8}>
           <View style={styles.composerIcon}>
-            <MessageCircle size={21} color="#426447" />
+            <MessageCircle size={20} color={colors.sage} />
           </View>
           <View style={styles.composerTextBlock}>
-            <Text style={styles.composerLabel}>Shelly’ye Sor</Text>
+            <Text style={styles.composerLabel}>SHELLY'YE SOR</Text>
             <Text style={styles.composerPlaceholder} numberOfLines={1}>Bugün cildimde bir değişiklik var...</Text>
           </View>
           <View style={styles.composerSend}>
-            <Send size={18} color="#ffffff" />
+            <Send size={17} color={colors.onDark} />
           </View>
         </TouchableOpacity>
 
@@ -201,7 +196,7 @@ export default function RoutineScreen({ navigation }: Props) {
             <View style={styles.todayHeader}>
               <Text style={styles.todayTitle}>Bugün kullan</Text>
               <TouchableOpacity style={styles.weekInlineButton} onPress={() => setIsWeekPlanVisible(true)} activeOpacity={0.78}>
-                <Calendar size={16} color="#426447" />
+                <Calendar size={15} color={colors.sage} />
                 <Text style={styles.weekInlineButtonText}>Haftalık plan</Text>
               </TouchableOpacity>
             </View>
@@ -236,7 +231,7 @@ export default function RoutineScreen({ navigation }: Props) {
                 <Text style={styles.weekPanelSubtitle}>Shelly dolabındaki ürünlere göre sabah ve akşam rutinini dengeli planlar.</Text>
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={() => setIsWeekPlanVisible(false)} activeOpacity={0.75}>
-                <X size={21} color="#426447" />
+                <X size={20} color={colors.forest} />
               </TouchableOpacity>
             </View>
 
@@ -250,7 +245,7 @@ export default function RoutineScreen({ navigation }: Props) {
                     </View>
                   </View>
                   <View style={styles.daySlot}>
-                    <Sun size={16} color="#8a6a20" />
+                    <Sun size={15} color={colors.warning} />
                     <Text style={styles.slotLabel}>Sabah</Text>
                   </View>
                   {dayPlan.morning.slice(0, 4).map(product => (
@@ -259,7 +254,7 @@ export default function RoutineScreen({ navigation }: Props) {
                     </Text>
                   ))}
                   <View style={styles.daySlot}>
-                    <Moon size={16} color="#426447" />
+                    <Moon size={15} color={colors.sage} />
                     <Text style={styles.slotLabel}>Akşam</Text>
                   </View>
                   {dayPlan.evening.slice(0, 4).map(product => (
@@ -280,187 +275,314 @@ export default function RoutineScreen({ navigation }: Props) {
 const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
+  safeArea: { flex: 1, backgroundColor: colors.background },
   header: {
     paddingTop: androidHeaderPadding,
-    paddingBottom: 18,
-    paddingHorizontal: 20,
+    paddingBottom: 16,
+    paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(250,249,245,0.96)',
   },
-  headerSpacer: { width: 42 },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 24, fontWeight: '900', color: '#426447' },
+  headerSpacer: { width: 44 },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: fonts.display,
+    fontSize: 25,
+    color: colors.forest,
+  },
   headerIconButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#eef3ee',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
-  content: { padding: 20, paddingBottom: 120 },
+  content: { padding: 22, paddingBottom: 150 },
   summaryCard: {
-    backgroundColor: '#f6ecec',
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#ecd4d3',
-    marginBottom: 18,
+    borderRadius: radius.xl,
+    padding: 20,
+    marginBottom: 16,
+    ...shadows.card,
   },
-  summaryHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  summaryHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 13 },
   summaryIcon: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#426447',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   summaryTextBlock: { flex: 1 },
-  summaryTitle: { fontSize: 18, fontWeight: '900', color: '#14351f' },
-  summarySubtitle: { fontSize: 12, color: '#627168', marginTop: 2, fontWeight: '700' },
-  summaryText: { color: '#314239', fontSize: 14, lineHeight: 20, fontWeight: '600' },
+  summaryTitle: {
+    fontFamily: fonts.display,
+    fontSize: 19,
+    color: colors.onDark,
+  },
+  summarySubtitle: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 11.5,
+    color: colors.onDarkSoft,
+    marginTop: 3,
+  },
+  summaryText: {
+    fontFamily: fonts.sans,
+    color: 'rgba(255,255,255,0.88)',
+    fontSize: 13.5,
+    lineHeight: 21,
+  },
   todayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
-  todayTitle: { color: '#14351f', fontSize: 19, fontWeight: '900' },
+  todayTitle: {
+    fontFamily: fonts.display,
+    color: colors.ink,
+    fontSize: 21,
+  },
   weekInlineButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-    borderRadius: 15,
-    backgroundColor: '#e9efea',
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#d4e2d6',
+    borderColor: colors.lineSage,
+    ...shadows.soft,
   },
-  weekInlineButtonText: { color: '#426447', fontSize: 12, fontWeight: '900' },
-  todaySection: { gap: 13, marginBottom: 18 },
+  weekInlineButtonText: {
+    fontFamily: fonts.sansBold,
+    color: colors.sage,
+    fontSize: 12,
+  },
+  todaySection: { gap: 14, marginBottom: 18 },
   routineBlock: {
-    backgroundColor: '#ffffff',
-    borderRadius: 22,
-    padding: 17,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#edf1ee',
+    borderColor: colors.line,
+    ...shadows.soft,
   },
-  routineBlockHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 },
-  routineTitleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-  routineBlockTitle: { color: '#14351f', fontSize: 17, fontWeight: '900' },
-  statusPill: { backgroundColor: '#e9efea', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, borderWidth: 1, borderColor: '#d4e2d6' },
-  statusPillText: { color: '#426447', fontSize: 11, fontWeight: '900' },
+  routineBlockHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11, gap: 8 },
+  routineTitleWrap: { flexDirection: 'row', alignItems: 'center', gap: 9, flex: 1 },
+  slotIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  slotIconMorning: { backgroundColor: colors.warningSurface },
+  slotIconEvening: { backgroundColor: colors.surfaceSage },
+  routineBlockTitle: {
+    fontFamily: fonts.sansBold,
+    color: colors.ink,
+    fontSize: 16,
+  },
+  statusPill: {
+    backgroundColor: colors.surfaceSage,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.lineSage,
+  },
+  statusPillText: {
+    fontFamily: fonts.sansBold,
+    color: colors.sage,
+    fontSize: 10.5,
+  },
   routineNote: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 7,
-    backgroundColor: '#f6f7f3',
-    borderRadius: 15,
-    padding: 10,
+    gap: 8,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    padding: 11,
     marginBottom: 4,
   },
-  routineNoteText: { flex: 1, color: '#435248', fontSize: 12, lineHeight: 17, fontWeight: '800' },
+  routineNoteText: {
+    flex: 1,
+    fontFamily: fonts.sansSemiBold,
+    color: colors.inkSoft,
+    fontSize: 12,
+    lineHeight: 18,
+  },
   productRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 11,
     borderTopWidth: 1,
-    borderTopColor: '#f0f1ec',
+    borderTopColor: colors.surfaceMuted,
   },
-  productDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#426447', marginRight: 10 },
+  productDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.gold, marginRight: 11 },
   productTextBlock: { flex: 1 },
-  productBrand: { fontSize: 11, color: '#6b765d', fontWeight: '900', textTransform: 'uppercase' },
-  productName: { fontSize: 14, color: '#1b1c1c', fontWeight: '800', marginTop: 1 },
-  productCategory: { fontSize: 11, color: '#426447', fontWeight: '900', marginLeft: 8 },
-  emptyRoutineText: { color: '#707973', fontSize: 13, fontWeight: '600' },
+  productBrand: {
+    fontFamily: fonts.sansExtraBold,
+    fontSize: 10,
+    color: colors.inkMuted,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  productName: {
+    fontFamily: fonts.sansBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginTop: 2,
+  },
+  productCategory: {
+    fontFamily: fonts.sansBold,
+    fontSize: 11,
+    color: colors.sage,
+    marginLeft: 8,
+  },
+  emptyRoutineText: {
+    fontFamily: fonts.sans,
+    color: colors.inkMuted,
+    fontSize: 13,
+    paddingVertical: 6,
+  },
   assistantComposer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 22,
-    padding: 12,
-    borderWidth: 2,
-    borderColor: '#ecd4d3',
-    marginBottom: 18,
-    shadowColor: '#8f6f6e',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: 13,
+    borderWidth: 1,
+    borderColor: colors.lineGold,
+    marginBottom: 20,
+    ...shadows.card,
   },
   composerIcon: {
     width: 46,
     height: 46,
     borderRadius: 18,
-    backgroundColor: '#f7eeee',
+    backgroundColor: colors.surfaceSage,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 11,
+    marginRight: 12,
   },
   composerTextBlock: { flex: 1 },
-  composerLabel: { color: '#426447', fontSize: 12, fontWeight: '900', marginBottom: 2 },
-  composerPlaceholder: { color: '#8b968f', fontSize: 15, fontWeight: '800' },
+  composerLabel: {
+    fontFamily: fonts.sansExtraBold,
+    color: colors.gold,
+    fontSize: 10,
+    letterSpacing: 1.6,
+    marginBottom: 3,
+  },
+  composerPlaceholder: {
+    fontFamily: fonts.sansSemiBold,
+    color: colors.inkMuted,
+    fontSize: 14.5,
+  },
   composerSend: {
     width: 42,
     height: 42,
-    borderRadius: 15,
-    backgroundColor: '#426447',
+    borderRadius: 16,
+    backgroundColor: colors.forest,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: '#FAF9F5',
+    backgroundColor: colors.background,
   },
   weekPanel: {
     flex: 1,
-    backgroundColor: '#FAF9F5',
+    backgroundColor: colors.background,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 18 : 18,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     paddingBottom: 18,
   },
-  weekPanelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14 },
+  weekPanelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 16 },
   weekPanelTitleBlock: { flex: 1, paddingRight: 4 },
-  weekPanelTitle: { color: '#14351f', fontSize: 22, fontWeight: '900' },
-  weekPanelSubtitle: { color: '#68746b', fontSize: 13, fontWeight: '700', marginTop: 3, lineHeight: 18 },
+  weekPanelTitle: {
+    fontFamily: fonts.display,
+    color: colors.ink,
+    fontSize: 26,
+  },
+  weekPanelSubtitle: {
+    fontFamily: fonts.sans,
+    color: colors.inkMuted,
+    fontSize: 13,
+    marginTop: 5,
+    lineHeight: 19,
+  },
   closeButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#e9efea',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
   weekList: { gap: 12, paddingBottom: 8 },
   dayCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    padding: 15,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#e3ebe5',
+    borderColor: colors.line,
+    ...shadows.soft,
   },
-  dayCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 },
-  dayTitle: { fontSize: 17, fontWeight: '900', color: '#426447' },
-  focusPill: { flexShrink: 1, backgroundColor: '#fff4f2', borderRadius: 13, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: '#ecd4d3' },
-  focusPillText: { color: '#8a4f4d', fontSize: 11, fontWeight: '900' },
-  daySlot: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 6, marginBottom: 5 },
-  slotLabel: { fontSize: 12, fontWeight: '900', color: '#6b765d', textTransform: 'uppercase' },
-  dayProduct: { fontSize: 13, color: '#1b1c1c', fontWeight: '700', marginBottom: 4 },
-  // Safe Mode Styles
+  dayCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 11 },
+  dayTitle: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.forest,
+  },
+  focusPill: {
+    flexShrink: 1,
+    backgroundColor: colors.surfaceBlush,
+    borderRadius: radius.pill,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: colors.lineBlush,
+  },
+  focusPillText: {
+    fontFamily: fonts.sansBold,
+    color: colors.blush,
+    fontSize: 11,
+  },
+  daySlot: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 7, marginBottom: 5 },
+  slotLabel: {
+    fontFamily: fonts.sansExtraBold,
+    fontSize: 11,
+    color: colors.inkMuted,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  dayProduct: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginBottom: 4,
+  },
   safeModeWarningBanner: {
-    backgroundColor: '#e8543c',
+    backgroundColor: '#C15B41',
     paddingVertical: 12,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 2,
-    borderBottomColor: '#d43b27',
   },
   safeModeWarningContent: {
     flex: 1,
@@ -472,40 +594,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   safeModeWarningTitle: {
-    color: '#ffffff',
+    fontFamily: fonts.sansExtraBold,
+    color: colors.onDark,
     fontSize: 13,
-    fontWeight: '900',
   },
   safeModeWarningMessage: {
-    color: '#fff5f3',
+    fontFamily: fonts.sansSemiBold,
+    color: 'rgba(255,255,255,0.92)',
     fontSize: 11,
-    fontWeight: '700',
     marginTop: 2,
   },
   safeModeRecoveryButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.surface,
+    borderRadius: radius.sm,
     marginLeft: 10,
   },
   safeModeRecoveryButtonText: {
-    color: '#e8543c',
+    fontFamily: fonts.sansExtraBold,
+    color: '#C15B41',
     fontSize: 11,
-    fontWeight: '900',
   },
   safeModeBadge: {
-    backgroundColor: '#fff0ee',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    backgroundColor: colors.surfaceBlush,
+    borderRadius: radius.sm,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#f0d5d0',
+    borderColor: colors.lineBlush,
   },
   safeModeBadgeText: {
-    color: '#8a4f4d',
+    fontFamily: fonts.sansBold,
+    color: colors.blush,
     fontSize: 11,
-    fontWeight: '800',
   },
 });

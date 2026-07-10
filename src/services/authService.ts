@@ -1,10 +1,52 @@
-import { supabase } from './supabaseClient';
+import { API_AUTH_URL } from './apiConfig';
+import { apiFetch } from './apiClient';
+import { clearAuthSession, getAuthToken, getCachedAuthUserId, saveAuthSession } from './authSession';
 
-// .env dosyasındaki EXPO_PUBLIC_API_URL değerini okur
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL; 
+type AuthUser = {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+};
+
+type AuthResponse = {
+  token: string;
+  user: AuthUser;
+};
 
 // Giriş yapan aktif kullanıcının ID'sini bellekte tutacak değişken
-let activeUserId: number | null = null;
+let activeUserId: string | null = getCachedAuthUserId();
+
+const requestAuth = async (path: string, body: unknown): Promise<AuthResponse> => {
+  console.log('İstek atılan adres:', `${API_AUTH_URL}${path}`);
+
+  const response = await fetch(`${API_AUTH_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const responseText = await response.text();
+  const responseData = responseText ? JSON.parse(responseText) : undefined;
+
+  if (!response.ok) {
+    throw new Error(responseData?.message || responseText || 'Kimlik doğrulama isteği başarısız.');
+  }
+
+  activeUserId = String(responseData.user.id);
+  await saveAuthSession(responseData.token, activeUserId);
+  console.log('Oturum açan kullanıcı ID\'si belleğe kaydedildi:', activeUserId);
+
+  return {
+    token: responseData.token,
+    user: {
+      ...responseData.user,
+      id: String(responseData.user.id),
+    },
+  };
+};
 
 export const authService = {
   // Bellekteki aktif kullanıcı ID'sini dış dünyaya açan metot
@@ -15,28 +57,7 @@ export const authService = {
   // Giriş İşlemi
   login: async (credentials: any) => {
     try {
-      console.log('İstek atılan adres:', `${API_BASE_URL}/login`);
-      
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Giriş yapılamadı.');
-      }
-
-      const user = await response.json();
-      
-      // Giriş yapan kullanıcının veritabanı ID'sini belleğe alıyoruz
-      activeUserId = user.id;
-      console.log('Oturum açan kullanıcı ID\'si belleğe kaydedildi:', activeUserId);
-
-      return user;
+      return await requestAuth('/login', credentials);
     } catch (error) {
       console.error('authService.login hatası:', error);
       throw error;
@@ -46,38 +67,38 @@ export const authService = {
   // Kayıt İşlemi
   register: async (data: any) => {
     try {
-      console.log('İstek atılan adres:', `${API_BASE_URL}/register`);
-
-      const response = await fetch(`${API_BASE_URL}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Kayıt işlemi başarısız.');
-      }
-
-      const responseData = await response.json();
-      
-      // Yeni kayıt olan kullanıcının veritabanı ID'sini belleğe alıyoruz
-      activeUserId = responseData.id;
-      console.log('Kayıt olan kullanıcı ID\'si belleğe kaydedildi:', activeUserId);
-
-      return responseData;
+      return await requestAuth('/register', data);
     } catch (error) {
       console.error('authService.register hatası:', error);
       throw error;
     }
   },
 
+  // Kayıtlı token varsa /auth/me ile oturumu doğrular ve kullanıcıyı döner
+  restoreSession: async (): Promise<AuthUser | null> => {
+    const token = await getAuthToken();
+    if (!token) return null;
+
+    try {
+      const user = await apiFetch<AuthUser>(`${API_AUTH_URL}/me`);
+      if (!user?.id) return null;
+
+      activeUserId = String(user.id);
+      await saveAuthSession(token, activeUserId);
+      return { ...user, id: activeUserId };
+    } catch {
+      // Token süresi dolmuş veya geçersiz; sessizce temizle
+      await clearAuthSession();
+      activeUserId = null;
+      return null;
+    }
+  },
+
   // Oturumu Kapatma İşlemi
   logout: async () => {
     activeUserId = null; // Belleği temizler
+    await clearAuthSession();
     console.log('Oturum kapatıldı, bellek sıfırlandı.');
-    return Promise.resolve(true);
+    return true;
   }
 };
