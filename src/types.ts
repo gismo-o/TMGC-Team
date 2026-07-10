@@ -27,6 +27,7 @@ export type RootStackParamList = {
   ProductReview: { scannedProduct?: ProductDraft; editingProductId?: string } | undefined;
   ProductDetail: { productId: string };
   Assistant: undefined;
+  Notifications: undefined;
 };
 
 export type MainTabParamList = {
