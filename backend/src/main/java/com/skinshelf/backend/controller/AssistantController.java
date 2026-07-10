@@ -2,12 +2,15 @@ package com.skinshelf.backend.controller;
 
 import com.skinshelf.backend.dto.AssistantChatRequest;
 import com.skinshelf.backend.dto.AssistantChatResponse;
+import com.skinshelf.backend.dto.AssistantMessageResponse;
 import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.service.AssistantService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/assistant")
@@ -24,5 +27,10 @@ public class AssistantController {
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody AssistantChatRequest request) {
         return ResponseEntity.ok(assistantService.chat(currentUser, request));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<AssistantMessageResponse>> history(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(assistantService.history(currentUser));
     }
 }

@@ -1,24 +1,39 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Platform, StatusBar } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { User, Settings, Shield, CircleHelp, LogOut, Sparkles } from 'lucide-react-native';
+import { ChevronRight, Settings, Shield, CircleHelp, LogOut, Sparkles } from 'lucide-react-native';
 import { authService } from '../services/authService';
 import { useUser } from '../context/UserContext';
 import { useProducts } from '../context/ProductContext';
+import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 };
 
 export default function ProfileScreen({ navigation }: Props) {
-  const { profile, clearProfile } = useUser();
+  const { profile, account, clearProfile } = useUser();
   const { products, clearProducts } = useProducts();
+
   const menuItems = [
     { icon: Settings, label: 'Hesap Ayarları' },
     { icon: Shield, label: 'Gizlilik ve Güvenlik' },
     { icon: CircleHelp, label: 'Yardım ve Destek' },
   ];
+
+  const fullName =
+    profile.displayName?.trim() ||
+    [account?.firstName, account?.lastName].filter(Boolean).join(' ').trim() ||
+    'SkinShelf Kullanıcısı';
+  const email = account?.email || '';
+  const initials = fullName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toLocaleUpperCase('tr-TR'))
+    .join('');
 
   const handleLogout = async () => {
     try {
@@ -38,18 +53,29 @@ export default function ProfileScreen({ navigation }: Props) {
         <Text style={styles.headerTitle}>Profil</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
-          <View style={styles.avatarRing}>
-            <View style={styles.avatar}>
-              <User size={38} color="#426447" />
+          <LinearGradient
+            colors={['#1C4630', '#0F2919']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.profileCardTop}
+          >
+            <View style={styles.avatarRing}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarInitials}>{initials || 'S'}</Text>
+              </View>
             </View>
-          </View>
-          <Text style={styles.name}>Gizem Koz</Text>
-          <Text style={styles.email}>kozgizemm@gmail.com</Text>
-          <View style={styles.skinTypeBadge}>
-             <Text style={styles.skinTypeText}>{profile.skinType}</Text>
-          </View>
+            <Text style={styles.name}>{fullName}</Text>
+            {!!email && <Text style={styles.email}>{email}</Text>}
+            {!!profile.skinType && (
+              <View style={styles.skinTypeBadge}>
+                <Sparkles size={12} color={colors.goldSoft} />
+                <Text style={styles.skinTypeText}>{profile.skinType}</Text>
+              </View>
+            )}
+          </LinearGradient>
+
           <View style={styles.profileStats}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{products.length}</Text>
@@ -57,53 +83,63 @@ export default function ProfileScreen({ navigation }: Props) {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>Hazır</Text>
+              <Text style={styles.statValue}>{products.length > 0 ? 'Hazır' : 'Bekliyor'}</Text>
               <Text style={styles.statLabel}>Rutin</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>Tam</Text>
+              <Text style={styles.statValue}>{profile.isOnboarded ? 'Tam' : 'Eksik'}</Text>
               <Text style={styles.statLabel}>Profil</Text>
             </View>
           </View>
         </View>
 
+        <Text style={styles.sectionLabel}>CİLT PROFİLİ</Text>
         <View style={styles.menuContainer}>
-          <TouchableOpacity 
-            style={styles.menuItem} 
+          <TouchableOpacity
+            style={[styles.menuItem, styles.menuItemLast]}
             onPress={() => navigation.navigate('Onboarding' as any)}
+            activeOpacity={0.75}
           >
-            <View style={styles.menuIconBox}>
-              <Sparkles size={20} color="#404943" />
+            <View style={[styles.menuIconBox, styles.menuIconBoxAccent]}>
+              <Sparkles size={19} color={colors.gold} />
             </View>
             <Text style={[styles.menuText, { flex: 1 }]}>Cilt Profilini Düzenle</Text>
-            <View style={styles.inlineBadge}>
-              <Text style={styles.inlineBadgeText}>{profile.skinType}</Text>
-            </View>
+            {!!profile.skinType && (
+              <View style={styles.inlineBadge}>
+                <Text style={styles.inlineBadgeText}>{profile.skinType}</Text>
+              </View>
+            )}
+            <ChevronRight size={18} color={colors.inkMuted} />
           </TouchableOpacity>
+        </View>
+
+        <Text style={styles.sectionLabel}>HESAP</Text>
+        <View style={styles.menuContainer}>
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             return (
               <TouchableOpacity
                 key={index}
                 style={[styles.menuItem, index === menuItems.length - 1 && styles.menuItemLast]}
+                activeOpacity={0.75}
               >
                 <View style={styles.menuIconBox}>
-                  <Icon size={20} color="#404943" />
+                  <Icon size={19} color={colors.inkSoft} />
                 </View>
-                <Text style={styles.menuText}>{item.label}</Text>
+                <Text style={[styles.menuText, { flex: 1 }]}>{item.label}</Text>
+                <ChevronRight size={18} color={colors.inkMuted} />
               </TouchableOpacity>
             );
           })}
         </View>
 
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <LogOut size={20} color="#BA1A1A" style={{ marginRight: 12 }} />
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
+          <LogOut size={19} color={colors.danger} style={{ marginRight: 11 }} />
           <Text style={styles.logoutText}>Çıkış Yap</Text>
         </TouchableOpacity>
+
+        <Text style={styles.versionText}>SkinShelf • v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -112,62 +148,180 @@ export default function ProfileScreen({ navigation }: Props) {
 const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
-  header: { paddingTop: androidHeaderPadding, paddingBottom: 18, paddingHorizontal: 20, alignItems: 'center' },
-  headerTitle: { fontSize: 24, fontWeight: '900', color: '#14351f' },
-  content: { padding: 20, paddingBottom: 120 },
+  safeArea: { flex: 1, backgroundColor: colors.background },
+  header: { paddingTop: androidHeaderPadding, paddingBottom: 16, paddingHorizontal: 22, alignItems: 'center' },
+  headerTitle: {
+    fontFamily: fonts.display,
+    fontSize: 25,
+    color: colors.forest,
+  },
+  content: { padding: 22, paddingBottom: 150 },
   profileCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 28,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#14351f',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 22,
-    elevation: 6,
-    marginBottom: 28,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xxl,
+    overflow: 'hidden',
+    marginBottom: 26,
     borderWidth: 1,
-    borderColor: '#edf1ee',
+    borderColor: colors.line,
+    ...shadows.card,
+  },
+  profileCardTop: {
+    alignItems: 'center',
+    paddingTop: 28,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
   },
   avatarRing: {
-    width: 94,
-    height: 94,
-    borderRadius: 47,
-    backgroundColor: '#fff7f7',
-    borderWidth: 1,
-    borderColor: '#ead7d6',
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    borderWidth: 1.5,
+    borderColor: 'rgba(216,195,154,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  avatar: { width: 76, height: 76, borderRadius: 38, backgroundColor: '#f7eeee', justifyContent: 'center', alignItems: 'center' },
-  name: { fontSize: 25, fontWeight: '900', color: '#1b1c1c', marginBottom: 4 },
-  email: { fontSize: 14, color: '#707973', marginBottom: 14, fontWeight: '600' },
-  skinTypeBadge: { backgroundColor: '#fff1f1', paddingHorizontal: 16, paddingVertical: 7, borderRadius: 16, marginBottom: 18, borderWidth: 1, borderColor: '#ead7d6' },
-  skinTypeText: { color: '#426447', fontSize: 12, fontWeight: '900' },
+  avatar: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitials: {
+    fontFamily: fonts.display,
+    fontSize: 30,
+    color: colors.goldSoft,
+  },
+  name: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+    color: colors.onDark,
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  email: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 13,
+    color: colors.onDarkSoft,
+    marginBottom: 13,
+  },
+  skinTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(216,195,154,0.4)',
+  },
+  skinTypeText: {
+    fontFamily: fonts.sansBold,
+    color: colors.goldSoft,
+    fontSize: 12,
+    letterSpacing: 0.4,
+  },
   profileStats: {
-    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8faf7',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#edf1ee',
-    paddingVertical: 13,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    backgroundColor: colors.surface,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { color: '#14351f', fontSize: 16, fontWeight: '900' },
-  statLabel: { color: '#68746b', fontSize: 11, fontWeight: '800', marginTop: 3 },
-  statDivider: { width: 1, height: 28, backgroundColor: '#e1e8e2' },
-  menuContainer: { backgroundColor: '#ffffff', borderRadius: 24, padding: 8, marginBottom: 28, borderWidth: 1, borderColor: '#edf1ee' },
-  menuItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0f1ec' },
+  statValue: {
+    fontFamily: fonts.display,
+    color: colors.forest,
+    fontSize: 18,
+  },
+  statLabel: {
+    fontFamily: fonts.sansBold,
+    color: colors.inkMuted,
+    fontSize: 10.5,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 4,
+  },
+  statDivider: { width: 1, height: 30, backgroundColor: colors.line },
+  sectionLabel: {
+    fontFamily: fonts.sansExtraBold,
+    fontSize: 10.5,
+    letterSpacing: 1.8,
+    color: colors.inkMuted,
+    marginBottom: 9,
+    marginLeft: 6,
+  },
+  menuContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    paddingHorizontal: 8,
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: colors.line,
+    ...shadows.soft,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.surfaceMuted,
+  },
   menuItemLast: { borderBottomWidth: 0 },
-  menuIconBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f1ec', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  menuText: { fontSize: 16, color: '#1b1c1c', fontWeight: '800' },
-  inlineBadge: { backgroundColor: '#e9efea', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  inlineBadgeText: { color: '#426447', fontSize: 12, fontWeight: '600' },
-  logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: '#ffdad6', borderRadius: 18 },
-  logoutText: { color: '#BA1A1A', fontSize: 16, fontWeight: '900' }
+  menuIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  menuIconBoxAccent: {
+    backgroundColor: '#FBF5E9',
+  },
+  menuText: {
+    fontFamily: fonts.sansBold,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  inlineBadge: {
+    backgroundColor: colors.surfaceSage,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    marginRight: 8,
+  },
+  inlineBadgeText: {
+    fontFamily: fonts.sansBold,
+    color: colors.sage,
+    fontSize: 11.5,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: colors.dangerSurface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: '#F2D9D6',
+  },
+  logoutText: {
+    fontFamily: fonts.sansBold,
+    color: colors.danger,
+    fontSize: 15,
+  },
+  versionText: {
+    fontFamily: fonts.sans,
+    fontSize: 11.5,
+    color: colors.inkMuted,
+    textAlign: 'center',
+    marginTop: 20,
+  },
 });

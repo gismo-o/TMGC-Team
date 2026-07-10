@@ -14,11 +14,13 @@ import {
   Switch,
   Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, Send, Sparkles, Bot, Shield, RotateCcw } from 'lucide-react-native';
 import { RootStackParamList, Message, GeminiBotResponse } from '../types';
 import { useUser } from '../context/UserContext';
-import { callAssistantAPI } from '../api/assistant';
+import { callAssistantAPI, fetchAssistantHistory } from '../api/assistant';
+import { colors, fonts, radius, shadows } from '../theme';
 
 type AssistantScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Assistant'>;
 
@@ -40,7 +42,7 @@ const ChatBubble = ({ from, text }: { from: 'user' | 'ai'; text: string }) => (
   <View style={[styles.chatRow, from === 'user' && styles.chatRowUser]}>
     {from === 'ai' && (
       <View style={styles.chatAvatar}>
-        <Bot size={15} color="#ffffff" />
+        <Bot size={14} color={colors.goldSoft} />
       </View>
     )}
     <View style={[styles.chatBubble, from === 'user' && styles.chatBubbleUser]}>
@@ -58,11 +60,26 @@ export default function AssistantScreen({ navigation }: Props) {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lastResponse, setLastResponse] = useState<GeminiBotResponse | null>(null);
-  
+
   // REFS
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  // LOAD PREVIOUS CONVERSATION FROM BACKEND
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAssistantHistory().then(history => {
+      if (!cancelled && history.length) {
+        setMessages(prev => (prev.length ? prev : history));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // AUTO-SCROLL TO BOTTOM
   useEffect(() => {
@@ -74,58 +91,13 @@ export default function AssistantScreen({ navigation }: Props) {
   }, [messages, isLoading]);
 
   // ============ HANDLERS ============
-  const handleSendMessage = async (event?: any) => {
-    // 🛑 CRITICAL WEB SAFETY: Stop web native click & submit side-effects entirely
-    if (event) {
-      if (typeof event.preventDefault === 'function') event.preventDefault();
-      if (typeof event.stopPropagation === 'function') event.stopPropagation();
-    }
-
-    const trimmed = inputValue.trim();
-    if (!trimmed || isLoading) return;
-
-    // Add user message
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      from: 'user',
-      text: trimmed,
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setInputValue('');
-
-    setIsLoading(true);
-    try {
-      // Call Assistant API
-      const response = await callAssistantAPI(trimmed);
-      setLastResponse(response);
-
-      // Add AI message
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        from: 'ai',
-        text: response.ai_response,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        from: 'ai',
-        text: 'Şu anda bağlantı kurulamıyor. Lütfen tekrar deneyin.',
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickAction = async (prompt: string) => {
+  const sendPrompt = async (prompt: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
       from: 'user',
       text: prompt,
     };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages(prev => [...prev, userMsg]);
 
     setIsLoading(true);
     try {
@@ -137,18 +109,37 @@ export default function AssistantScreen({ navigation }: Props) {
         from: 'ai',
         text: response.ai_response,
       };
-      setMessages((prev) => [...prev, aiMsg]);
+      setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
-      console.error('Error in quick action:', error);
+      console.error('Error sending message:', error);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         from: 'ai',
         text: 'Şu anda bağlantı kurulamıyor. Lütfen tekrar deneyin.',
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSendMessage = async (event?: any) => {
+    // Web'de form submit / sayfa yenileme yan etkilerini engelle
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    const trimmed = inputValue.trim();
+    if (!trimmed || isLoading) return;
+
+    setInputValue('');
+    await sendPrompt(trimmed);
+  };
+
+  const handleQuickAction = async (prompt: string) => {
+    if (isLoading) return;
+    await sendPrompt(prompt);
   };
 
   const handleToggleSafePlan = (value: boolean) => {
@@ -156,30 +147,22 @@ export default function AssistantScreen({ navigation }: Props) {
 
     if (value) {
       Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
+        Animated.timing(scaleAnim, { toValue: 1.1, duration: 150, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
       ]).start();
 
       setActiveIssue(lastResponse.detected_issue);
 
       Alert.alert(
-        '✅ Güvenli Mod Aktif',
+        'Güvenli Mod Aktif',
         `"${lastResponse.detected_issue}" nedeniyle Güvenli Mod başlatıldı. Rutinim ekranında ürün filtreleri ve koruma bantları aktif oldu.`,
         [{ text: 'Tamam' }]
       );
     } else {
       setActiveIssue(null);
       Alert.alert(
-        '🌟 Güvenli Mod Kapatıldı',
-        'Normal mod\'a geri döndünüz. Tüm ürünler tekrar görünür.',
+        'Güvenli Mod Kapatıldı',
+        "Normal mod'a geri döndünüz. Tüm ürünler tekrar görünür.",
         [{ text: 'Tamam' }]
       );
     }
@@ -200,36 +183,46 @@ export default function AssistantScreen({ navigation }: Props) {
       {/* ========== HEADER ========== */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.75}>
-          <ArrowLeft size={22} color="#426447" />
+          <ArrowLeft size={21} color={colors.forest} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Shelly</Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Shelly</Text>
+          <View style={styles.onlineRow}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.onlineText}>Cilt bakım asistanın</Text>
+          </View>
+        </View>
         <View style={styles.headerSpacer} />
       </View>
 
       {/* ========== MAIN CONTENT (SCROLLABLE) ========== */}
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        style={styles.scrollContainer} 
-        contentContainerStyle={styles.scrollContent} 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 🟢 INITIAL STATE: Hero Card + Action Grid (messages.length === 0) */}
         {!hasMessages && (
           <>
-            <View style={styles.heroCard}>
+            <LinearGradient
+              colors={['#1C4630', '#0F2919']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.heroCard}
+            >
               <View style={styles.heroIcon}>
-                <Sparkles size={24} color="#ffffff" />
+                <Sparkles size={22} color={colors.goldSoft} />
               </View>
               <View style={styles.heroTextBlock}>
                 <Text style={styles.heroTitle}>Shelly bugün neyi kontrol etsin?</Text>
                 <Text style={styles.heroText}>
-                  Shelly, cilt bakım rafındaki ürünleri tanır; rutinini, içerikleri ve cilt değişimlerini birlikte takip eder.
+                  Shelly, rafındaki ürünleri tanır; rutinini, içerikleri ve cilt değişimlerini birlikte takip eder.
                 </Text>
               </View>
-            </View>
+            </LinearGradient>
 
             <View style={styles.actionGrid}>
-              {QUICK_ACTIONS.map((action) => (
+              {QUICK_ACTIONS.map(action => (
                 <TouchableOpacity
                   key={action.label}
                   style={styles.actionCard}
@@ -244,17 +237,16 @@ export default function AssistantScreen({ navigation }: Props) {
           </>
         )}
 
-        {/* 🟡 CHAT STATE: Message Bubbles (messages.length > 0) */}
         {hasMessages && (
           <View style={styles.chatContainer}>
-            {messages.map((msg) => (
+            {messages.map(msg => (
               <ChatBubble key={msg.id} from={msg.from} text={msg.text} />
             ))}
 
             {isLoading && (
               <View style={styles.chatRow}>
                 <View style={styles.chatAvatar}>
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={colors.goldSoft} />
                 </View>
                 <View style={styles.chatBubble}>
                   <Text style={styles.chatText}>Düşünüyorum...</Text>
@@ -262,12 +254,11 @@ export default function AssistantScreen({ navigation }: Props) {
               </View>
             )}
 
-            {/* 🔴 ISSUE SAFE PLAN TOGGLE */}
             {showSafePlanButton && (
               <View style={styles.safePlanToggleContainer}>
                 <View style={styles.safePlanToggleContent}>
                   <View style={styles.safePlanToggleLeft}>
-                    <Shield size={18} color="#c4423c" />
+                    <Shield size={18} color={colors.danger} />
                     <View style={styles.safePlanToggleText}>
                       <Text style={styles.safePlanToggleTitle}>Cilt Bariyerini Koru</Text>
                       <Text style={styles.safePlanToggleSubtitle}>Güvenli Mod</Text>
@@ -276,30 +267,27 @@ export default function AssistantScreen({ navigation }: Props) {
                   <Switch
                     value={activeIssue === lastResponse?.detected_issue}
                     onValueChange={handleToggleSafePlan}
-                    trackColor={{ false: '#e9efea', true: '#c4423c' }}
-                    thumbColor={activeIssue === lastResponse?.detected_issue ? '#ffffff' : '#bbb'}
-                    ios_backgroundColor="#e9efea"
+                    trackColor={{ false: colors.surfaceSage, true: colors.danger }}
+                    thumbColor={colors.surface}
+                    ios_backgroundColor={colors.surfaceSage}
                   />
                 </View>
               </View>
             )}
 
-            {/* RESET BUTTON */}
             <TouchableOpacity style={styles.resetButton} onPress={handleResetChat} activeOpacity={0.75}>
-              <RotateCcw size={16} color="#426447" />
-              <Text style={styles.resetButtonText}>🔄 Yeni sohbet başlat</Text>
+              <RotateCcw size={15} color={colors.sage} />
+              <Text style={styles.resetButtonText}>Yeni sohbet başlat</Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
 
       {/* ========== FIXED BOTTOM INPUT AREA ========== */}
-      {/* ⚠️ PURE VIEW MANTIĞI: HTML form tetiklememesi için asla 'form' tagına dönüşmeyecek salt View yapısı */}
       <View style={styles.inputContainer}>
-        {/* Quick Prompts (sadece mesaj yokken görünür) */}
         {!hasMessages && (
           <View style={styles.quickPromptsRow}>
-            {QUICK_PROMPTS.map((prompt) => (
+            {QUICK_PROMPTS.map(prompt => (
               <TouchableOpacity
                 key={prompt}
                 style={styles.quickPromptButton}
@@ -312,34 +300,38 @@ export default function AssistantScreen({ navigation }: Props) {
           </View>
         )}
 
-        {/* Input Row */}
         <View style={styles.inputRow}>
           <TextInput
             ref={textInputRef}
             value={inputValue}
             onChangeText={setInputValue}
-            onSubmitEditing={(e) => {
-              // 🛑 WEB SAFETY: Sayfa submit/F5 reload davranışını engeller
+            onSubmitEditing={e => {
               if (e && typeof e.preventDefault === 'function') e.preventDefault();
               handleSendMessage();
             }}
             placeholder="Ürün, rutin veya cilt değişimini yaz"
-            placeholderTextColor="#8b968f"
+            placeholderTextColor={colors.inkMuted}
             style={styles.input}
-            multiline={false} // 🛑 MULTILINE TRUE OLDUĞUNDA ENTER TUŞU SAFARI/CHROME'DA SUBMIT TETIKLEYEBILIR, FALSE YAPILDI
+            multiline={false}
             maxLength={500}
             editable={!isLoading}
             blurOnSubmit={false}
             returnKeyType="send"
           />
           <TouchableOpacity
-            style={[styles.sendButton, (isLoading || !inputValue.trim()) && styles.sendButtonDisabled]}
-            onPress={(e) => handleSendMessage(e)} // Click event'i yakalayıp preventDefault'a paslar
+            onPress={e => handleSendMessage(e)}
             disabled={isLoading || !inputValue.trim()}
             activeOpacity={0.75}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Send size={18} color="#ffffff" />
+            <LinearGradient
+              colors={isLoading || !inputValue.trim() ? ['#B8BFB8', '#A7AFA7'] : ['#1C4630', '#0F2919']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.sendButton}
+            >
+              <Send size={17} color={colors.onDark} />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -353,77 +345,86 @@ const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeigh
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FAF9F5',
+    backgroundColor: colors.background,
   },
   header: {
     paddingTop: androidHeaderPadding,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
+    paddingBottom: 14,
+    paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(250,249,245,0.96)',
     borderBottomWidth: 1,
-    borderBottomColor: '#e9efea',
+    borderBottomColor: colors.line,
+    backgroundColor: colors.background,
   },
   backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#eef3ee',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
+  headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    color: '#14351f',
-    fontSize: 23,
-    fontWeight: '900',
+    fontFamily: fonts.display,
+    color: colors.forest,
+    fontSize: 24,
+  },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  onlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success },
+  onlineText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 11,
+    color: colors.inkMuted,
   },
   headerSpacer: {
-    width: 42,
+    width: 44,
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 20,
   },
   heroCard: {
     flexDirection: 'row',
-    backgroundColor: '#f6ecec',
-    borderRadius: 24,
-    padding: 18,
+    borderRadius: radius.xl,
+    padding: 20,
     alignItems: 'center',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ecd4d3',
+    ...shadows.card,
   },
   heroIcon: {
     width: 48,
     height: 48,
-    borderRadius: 18,
-    backgroundColor: '#426447',
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(216,195,154,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 13,
+    marginRight: 14,
   },
   heroTextBlock: {
     flex: 1,
   },
   heroTitle: {
-    color: '#14351f',
-    fontSize: 18,
-    fontWeight: '900',
-    lineHeight: 24,
+    fontFamily: fonts.display,
+    color: colors.onDark,
+    fontSize: 19,
+    lineHeight: 25,
   },
   heroText: {
-    color: '#526159',
-    fontSize: 13,
+    fontFamily: fonts.sans,
+    color: 'rgba(255,255,255,0.78)',
+    fontSize: 12.5,
     lineHeight: 18,
-    fontWeight: '700',
-    marginTop: 6,
+    marginTop: 7,
   },
   actionGrid: {
     flexDirection: 'row',
@@ -433,25 +434,26 @@ const styles = StyleSheet.create({
   },
   actionCard: {
     width: '48%',
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    padding: 13,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#e3ebe5',
-    minHeight: 92,
+    borderColor: colors.line,
+    minHeight: 96,
     justifyContent: 'space-between',
+    ...shadows.soft,
   },
   actionTitle: {
-    color: '#14351f',
+    fontFamily: fonts.sansBold,
+    color: colors.ink,
     fontSize: 14,
-    fontWeight: '900',
-    lineHeight: 18,
+    lineHeight: 19,
   },
   actionSubtitle: {
-    color: '#68746b',
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '700',
+    fontFamily: fonts.sans,
+    color: colors.inkMuted,
+    fontSize: 11.5,
+    lineHeight: 16,
     marginTop: 8,
   },
   chatContainer: {
@@ -460,54 +462,58 @@ const styles = StyleSheet.create({
   chatRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginBottom: 10,
+    marginBottom: 11,
   },
   chatRowUser: {
     justifyContent: 'flex-end',
   },
   chatAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#426447',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.forest,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 9,
   },
   chatBubble: {
     maxWidth: '84%',
-    backgroundColor: '#f7eeee',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.lg,
     borderBottomLeftRadius: 6,
-    paddingHorizontal: 13,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    ...shadows.soft,
   },
   chatBubbleUser: {
-    backgroundColor: '#426447',
-    borderBottomLeftRadius: 18,
+    backgroundColor: colors.forest,
+    borderColor: colors.forest,
+    borderBottomLeftRadius: radius.lg,
     borderBottomRightRadius: 6,
   },
   chatText: {
-    color: '#314239',
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: '700',
+    fontFamily: fonts.sansSemiBold,
+    color: colors.inkSoft,
+    fontSize: 13.5,
+    lineHeight: 20,
   },
   chatTextUser: {
-    color: '#ffffff',
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: '800',
+    fontFamily: fonts.sansSemiBold,
+    color: colors.onDark,
+    fontSize: 13.5,
+    lineHeight: 20,
   },
   safePlanToggleContainer: {
     marginTop: 12,
     marginBottom: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: '#fff7f7',
-    borderRadius: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
+    backgroundColor: colors.dangerSurface,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#ead7d6',
+    borderColor: '#F2D9D6',
   },
   safePlanToggleContent: {
     flexDirection: 'row',
@@ -524,14 +530,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   safePlanToggleTitle: {
-    color: '#14351f',
+    fontFamily: fonts.sansBold,
+    color: colors.ink,
     fontSize: 14,
-    fontWeight: '900',
   },
   safePlanToggleSubtitle: {
-    color: '#8a6100',
-    fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.sansSemiBold,
+    color: colors.danger,
+    fontSize: 11.5,
     marginTop: 2,
   },
   resetButton: {
@@ -544,17 +550,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   resetButtonText: {
-    color: '#426447',
+    fontFamily: fonts.sansBold,
+    color: colors.sage,
     fontSize: 13,
-    fontWeight: '900',
   },
   inputContainer: {
-    backgroundColor: '#FAF9F5',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+    backgroundColor: colors.background,
+    paddingHorizontal: 22,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 22 : 12,
     borderTopWidth: 1,
-    borderTopColor: '#e9efea',
+    borderTopColor: colors.line,
   },
   quickPromptsRow: {
     flexDirection: 'row',
@@ -563,17 +569,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   quickPromptButton: {
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-    borderRadius: 15,
-    backgroundColor: '#fff7f7',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#ead7d6',
+    borderColor: colors.lineGold,
   },
   quickPromptText: {
-    color: '#426447',
+    fontFamily: fonts.sansBold,
+    color: colors.sage,
     fontSize: 12,
-    fontWeight: '900',
   },
   inputRow: {
     flexDirection: 'row',
@@ -582,25 +588,21 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: '#fffafa',
-    borderWidth: 1,
-    borderColor: '#ead7d6',
-    paddingHorizontal: 14,
-    color: '#1b1c1c',
+    height: 50,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    paddingHorizontal: 15,
+    color: colors.ink,
+    fontFamily: fonts.sansSemiBold,
     fontSize: 14,
-    fontWeight: '700',
   },
   sendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: '#426447',
+    width: 50,
+    height: 50,
+    borderRadius: radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#bbb',
   },
 });

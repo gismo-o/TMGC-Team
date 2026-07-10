@@ -7,6 +7,7 @@ import { RootStackParamList, Category, ProductDraft } from '../types';
 import { ArrowLeft, Check, Sparkles, AlertCircle, AlertTriangle, Plus, X } from 'lucide-react-native';
 import { useProducts } from '../context/ProductContext';
 import { getProductVisualSource } from '../services/productVisualCatalog';
+import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ProductReview'>;
@@ -113,7 +114,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <ArrowLeft size={24} color="#426447" />
+          <ArrowLeft size={24} color={colors.sage} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{editingProductId ? 'Ürün Düzenle' : 'Ürün Ekle'}</Text>
         <View style={{ width: 40 }} />
@@ -128,14 +129,14 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
             onError={() => setProductImageFailed(true)}
           />
           <View style={styles.aiBadge}>
-            <Sparkles size={16} color="#ffffff" />
+            <Sparkles size={16} color={colors.onDark} />
             <Text style={styles.aiBadgeText}>Yapay Zeka ile Tanındı</Text>
           </View>
         </View>
 
         <View style={styles.detailsContainer}>
           <View style={styles.sourceNotice}>
-            <Sparkles size={14} color="#426447" />
+            <Sparkles size={14} color={colors.sage} />
             <Text style={styles.sourceNoticeText}>Otomatik gelen bilgiler onaydan önce düzenlenebilir.</Text>
           </View>
           <View style={styles.detailRow}>
@@ -188,7 +189,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
                     onPress={() => handleRemoveIngredient(index)}
                   >
                     <Text style={styles.ingredientChipText}>{ingredient}</Text>
-                    <X size={12} color="#426447" />
+                    <X size={12} color={colors.sage} />
                   </TouchableOpacity>
                 ))
               ) : (
@@ -206,7 +207,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
                 returnKeyType="done"
               />
               <TouchableOpacity style={styles.addIngredientButton} onPress={handleAddIngredient}>
-                <Plus size={18} color="#ffffff" />
+                <Plus size={18} color={colors.onDark} />
               </TouchableOpacity>
             </View>
           </View>
@@ -214,7 +215,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
 
         <View style={styles.aiAnalysisCard}>
           <View style={styles.aiAnalysisHeader}>
-            <Sparkles size={20} color="#426447" />
+            <Sparkles size={20} color={colors.sage} />
             <Text style={styles.aiAnalysisTitle}>Yapay Zeka İçerik Analizi</Text>
           </View>
           {aiAnalysis ? (
@@ -294,7 +295,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
           onPress={handleSave}
           disabled={loading}
         >
-          <Check size={20} color="#ffffff" style={{ marginRight: 8 }} />
+          <Check size={20} color={colors.onDark} style={{ marginRight: 8 }} />
           <Text style={styles.saveButtonText}>{loading ? 'Kaydediliyor...' : editingProductId ? 'Değişiklikleri Kaydet' : 'Dolabıma Ekle'}</Text>
         </TouchableOpacity>
       </View>
@@ -303,60 +304,182 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
+  safeArea: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
-  backButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f1ec', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#1b1c1c' },
-  content: { padding: 20, paddingBottom: 120 },
-  imageContainer: { width: '100%', height: 250, backgroundColor: '#ffffff', borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 24, position: 'relative', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5 },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.soft,
+  },
+  headerTitle: { fontFamily: fonts.display, fontSize: 21, color: colors.ink },
+  content: { padding: 22, paddingBottom: 120 },
+  imageContainer: {
+    width: '100%',
+    height: 250,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 28,
+    position: 'relative',
+    ...shadows.card,
+  },
   image: { width: '60%', height: '80%', resizeMode: 'contain' },
-  aiBadge: { position: 'absolute', bottom: -16, backgroundColor: '#426447', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  aiBadgeText: { color: '#ffffff', fontSize: 12, fontWeight: '600', marginLeft: 8 },
-  detailsContainer: { backgroundColor: '#ffffff', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: '#f0f1ec' },
-  sourceNotice: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e9efea', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 12 },
-  sourceNoticeText: { flex: 1, marginLeft: 8, color: '#426447', fontSize: 12, fontWeight: '600' },
+  aiBadge: {
+    position: 'absolute',
+    bottom: -16,
+    backgroundColor: colors.forest,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    ...shadows.card,
+  },
+  aiBadgeText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 12, marginLeft: 8 },
+  detailsContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: 20,
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: colors.line,
+    ...shadows.soft,
+  },
+  sourceNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceSage,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  sourceNoticeText: { flex: 1, marginLeft: 8, fontFamily: fonts.sansSemiBold, color: colors.sage, fontSize: 12 },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
-  label: { fontSize: 14, color: '#707973' },
-  inputValue: { flex: 1, minHeight: 42, borderRadius: 12, backgroundColor: '#FAF9F5', paddingHorizontal: 12, color: '#1b1c1c', fontSize: 15, fontWeight: '600', textAlign: 'right', marginLeft: 16 },
-  separator: { height: 1, backgroundColor: '#f0f1ec' },
+  label: { fontFamily: fonts.sansBold, fontSize: 13, color: colors.inkMuted },
+  inputValue: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: radius.sm,
+    backgroundColor: colors.background,
+    paddingHorizontal: 12,
+    fontFamily: fonts.sansBold,
+    color: colors.ink,
+    fontSize: 15,
+    textAlign: 'right',
+    marginLeft: 16,
+  },
+  separator: { height: 1, backgroundColor: colors.surfaceMuted },
   categorySection: { paddingTop: 14 },
   categoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  categoryChip: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 14, backgroundColor: '#FAF9F5', borderWidth: 1, borderColor: '#dbe2dd' },
-  categoryChipActive: { backgroundColor: '#426447', borderColor: '#426447' },
-  categoryChipText: { color: '#526159', fontSize: 12, fontWeight: '600' },
-  categoryChipTextActive: { color: '#ffffff' },
+  categoryChip: {
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  categoryChipActive: { backgroundColor: colors.forest, borderColor: colors.forest },
+  categoryChipText: { fontFamily: fonts.sansBold, color: colors.inkSoft, fontSize: 12 },
+  categoryChipTextActive: { color: colors.onDark },
   ingredientSection: { paddingTop: 14 },
   ingredientChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  ingredientChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 14, backgroundColor: '#edf4ee', borderWidth: 1, borderColor: '#cce0d0', gap: 6 },
-  ingredientChipText: { color: '#426447', fontSize: 12, fontWeight: '700' },
-  emptyIngredientsText: { color: '#707973', fontSize: 13, marginTop: 2 },
+  ingredientChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceSage,
+    borderWidth: 1,
+    borderColor: colors.lineSage,
+    gap: 6,
+  },
+  ingredientChipText: { fontFamily: fonts.sansBold, color: colors.sage, fontSize: 12 },
+  emptyIngredientsText: { fontFamily: fonts.sans, color: colors.inkMuted, fontSize: 13, marginTop: 2 },
   ingredientInputRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 },
-  ingredientInput: { flex: 1, minHeight: 42, borderRadius: 12, backgroundColor: '#FAF9F5', borderWidth: 1, borderColor: '#dbe2dd', paddingHorizontal: 12, color: '#1b1c1c', fontSize: 14, fontWeight: '600' },
-  addIngredientButton: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#426447', justifyContent: 'center', alignItems: 'center' },
-  aiAnalysisCard: { backgroundColor: '#e9efea', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: '#cce8d0' },
+  ingredientInput: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: radius.sm,
+    backgroundColor: colors.background,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    paddingHorizontal: 12,
+    fontFamily: fonts.sansSemiBold,
+    color: colors.ink,
+    fontSize: 14,
+  },
+  addIngredientButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.sm,
+    backgroundColor: colors.forest,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiAnalysisCard: {
+    backgroundColor: colors.surfaceSage,
+    borderRadius: radius.xl,
+    padding: 20,
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: colors.lineSage,
+  },
   aiAnalysisHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  aiAnalysisTitle: { fontSize: 16, fontWeight: '700', color: '#426447', marginLeft: 8 },
-  aiAnalysisText: { fontSize: 14, color: '#1b1c1c', lineHeight: 22 },
-  aiAnalysisLoadingText: { fontSize: 14, color: '#707973', fontStyle: 'italic' },
-  conflictCard: { padding: 16, borderRadius: 16, marginBottom: 24, borderWidth: 1 },
+  aiAnalysisTitle: { fontFamily: fonts.sansBold, fontSize: 15.5, color: colors.forest, marginLeft: 8 },
+  aiAnalysisText: { fontFamily: fonts.sans, fontSize: 14, color: colors.inkSoft, lineHeight: 22 },
+  aiAnalysisLoadingText: { fontFamily: fonts.sans, fontSize: 14, color: colors.inkMuted, fontStyle: 'italic' },
+  conflictCard: { padding: 17, borderRadius: radius.lg, marginBottom: 22, borderWidth: 1 },
   conflictHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  conflictTitle: { fontSize: 16, fontWeight: '700', marginLeft: 8 },
-  conflictMessage: { fontSize: 14, lineHeight: 20 },
-  conflictHigh: { backgroundColor: '#FFDAD6', borderColor: '#FFB4AB' },
-  conflictWarning: { backgroundColor: '#FFEFD7', borderColor: '#F8BD49' },
-  conflictSynergy: { backgroundColor: '#C4EED0', borderColor: '#6DD58C' },
+  conflictTitle: { fontFamily: fonts.sansBold, fontSize: 15.5, marginLeft: 8 },
+  conflictMessage: { fontFamily: fonts.sans, fontSize: 13.5, lineHeight: 20 },
+  conflictHigh: { backgroundColor: colors.dangerSurface, borderColor: '#F2C7C2' },
+  conflictWarning: { backgroundColor: colors.warningSurface, borderColor: '#EDD9A8' },
+  conflictSynergy: { backgroundColor: colors.successSurface, borderColor: '#BFDFC8' },
   routineSection: { marginBottom: 40 },
   routineTitleContainer: { marginBottom: 16 },
-  routineTitle: { fontSize: 16, fontWeight: '600', color: '#1b1c1c' },
-  aiSuggestionBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  aiSuggestionText: { fontSize: 11, color: '#006D3B', marginLeft: 4, fontWeight: '500', flex: 1 },
+  routineTitle: { fontFamily: fonts.sansBold, fontSize: 16, color: colors.ink },
+  aiSuggestionBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
+  aiSuggestionText: { fontFamily: fonts.sansSemiBold, fontSize: 11, color: colors.success, marginLeft: 5, flex: 1 },
   routineButtons: { flexDirection: 'row', gap: 12 },
-  timeButton: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#c0c9c1', alignItems: 'center' },
-  timeButtonActive: { backgroundColor: '#e9efea', borderColor: '#426447' },
-  timeText: { fontSize: 14, fontWeight: '600', color: '#707973' },
-  timeTextActive: { color: '#426447' },
-  footer: { padding: 20, backgroundColor: 'rgba(250, 249, 245, 0.9)', borderTopWidth: 1, borderTopColor: '#f0f1ec' },
-  saveButton: { flexDirection: 'row', backgroundColor: '#426447', paddingVertical: 16, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  timeButton: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    alignItems: 'center',
+  },
+  timeButtonActive: { backgroundColor: colors.surfaceSage, borderColor: colors.sage },
+  timeText: { fontFamily: fonts.sansBold, fontSize: 14, color: colors.inkMuted },
+  timeTextActive: { color: colors.forest },
+  footer: {
+    padding: 20,
+    backgroundColor: 'rgba(251,250,246,0.97)',
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  saveButton: {
+    flexDirection: 'row',
+    backgroundColor: colors.forest,
+    paddingVertical: 17,
+    borderRadius: radius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.card,
+  },
   disabledButton: { opacity: 0.7 },
-  saveButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' }
+  saveButtonText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 16, letterSpacing: 0.2 },
 });

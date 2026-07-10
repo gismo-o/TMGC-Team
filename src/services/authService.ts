@@ -1,5 +1,6 @@
 import { API_AUTH_URL } from './apiConfig';
-import { clearAuthSession, getCachedAuthUserId, saveAuthSession } from './authSession';
+import { apiFetch } from './apiClient';
+import { clearAuthSession, getAuthToken, getCachedAuthUserId, saveAuthSession } from './authSession';
 
 type AuthUser = {
   id: string;
@@ -70,6 +71,26 @@ export const authService = {
     } catch (error) {
       console.error('authService.register hatası:', error);
       throw error;
+    }
+  },
+
+  // Kayıtlı token varsa /auth/me ile oturumu doğrular ve kullanıcıyı döner
+  restoreSession: async (): Promise<AuthUser | null> => {
+    const token = await getAuthToken();
+    if (!token) return null;
+
+    try {
+      const user = await apiFetch<AuthUser>(`${API_AUTH_URL}/me`);
+      if (!user?.id) return null;
+
+      activeUserId = String(user.id);
+      await saveAuthSession(token, activeUserId);
+      return { ...user, id: activeUserId };
+    } catch {
+      // Token süresi dolmuş veya geçersiz; sessizce temizle
+      await clearAuthSession();
+      activeUserId = null;
+      return null;
     }
   },
 

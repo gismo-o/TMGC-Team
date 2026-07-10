@@ -2,11 +2,15 @@ package com.skinshelf.backend.service;
 
 import com.skinshelf.backend.dto.AssistantChatRequest;
 import com.skinshelf.backend.dto.AssistantChatResponse;
+import com.skinshelf.backend.dto.AssistantMessageResponse;
 import com.skinshelf.backend.entity.AssistantMessage;
 import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.repository.AssistantMessageRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -31,6 +35,14 @@ public class AssistantService {
         assistantMessageRepository.save(message);
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AssistantMessageResponse> history(User user) {
+        return assistantMessageRepository.findTop50ByUserOrderByCreatedAtDesc(user).stream()
+                .sorted(Comparator.comparing(AssistantMessage::getCreatedAt))
+                .map(AssistantMessageResponse::from)
+                .toList();
     }
 
     private AssistantChatResponse buildResponse(String prompt) {

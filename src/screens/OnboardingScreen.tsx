@@ -7,7 +7,8 @@ import { useUser } from '../context/UserContext';
 import { userService } from '../services/userService';
 import { useRoute } from '@react-navigation/native';
 // KRAVAT IMPORT: authService import edildi
-import { authService } from '../services/authService'; 
+import { authService } from '../services/authService';
+import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
@@ -57,7 +58,7 @@ const OptionButton = ({
 }) => (
   <TouchableOpacity style={[styles.optionButton, selected && styles.optionButtonSelected]} onPress={onPress} activeOpacity={0.76}>
     <Text style={[styles.optionText, selected && styles.optionTextSelected]}>{label}</Text>
-    {selected && <Check size={16} color="#426447" />}
+    {selected && <Check size={16} color={colors.sage} />}
   </TouchableOpacity>
 );
 
@@ -194,7 +195,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           {postWashOptions.map(item => <OptionButton key={item} label={item} selected={postWashFeel === item} onPress={() => setPostWashFeel(item)} />)}
           {skinFeel && postWashFeel && (
             <View style={styles.shellyNote}>
-              <Sparkles size={18} color="#426447" />
+              <Sparkles size={18} color={colors.sage} />
               <Text style={styles.shellyNoteText}>Shelly tahmini: {inferredSkinType}</Text>
             </View>
           )}
@@ -286,18 +287,18 @@ export default function OnboardingScreen({ navigation }: Props) {
     return (
       <View style={styles.readyCard}>
         <View style={styles.readyIcon}>
-          <Sparkles size={32} color="#ffffff" />
+          <Sparkles size={32} color={colors.onDark} />
         </View>
         <Text style={styles.readyTitle}>Hazırsın!</Text>
         <Text style={styles.readyText}>
           Şimdi ürünlerini SkinShelf rafına ekleyebilir, Shelly’den cildinle uyumlarını analiz etmesini isteyebilirsin.
         </Text>
         <TouchableOpacity style={styles.primaryAction} onPress={completeToScanner} activeOpacity={0.78}>
-          <Camera size={19} color="#ffffff" />
+          <Camera size={19} color={colors.onDark} />
           <Text style={styles.primaryActionText}>Barkodla ürün ekle</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryAction} onPress={completeToManualProduct} activeOpacity={0.78}>
-          <PenLine size={18} color="#426447" />
+          <PenLine size={18} color={colors.sage} />
           <Text style={styles.secondaryActionText}>Manuel ürün ekle</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.textAction} onPress={completeToMain} activeOpacity={0.75}>
@@ -316,7 +317,7 @@ export default function OnboardingScreen({ navigation }: Props) {
             onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())}
             activeOpacity={0.75}
           >
-            <ArrowLeft size={22} color="#426447" />
+            <ArrowLeft size={22} color={colors.sage} />
           </TouchableOpacity>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${((step + 1) / 7) * 100}%` }]} />
@@ -343,7 +344,7 @@ export default function OnboardingScreen({ navigation }: Props) {
               activeOpacity={0.78}
             >
               <Text style={styles.nextButtonText}>Devam Et</Text>
-              <ArrowRight size={20} color="#ffffff" />
+              <ArrowRight size={20} color={colors.onDark} />
             </TouchableOpacity>
           </View>
         )}
@@ -355,151 +356,184 @@ export default function OnboardingScreen({ navigation }: Props) {
 const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F5' },
+  safeArea: { flex: 1, backgroundColor: colors.background },
   keyboardView: { flex: 1 },
   header: {
     paddingTop: androidHeaderPadding,
-    paddingHorizontal: 20,
-    paddingBottom: 14,
+    paddingHorizontal: 22,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#eef3ee',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.soft,
   },
-  progressTrack: { flex: 1, height: 8, borderRadius: 10, backgroundColor: '#e9efea', overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 10, backgroundColor: '#426447' },
-  stepCounter: { color: '#68746b', fontSize: 12, fontWeight: '900' },
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
+  progressTrack: { flex: 1, height: 6, borderRadius: 10, backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 10, backgroundColor: colors.gold },
+  stepCounter: { fontFamily: fonts.sansBold, color: colors.inkMuted, fontSize: 12 },
+  content: { paddingHorizontal: 22, paddingBottom: 120 },
   brandCard: {
-    backgroundColor: '#f6ecec',
-    borderRadius: 22,
+    backgroundColor: colors.surfaceSage,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#ecd4d3',
-    padding: 17,
-    marginBottom: 20,
+    borderColor: colors.lineSage,
+    padding: 18,
+    marginBottom: 22,
   },
-  brandTitle: { color: '#14351f', fontSize: 18, fontWeight: '900' },
-  brandText: { color: '#526159', fontSize: 14, fontWeight: '700', marginTop: 5 },
-  stepTitle: { color: '#14351f', fontSize: 28, fontWeight: '900', lineHeight: 33, marginBottom: 8 },
-  stepText: { color: '#526159', fontSize: 15, lineHeight: 22, fontWeight: '700', marginBottom: 18 },
+  brandTitle: { fontFamily: fonts.display, color: colors.forest, fontSize: 19 },
+  brandText: { fontFamily: fonts.sans, color: colors.inkSoft, fontSize: 13.5, lineHeight: 20, marginTop: 6 },
+  stepTitle: { fontFamily: fonts.display, color: colors.ink, fontSize: 28, lineHeight: 35, marginBottom: 9 },
+  stepText: { fontFamily: fonts.sans, color: colors.inkSoft, fontSize: 14.5, lineHeight: 22, marginBottom: 20 },
   inputCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#edf1ee',
-    padding: 14,
+    borderColor: colors.line,
+    padding: 15,
     marginBottom: 18,
+    ...shadows.soft,
   },
-  inputLabel: { color: '#426447', fontSize: 12, fontWeight: '900', marginBottom: 8 },
-  textInput: { minHeight: 46, color: '#1b1c1c', fontSize: 18, fontWeight: '800' },
-  groupTitle: { color: '#14351f', fontSize: 15, fontWeight: '900', marginTop: 10, marginBottom: 10 },
+  inputLabel: {
+    fontFamily: fonts.sansExtraBold,
+    color: colors.sage,
+    fontSize: 10.5,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  textInput: { minHeight: 46, fontFamily: fonts.sansBold, color: colors.ink, fontSize: 18 },
+  groupTitle: { fontFamily: fonts.sansBold, color: colors.ink, fontSize: 15, marginTop: 12, marginBottom: 10 },
   optionButton: {
-    minHeight: 50,
+    minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: '#e1e8e2',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
     marginBottom: 9,
   },
-  optionButtonSelected: { backgroundColor: '#fff7f7', borderColor: '#ead7d6' },
-  optionText: { flex: 1, color: '#1b1c1c', fontSize: 14, fontWeight: '800', lineHeight: 19, marginRight: 10 },
-  optionTextSelected: { color: '#426447' },
+  optionButtonSelected: { backgroundColor: colors.surfaceSage, borderColor: colors.sage },
+  optionText: {
+    flex: 1,
+    fontFamily: fonts.sansSemiBold,
+    color: colors.inkSoft,
+    fontSize: 14,
+    lineHeight: 19,
+    marginRight: 10,
+  },
+  optionTextSelected: { fontFamily: fonts.sansBold, color: colors.forest },
   shellyNote: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#e9efea',
-    borderRadius: 17,
-    padding: 13,
+    gap: 9,
+    backgroundColor: colors.surfaceSage,
+    borderWidth: 1,
+    borderColor: colors.lineSage,
+    borderRadius: radius.md,
+    padding: 14,
     marginTop: 10,
   },
-  shellyNoteText: { color: '#426447', fontSize: 14, fontWeight: '900' },
+  shellyNoteText: { fontFamily: fonts.sansBold, color: colors.forest, fontSize: 14 },
   warningText: {
-    color: '#8a6100',
-    backgroundColor: '#fff4d7',
-    borderRadius: 14,
-    padding: 12,
-    fontSize: 13,
-    fontWeight: '800',
+    fontFamily: fonts.sansSemiBold,
+    color: colors.warning,
+    backgroundColor: colors.warningSurface,
+    borderRadius: radius.sm,
+    padding: 13,
+    fontSize: 12.5,
     lineHeight: 18,
     marginTop: 8,
   },
   readyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 28,
-    padding: 22,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xxl,
+    padding: 26,
     borderWidth: 1,
-    borderColor: '#edf1ee',
+    borderColor: colors.line,
     alignItems: 'center',
-    shadowColor: '#14351f',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 6,
+    ...shadows.card,
   },
-  readyIcon: { width: 72, height: 72, borderRadius: 28, backgroundColor: '#426447', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  readyTitle: { color: '#14351f', fontSize: 30, fontWeight: '900', marginBottom: 8 },
-  readyText: { color: '#526159', fontSize: 15, lineHeight: 22, fontWeight: '700', textAlign: 'center', marginBottom: 20 },
+  readyIcon: {
+    width: 74,
+    height: 74,
+    borderRadius: 30,
+    backgroundColor: colors.forest,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 18,
+    ...shadows.card,
+  },
+  readyTitle: { fontFamily: fonts.display, color: colors.ink, fontSize: 32, marginBottom: 10 },
+  readyText: {
+    fontFamily: fonts.sans,
+    color: colors.inkSoft,
+    fontSize: 14.5,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 22,
+  },
   primaryAction: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#426447',
-    borderRadius: 18,
-    paddingVertical: 15,
+    backgroundColor: colors.forest,
+    borderRadius: radius.lg,
+    paddingVertical: 16,
     marginBottom: 10,
   },
-  primaryActionText: { color: '#ffffff', fontSize: 15, fontWeight: '900' },
+  primaryActionText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 15, letterSpacing: 0.2 },
   secondaryAction: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#f6ecec',
-    borderRadius: 18,
-    paddingVertical: 15,
+    backgroundColor: colors.surfaceSage,
+    borderRadius: radius.lg,
+    paddingVertical: 16,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#ecd4d3',
+    borderColor: colors.lineSage,
   },
-  secondaryActionText: { color: '#426447', fontSize: 15, fontWeight: '900' },
+  secondaryActionText: { fontFamily: fonts.sansBold, color: colors.forest, fontSize: 15 },
   textAction: { paddingVertical: 12, paddingHorizontal: 16 },
-  textActionText: { color: '#68746b', fontSize: 14, fontWeight: '900' },
+  textActionText: { fontFamily: fonts.sansBold, color: colors.inkMuted, fontSize: 14 },
   footer: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    padding: 20,
-    paddingBottom: 24,
-    backgroundColor: 'rgba(250,249,245,0.96)',
+    padding: 22,
+    paddingBottom: 26,
+    backgroundColor: 'rgba(251,250,246,0.97)',
     borderTopWidth: 1,
-    borderTopColor: '#edf1ee',
+    borderTopColor: colors.line,
   },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#426447',
-    borderRadius: 18,
-    paddingVertical: 15,
+    backgroundColor: colors.forest,
+    borderRadius: radius.lg,
+    paddingVertical: 16,
+    ...shadows.card,
   },
   nextButtonDisabled: { opacity: 0.45 },
-  nextButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
+  nextButtonText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 16, letterSpacing: 0.2 },
 });

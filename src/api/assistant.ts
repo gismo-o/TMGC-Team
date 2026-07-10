@@ -1,4 +1,4 @@
-import { GeminiBotResponse } from '../types';
+import { GeminiBotResponse, Message } from '../types';
 import { apiFetch } from '../services/apiClient';
 import { API_BASE_URL } from '../services/apiConfig';
 
@@ -6,6 +6,15 @@ type AssistantApiResponse = {
   intentType: 'INFO' | 'ISSUE';
   detectedIssue: string | null;
   aiResponse: string;
+};
+
+type AssistantHistoryEntry = {
+  id: number;
+  prompt: string;
+  intentType: 'INFO' | 'ISSUE';
+  detectedIssue: string | null;
+  aiResponse: string;
+  createdAt: string;
 };
 
 export async function callAssistantAPI(userInput: string): Promise<GeminiBotResponse> {
@@ -27,5 +36,20 @@ export async function callAssistantAPI(userInput: string): Promise<GeminiBotResp
       detected_issue: null,
       ai_response: 'Şu anda bağlantı kurulamıyor. Lütfen tekrar deneyin.',
     };
+  }
+}
+
+/** Son sohbet geçmişini mesaj listesine dönüştürerek getirir (eskiden yeniye). */
+export async function fetchAssistantHistory(): Promise<Message[]> {
+  try {
+    const entries = await apiFetch<AssistantHistoryEntry[]>(`${API_BASE_URL}/assistant/history`);
+
+    return entries.flatMap<Message>(entry => [
+      { id: `${entry.id}-user`, from: 'user', text: entry.prompt },
+      { id: `${entry.id}-ai`, from: 'ai', text: entry.aiResponse },
+    ]);
+  } catch (error) {
+    console.error('Assistant history error:', error);
+    return [];
   }
 }
