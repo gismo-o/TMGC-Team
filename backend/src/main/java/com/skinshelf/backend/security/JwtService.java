@@ -25,8 +25,11 @@ public class JwtService {
     private final long expirationSeconds;
 
     public JwtService(
-            @Value("${app.jwt.secret:skinshelf-local-development-secret-change-me}") String secret,
+            @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-seconds:604800}") long expirationSeconds) {
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException("app.jwt.secret en az 32 karakter olmalıdır.");
+        }
         this.secret = secret;
         this.expirationSeconds = expirationSeconds;
     }

@@ -16,7 +16,7 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
-  // Giriş/kayıt sonrası çağrılır: kullanıcının GERÇEK rafını Supabase'den çeker.
+  // Giriş/kayıt sonrası çağrılır: kullanıcının gerçek rafını backend API'den çeker.
   const loadProducts = async () => {
     try {
       const data = await productService.getProducts();

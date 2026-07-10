@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/profiles")
-@CrossOrigin(origins = "*") // Mobil ve web platformlarından erişim için CORS'u açıyoruz
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
