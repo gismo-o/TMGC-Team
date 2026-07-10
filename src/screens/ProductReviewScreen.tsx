@@ -45,6 +45,16 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
   const entrySource = route.params?.source || 'manual';
   const activeIngredients = productData.activeIngredients || [];
   const ingredientKey = activeIngredients.join('|');
+  const sourceBadgeLabel = editingProductId
+    ? 'Dolaptan Düzenleniyor'
+    : entrySource === 'barcode'
+      ? 'Barkod ile Bulundu'
+      : 'Manuel Giriş';
+  const sourceNoticeText = editingProductId
+    ? 'Ürün bilgilerini düzenleyip değişiklikleri kaydedebilirsin.'
+    : entrySource === 'barcode'
+      ? 'Barkoddan gelen bilgiler onaydan önce düzenlenebilir.'
+      : 'Ürün bilgilerini manuel girip içerikleri düzenleyebilirsin.';
 
   useEffect(() => {
     setProductImageFailed(false);
@@ -155,20 +165,16 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
             resizeMode="contain"
             onError={() => setProductImageFailed(true)}
           />
-          <View style={styles.aiBadge}>
-            <Sparkles size={16} color={colors.onDark} />
-            <Text style={styles.aiBadgeText}>Yapay Zeka ile Tanındı</Text>
+          <View style={styles.sourceBadge}>
+            <Check size={16} color={colors.onDark} />
+            <Text style={styles.sourceBadgeText}>{sourceBadgeLabel}</Text>
           </View>
         </View>
 
         <View style={styles.detailsContainer}>
           <View style={styles.sourceNotice}>
-            <Sparkles size={14} color={colors.sage} />
-            <Text style={styles.sourceNoticeText}>
-              {entrySource === 'barcode'
-                ? 'Barkoddan gelen bilgiler onaydan önce düzenlenebilir.'
-                : 'Ürün bilgilerini manuel girip içerikleri düzenleyebilirsin.'}
-            </Text>
+            <Check size={14} color={colors.sage} />
+            <Text style={styles.sourceNoticeText}>{sourceNoticeText}</Text>
           </View>
           <View style={styles.detailRow}>
              <Text style={styles.label}>Marka</Text>
@@ -368,7 +374,7 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   image: { width: '60%', height: '80%', resizeMode: 'contain' },
-  aiBadge: {
+  sourceBadge: {
     position: 'absolute',
     bottom: -16,
     backgroundColor: colors.forest,
@@ -379,7 +385,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     ...shadows.card,
   },
-  aiBadgeText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 12, marginLeft: 8 },
+  sourceBadgeText: { fontFamily: fonts.sansBold, color: colors.onDark, fontSize: 12, marginLeft: 8 },
   detailsContainer: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
