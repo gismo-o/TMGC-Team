@@ -1,13 +1,13 @@
 const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080/api';
-const runId = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
+const password = 'Test123!';
 
 const scenarios = [
   {
-    slug: 'sensitive',
+    email: 'test-kuru@example.com',
     firstName: 'Test',
-    lastName: 'Sensitive',
+    lastName: 'Kuru',
     profile: {
-      displayName: 'Test Sensitive',
+      displayName: 'Test Kuru',
       ageRange: '18-24',
       experienceLevel: 'Yeni başlıyorum',
       skinFeel: 'Hep kuru / gergin',
@@ -20,7 +20,7 @@ const scenarios = [
       isOnboarded: true,
     },
     product: {
-      name: 'Toleriane Sensitive',
+      name: 'Kuru Cilt Nemlendirici',
       brand: 'La Roche-Posay',
       category: 'Nemlendirici',
       timeOfDay: 'both',
@@ -32,11 +32,11 @@ const scenarios = [
     prompt: 'Cildim kızardı ve tepki verdi',
   },
   {
-    slug: 'acne',
+    email: 'test-yagli@example.com',
     firstName: 'Test',
-    lastName: 'Acne',
+    lastName: 'Yagli',
     profile: {
-      displayName: 'Test Acne',
+      displayName: 'Test Yagli',
       ageRange: '25-34',
       experienceLevel: 'Aktif içerikleri biliyorum',
       skinFeel: 'Genel olarak yağlı',
@@ -49,7 +49,7 @@ const scenarios = [
       isOnboarded: true,
     },
     product: {
-      name: 'BHA Liquid',
+      name: 'Yagli Cilt BHA',
       brand: 'Paula’s Choice',
       category: 'Tonik',
       timeOfDay: 'evening',
@@ -61,18 +61,18 @@ const scenarios = [
     prompt: 'Bu iki ürün birlikte kullanılır mı?',
   },
   {
-    slug: 'routine',
+    email: 'test-karma@example.com',
     firstName: 'Test',
-    lastName: 'Routine',
+    lastName: 'Karma',
     profile: {
-      displayName: 'Test Routine',
+      displayName: 'Test Karma',
       ageRange: '35+',
       experienceLevel: 'Rutinim detaylı',
-      skinFeel: 'Normal / dengeli',
-      postWashFeel: 'Pek değişmiyor',
+      skinFeel: 'T bölgesi yağlı, yanaklar normal',
+      postWashFeel: 'Burun çevresi hızlı yağlanıyor',
       mainGoal: 'Daha düzenli rutin',
       sensitivityLevel: 'Hayır, genelde dayanıklı',
-      skinType: 'Normal Cilt',
+      skinType: 'Karma Cilt',
       currentRoutine: ['Temizleyici', 'Nemlendirici', 'Güneş kremi'],
       trackingPreferences: ['Su tüketimi', 'Güneşe maruz kalma'],
       reminderPreferences: ['Sabah rutinim için', 'Haftalık cilt özeti için'],
@@ -92,69 +92,132 @@ const scenarios = [
   },
 ];
 
+class ApiError extends Error {
+  constructor(status, method, path, data) {
+    super(`${method} ${path} failed: ${status} ${JSON.stringify(data)}`);
+    this.status = status;
+    this.data = data;
+  }
+}
+
+const parseBody = (text) => {
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
 const request = async (path, options = {}) => {
+  const method = options.method || 'GET';
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
   });
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  const data = parseBody(text);
   if (!response.ok) {
-    throw new Error(`${options.method || 'GET'} ${path} failed: ${response.status} ${text}`);
+    throw new ApiError(response.status, method, path, data);
   }
   return data;
 };
 
 const authHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
-const created = [];
+const getSession = async (scenario) => {
+  try {
+    const auth = await request('/auth/register', {
+      method: 'POST',
+      body: {
+        email: scenario.email,
+        password,
+        firstName: scenario.firstName,
+        lastName: scenario.lastName,
+      },
+    });
+    return { auth, mode: 'created' };
+  } catch (error) {
+    const alreadyExists = error instanceof ApiError
+      && error.status === 400
+      && String(error.data?.message || '').includes('zaten');
+
+    if (!alreadyExists) {
+      throw error;
+    }
+
+    const auth = await request('/auth/login', {
+      method: 'POST',
+      body: {
+        email: scenario.email,
+        password,
+      },
+    });
+    return { auth, mode: 'existing' };
+  }
+};
+
+const upsertProduct = async (headers, product) => {
+  const products = await request('/products', { headers });
+  const existingProduct = products.find((item) => item.name === product.name && item.brand === product.brand);
+
+  if (!existingProduct) {
+    return request('/products', {
+      method: 'POST',
+      headers,
+      body: product,
+    });
+  }
+
+  return request(`/products/${existingProduct.id}`, {
+    method: 'PUT',
+    headers,
+    body: product,
+  });
+};
+
+const verified = [];
 
 for (const scenario of scenarios) {
-  const email = `skinshelf-test-${scenario.slug}-${runId}@example.com`;
-  const auth = await request('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({
-      email,
-      password: 'Test123!',
-      firstName: scenario.firstName,
-      lastName: scenario.lastName,
-    }),
-  });
+  const { auth, mode } = await getSession(scenario);
 
   const headers = authHeaders(auth.token);
   const profile = await request('/profiles/me', {
     method: 'PUT',
     headers,
-    body: JSON.stringify(scenario.profile),
+    body: scenario.profile,
   });
 
-  const product = await request('/products', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(scenario.product),
-  });
-
+  const product = await upsertProduct(headers, scenario.product);
   const products = await request('/products', { headers });
   const assistant = await request('/assistant/chat', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ message: scenario.prompt }),
+    body: { message: scenario.prompt },
   });
 
   if (!products.some((item) => item.id === product.id)) {
-    throw new Error(`Created product is missing from product list for ${email}`);
+    throw new Error(`Product is missing from product list for ${scenario.email}`);
   }
 
-  created.push({
-    email,
+  verified.push({
+    email: scenario.email,
+    mode,
     userId: String(auth.user.id),
     displayName: profile.displayName,
+    skinType: profile.skinType,
+    mainGoal: profile.mainGoal,
+    productName: product.name,
     productId: product.id,
     assistantIntent: assistant.intentType,
   });
 }
 
-console.log(JSON.stringify({ apiBaseUrl, created }, null, 2));
+console.log(JSON.stringify({ apiBaseUrl, verified }, null, 2));
