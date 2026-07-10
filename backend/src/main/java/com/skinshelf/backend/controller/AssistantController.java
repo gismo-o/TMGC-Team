@@ -3,8 +3,11 @@ package com.skinshelf.backend.controller;
 import com.skinshelf.backend.dto.AssistantChatRequest;
 import com.skinshelf.backend.dto.AssistantChatResponse;
 import com.skinshelf.backend.dto.AssistantMessageResponse;
+import com.skinshelf.backend.dto.IngredientAnalysisRequest;
+import com.skinshelf.backend.dto.IngredientAnalysisResponse;
 import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.service.AssistantService;
+import com.skinshelf.backend.service.IngredientAnalysisService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,9 +20,11 @@ import java.util.List;
 public class AssistantController {
 
     private final AssistantService assistantService;
+    private final IngredientAnalysisService ingredientAnalysisService;
 
-    public AssistantController(AssistantService assistantService) {
+    public AssistantController(AssistantService assistantService, IngredientAnalysisService ingredientAnalysisService) {
         this.assistantService = assistantService;
+        this.ingredientAnalysisService = ingredientAnalysisService;
     }
 
     @PostMapping("/chat")
@@ -32,5 +37,12 @@ public class AssistantController {
     @GetMapping("/history")
     public ResponseEntity<List<AssistantMessageResponse>> history(@AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(assistantService.history(currentUser));
+    }
+
+    @PostMapping("/analyze-ingredients")
+    public ResponseEntity<IngredientAnalysisResponse> analyzeIngredients(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody IngredientAnalysisRequest request) {
+        return ResponseEntity.ok(ingredientAnalysisService.analyze(currentUser, request));
     }
 }

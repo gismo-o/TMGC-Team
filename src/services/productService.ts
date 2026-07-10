@@ -8,18 +8,6 @@ type ScanInput = {
   imageData?: unknown;
 };
 
-const fallbackProduct: ProductDraft = {
-  brand: 'La Roche-Posay',
-  name: 'Effaclar duo+',
-  category: 'Serum',
-  timeOfDay: 'both',
-  imageUrl: '',
-  cutoutImageUrl: 'local:la-roche-effaclar-kplus',
-  description: 'Niacinamide, Zinc PCA ve salisilik asit içeren hedefli bakım ürünü.',
-  activeIngredients: ['Niacinamide', 'Zinc PCA', 'Salicylic Acid'],
-  expiryDate: '2027-01',
-};
-
 const toRequest = (product: Omit<Product, 'id'> | Partial<Product>) => ({
   name: product.name,
   brand: product.brand,
@@ -59,7 +47,7 @@ export const productService = {
     return true;
   },
 
-  scanProduct: async (input: ScanInput | string): Promise<ProductDraft> => {
+  scanProduct: async (input: ScanInput | string): Promise<ProductDraft | null> => {
     const scanInput: ScanInput = typeof input === 'string' ? { imageData: input } : input;
 
     if (scanInput.barcode) {
@@ -71,6 +59,6 @@ export const productService = {
       }
     }
 
-    return Promise.resolve(fallbackProduct);
+    return null;
   },
 };

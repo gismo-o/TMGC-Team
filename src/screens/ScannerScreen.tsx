@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { Camera, X, Image as ImageIcon, Barcode, ScanLine, Sparkles } from 'lucide-react-native';
+import { RootStackParamList, ProductDraft } from '../types';
+import { X, Barcode, ScanLine, Sparkles, PenLine, CameraOff } from 'lucide-react-native';
 import { productService } from '../services/productService';
 import { fonts, radius } from '../theme';
 
@@ -12,44 +13,94 @@ type Props = {
 
 const GOLD = '#D8C39A';
 
-export default function ScannerScreen({ navigation }: Props) {
-  const [isScanning, setIsScanning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'barcode' | 'photo'>('barcode');
+const manualProductDraft: ProductDraft = {
+  brand: '',
+  name: '',
+  category: 'Diğer',
+  timeOfDay: 'both',
+  imageUrl: '',
+  description: '',
+  activeIngredients: [],
+  expiryDate: '',
+};
 
-  const handleScan = async () => {
+export default function ScannerScreen({ navigation }: Props) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [isScanning, setIsScanning] = useState(false);
+  const [lastCode, setLastCode] = useState<string | null>(null);
+
+  const openManualForm = useCallback(() => {
+    navigation.replace('ProductReview', { scannedProduct: manualProductDraft, source: 'manual' });
+  }, [navigation]);
+
+  const lookupBarcode = useCallback(async (barcode: string) => {
     setIsScanning(true);
+    setLastCode(barcode);
+
     try {
-      let result;
-      if (activeTab === 'barcode') {
-        const demoBarcode = '3337875863377'; // La Roche-Posay Effaclar Duo+ sample from Open Beauty Facts.
-        result = await productService.scanProduct({ barcode: demoBarcode });
-      } else {
-        // Sprint 2 backend note: Send the photo to Vision AI without storing raw camera images.
-        result = await productService.scanProduct({ imageData: 'demo-photo' });
+      const result = await productService.scanProduct({ barcode });
+      if (result) {
+        navigation.replace('ProductReview', { scannedProduct: result, source: 'barcode' });
+        return;
       }
 
-      setTimeout(() => {
-        setIsScanning(false);
-        navigation.replace('ProductReview', { scannedProduct: result });
-      }, 1500);
+      Alert.alert(
+        'Ürün bulunamadı',
+        'Open Beauty Facts üzerinde bu barkod için ürün bilgisi bulunamadı. Bilgileri manuel ekleyebilirsin.',
+        [{ text: 'Manuel ekle', onPress: openManualForm }]
+      );
     } catch (error) {
       console.error('Scan error:', error);
-      Alert.alert('Hata', 'Ürün taranamadı.');
+      Alert.alert('Hata', 'Ürün bilgisi alınamadı. Manuel giriş ekranını açabilirsin.', [
+        { text: 'Manuel ekle', onPress: openManualForm },
+        { text: 'Tekrar dene', style: 'cancel', onPress: () => setLastCode(null) },
+      ]);
+    } finally {
       setIsScanning(false);
     }
-  };
+  }, [navigation, openManualForm]);
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-          <X size={22} color="#ffffff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{activeTab === 'barcode' ? 'Barkod Tara' : 'Ürün Tara'}</Text>
-        <View style={{ width: 44 }} />
-      </View>
+  const handleBarcodeScanned = useCallback((result: BarcodeScanningResult) => {
+    const code = result.data?.trim();
+    if (!code || isScanning || code === lastCode) {
+      return;
+    }
 
-      <View style={styles.scannerArea}>
+    void lookupBarcode(code);
+  }, [isScanning, lastCode, lookupBarcode]);
+
+  const renderScannerContent = () => {
+    if (!permission) {
+      return (
+        <View style={styles.permissionPanel}>
+          <ActivityIndicator color={GOLD} />
+          <Text style={styles.permissionText}>Kamera izni kontrol ediliyor...</Text>
+        </View>
+      );
+    }
+
+    if (!permission.granted) {
+      return (
+        <View style={styles.permissionPanel}>
+          <CameraOff size={36} color={GOLD} />
+          <Text style={styles.permissionTitle}>Kamera izni gerekli</Text>
+          <Text style={styles.permissionText}>Barkodu okutmak için kameraya izin ver.</Text>
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission} activeOpacity={0.85}>
+            <Text style={styles.permissionButtonText}>İzin ver</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <CameraView
+        style={styles.camera}
+        facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'],
+        }}
+        onBarcodeScanned={isScanning ? undefined : handleBarcodeScanned}
+      >
         <View style={styles.scannerFrame}>
           <View style={[styles.corner, styles.topLeft]} />
           <View style={[styles.corner, styles.topRight]} />
@@ -61,54 +112,65 @@ export default function ScannerScreen({ navigation }: Props) {
               <ActivityIndicator size="large" color={GOLD} />
               <View style={styles.loadingBadge}>
                 <Sparkles size={14} color={GOLD} />
-                <Text style={styles.loadingText}>Yapay Zeka Analiz Ediyor...</Text>
+                <Text style={styles.loadingText}>Ürün bilgisi alınıyor...</Text>
               </View>
             </View>
           ) : (
-            <Text style={styles.instruction}>
-              {activeTab === 'barcode' ? 'Barkodu çerçevenin içine hizalayın' : 'Kozmetik ürününü çerçevenin içine yerleştirin'}
-            </Text>
+            <Text style={styles.instruction}>Barkodu çerçevenin içine hizalayın</Text>
           )}
         </View>
+      </CameraView>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <X size={22} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Barkod Tara</Text>
+        <View style={{ width: 44 }} />
+      </View>
+
+      <View style={styles.scannerArea}>
+        {renderScannerContent()}
       </View>
 
       <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'barcode' && styles.activeTab]}
-          onPress={() => !isScanning && setActiveTab('barcode')}
-          activeOpacity={0.8}
-        >
-          <Barcode size={19} color={activeTab === 'barcode' ? '#10130F' : '#ffffff'} />
-          <Text style={[styles.tabText, activeTab === 'barcode' && styles.activeTabText]}>Barkod Tara</Text>
-        </TouchableOpacity>
+        <View style={[styles.tab, styles.activeTab]}>
+          <Barcode size={19} color="#10130F" />
+          <Text style={[styles.tabText, styles.activeTabText]}>Barkod Tara</Text>
+        </View>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'photo' && styles.activeTab]}
-          onPress={() => !isScanning && setActiveTab('photo')}
+          style={styles.tab}
+          onPress={openManualForm}
+          disabled={isScanning}
           activeOpacity={0.8}
         >
-          <Camera size={19} color={activeTab === 'photo' ? '#10130F' : '#ffffff'} />
-          <Text style={[styles.tabText, activeTab === 'photo' && styles.activeTabText]}>Fotoğraf Çek</Text>
+          <PenLine size={19} color="#ffffff" />
+          <Text style={styles.tabText}>Manuel Ekle</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.galleryButton} onPress={() => {}} activeOpacity={0.8}>
-          <ImageIcon size={22} color="#ffffff" />
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={[styles.captureButton, isScanning && styles.captureButtonDisabled]}
-          onPress={handleScan}
+          onPress={() => {
+            if (!permission?.granted) {
+              void requestPermission();
+              return;
+            }
+            Alert.alert('Barkod bekleniyor', 'Barkod kamerada göründüğünde otomatik okutulur.');
+          }}
           disabled={isScanning}
           activeOpacity={0.85}
         >
           <View style={styles.captureInner}>
-            {activeTab === 'barcode' && <ScanLine size={30} color="#10130F" />}
+            <ScanLine size={30} color="#10130F" />
           </View>
         </TouchableOpacity>
-
-        <View style={{ width: 50 }} />
       </View>
     </SafeAreaView>
   );
@@ -132,21 +194,25 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 21,
   },
-  scannerArea: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scannerFrame: {
-    width: '80%',
+  scannerArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 22 },
+  camera: {
+    width: '100%',
     aspectRatio: 3 / 4,
+    overflow: 'hidden',
+    borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.18)',
-    borderRadius: radius.xl,
+  },
+  scannerFrame: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   corner: { position: 'absolute', width: 42, height: 42, borderColor: GOLD, borderWidth: 0 },
-  topLeft: { top: -2, left: -2, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: radius.xl },
-  topRight: { top: -2, right: -2, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: radius.xl },
-  bottomLeft: { bottom: -2, left: -2, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: radius.xl },
-  bottomRight: { bottom: -2, right: -2, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: radius.xl },
+  topLeft: { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: radius.xl },
+  topRight: { top: 16, right: 16, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: radius.xl },
+  bottomLeft: { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: radius.xl },
+  bottomRight: { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: radius.xl },
   instruction: {
     fontFamily: fonts.sansSemiBold,
     color: '#ffffff',
@@ -182,6 +248,42 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 13.5,
   },
+  permissionPanel: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  permissionTitle: {
+    fontFamily: fonts.sansBold,
+    color: '#ffffff',
+    fontSize: 18,
+    marginTop: 16,
+  },
+  permissionText: {
+    fontFamily: fonts.sans,
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 13.5,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  permissionButton: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: radius.pill,
+    backgroundColor: GOLD,
+  },
+  permissionButtonText: {
+    fontFamily: fonts.sansBold,
+    color: '#10130F',
+    fontSize: 13.5,
+  },
   tabsContainer: { flexDirection: 'row', justifyContent: 'center', paddingVertical: 16, gap: 12 },
   tab: {
     flexDirection: 'row',
@@ -201,17 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
   },
   activeTabText: { color: '#10130F' },
-  footer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 40, paddingTop: 10 },
-  galleryButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  footer: { alignItems: 'center', paddingBottom: 40, paddingTop: 10 },
   captureButton: {
     width: 82,
     height: 82,

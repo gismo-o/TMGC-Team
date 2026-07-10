@@ -197,6 +197,17 @@ for (const scenario of scenarios) {
 
   const product = await upsertProduct(headers, scenario.product);
   const products = await request('/products', { headers });
+  const ingredientAnalysis = await request('/assistant/analyze-ingredients', {
+    method: 'POST',
+    headers,
+    body: {
+      name: scenario.product.name,
+      brand: scenario.product.brand,
+      category: scenario.product.category,
+      description: scenario.product.description,
+      activeIngredients: scenario.product.activeIngredients,
+    },
+  });
   const assistant = await request('/assistant/chat', {
     method: 'POST',
     headers,
@@ -216,6 +227,8 @@ for (const scenario of scenarios) {
     mainGoal: profile.mainGoal,
     productName: product.name,
     productId: product.id,
+    ingredientAnalysisLevel: ingredientAnalysis.compatibilityLevel,
+    suggestedTimeOfDay: ingredientAnalysis.suggestedTimeOfDay,
     assistantIntent: assistant.intentType,
   });
 }

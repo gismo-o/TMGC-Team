@@ -149,7 +149,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   const completeToManualProduct = async () => {
     await saveProfile();
-    navigation.navigate('ProductReview', { scannedProduct: manualProductDraft });
+    navigation.navigate('ProductReview', { scannedProduct: manualProductDraft, source: 'manual' });
   };
 
   const canContinue = () => {

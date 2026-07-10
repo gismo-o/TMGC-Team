@@ -6,6 +6,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, Category, ProductDraft } from '../types';
 import { ArrowLeft, Check, Sparkles, AlertCircle, AlertTriangle, Plus, X } from 'lucide-react-native';
 import { useProducts } from '../context/ProductContext';
+import { analyzeProductIngredients } from '../services/productAnalysisService';
 import { getProductVisualSource } from '../services/productVisualCatalog';
 import { colors, fonts, radius, shadows } from '../theme';
 
@@ -35,38 +36,59 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
   const [productData, setProductData] = useState<ProductDraft>(route.params?.scannedProduct || defaultProductData);
   const [productImageFailed, setProductImageFailed] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [conflictData, setConflictData] = useState<{ hasConflict: boolean, severity: 'high' | 'warning' | 'synergy', message: string, conflictingProduct?: string } | null>(null);
   const [aiSuggestedTime, setAiSuggestedTime] = useState<'morning' | 'evening' | 'both' | null>(null);
   const [ingredientInput, setIngredientInput] = useState('');
   const editingProductId = route.params?.editingProductId;
+  const entrySource = route.params?.source || 'manual';
   const activeIngredients = productData.activeIngredients || [];
+  const ingredientKey = activeIngredients.join('|');
 
   useEffect(() => {
     setProductImageFailed(false);
   }, [productData.cutoutImageUrl, productData.category]);
 
   useEffect(() => {
-    // Simulate fetching data from backend
-    const fetchAiAnalysis = async () => {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    setTimeOfDay(productData.timeOfDay || 'both');
+  }, [productData.timeOfDay]);
 
-      setAiAnalysis("Bu ürün içerdiği Niacinamide sayesinde cilt bariyerini güçlendirir ve sebum dengesini sağlar. Çinko ile birleştiğinde sivilce oluşumunu engellemeye yardımcı olur.");
-      
-      const simulatedConflictData: any = {
-        hasConflict: true,
-        severity: 'synergy',
-        message: 'Hyalüronik Asit içeren ürünleriniz ile mükemmel uyum! Birlikte kullanıldığında cilt bariyerini ekstra destekler ve nem oranını artırır.',
-      };
-      setConflictData(simulatedConflictData);
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setAnalysisLoading(true);
+      setAnalysisError(null);
+      try {
+        const analysis = await analyzeProductIngredients(productData);
+        if (cancelled) return;
 
-      const suggestedTime: 'morning' | 'evening' | 'both' = 'both';
-      setAiSuggestedTime(suggestedTime);
-      setTimeOfDay(productData.timeOfDay || suggestedTime);
+        setAiAnalysis(analysis.summary);
+        setConflictData({
+          hasConflict: true,
+          severity: analysis.compatibilityLevel,
+          message: analysis.compatibilityMessage,
+        });
+        setAiSuggestedTime(analysis.suggestedTimeOfDay);
+      } catch (error) {
+        console.error('Ingredient analysis error:', error);
+        if (cancelled) return;
+        setAiAnalysis(null);
+        setConflictData(null);
+        setAiSuggestedTime(null);
+        setAnalysisError('İçerik analizi şu anda alınamadı. Ürün bilgilerini yine kaydedebilirsin.');
+      } finally {
+        if (!cancelled) {
+          setAnalysisLoading(false);
+        }
+      }
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
     };
-
-    fetchAiAnalysis();
-  }, []);
+  }, [productData.name, productData.brand, productData.category, productData.description, ingredientKey]);
 
   const updateProductField = <K extends keyof ProductDraft>(field: K, value: ProductDraft[K]) => {
     setProductData(prev => ({ ...prev, [field]: value }));
@@ -88,6 +110,11 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
   };
 
   const handleSave = async () => {
+    if (!productData.name.trim() || !productData.brand.trim()) {
+      Alert.alert('Eksik bilgi', 'Ürünü kaydetmek için marka ve ürün adını doldur.');
+      return;
+    }
+
     setLoading(true);
     try {
       // Sprint 2 backend note: Persist only structured product data and routine time; do not store raw camera images.
@@ -137,7 +164,11 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
         <View style={styles.detailsContainer}>
           <View style={styles.sourceNotice}>
             <Sparkles size={14} color={colors.sage} />
-            <Text style={styles.sourceNoticeText}>Otomatik gelen bilgiler onaydan önce düzenlenebilir.</Text>
+            <Text style={styles.sourceNoticeText}>
+              {entrySource === 'barcode'
+                ? 'Barkoddan gelen bilgiler onaydan önce düzenlenebilir.'
+                : 'Ürün bilgilerini manuel girip içerikleri düzenleyebilirsin.'}
+            </Text>
           </View>
           <View style={styles.detailRow}>
              <Text style={styles.label}>Marka</Text>
@@ -220,8 +251,12 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
           </View>
           {aiAnalysis ? (
             <Text style={styles.aiAnalysisText}>{aiAnalysis}</Text>
+          ) : analysisError ? (
+            <Text style={styles.aiAnalysisLoadingText}>{analysisError}</Text>
           ) : (
-            <Text style={styles.aiAnalysisLoadingText}>Analiz hazırlanıyor...</Text>
+            <Text style={styles.aiAnalysisLoadingText}>
+              {analysisLoading ? 'Analiz hazırlanıyor...' : 'Analiz için ürün bilgisi bekleniyor...'}
+            </Text>
           )}
         </View>
 
