@@ -36,7 +36,7 @@ const emptyProfile: UserProfile = {
 interface UserContextType {
   profile: UserProfile;
   userId: string | null;
-  updateUserProfile: (updates: Partial<UserProfile>) => void;
+  updateUserProfile: (updates: Partial<UserProfile>, options?: { persist?: boolean }) => Promise<void>;
   loadProfile: (userId: string) => Promise<void>;
   clearProfile: () => void;
   activeIssue: string | null;
@@ -50,12 +50,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [activeIssue, setActiveIssue] = useState<string | null>(null);
 
-  const updateUserProfile = (updates: Partial<UserProfile>) => {
+  const updateUserProfile = async (updates: Partial<UserProfile>, options: { persist?: boolean } = {}) => {
     setProfile(prev => ({ ...prev, ...updates }));
-    if (userId) {
-      userService.updateProfile(userId, updates).catch(error => {
+    if (userId && options.persist !== false) {
+      try {
+        await userService.updateProfile(userId, updates);
+      } catch (error) {
         console.error('Profil güncellenemedi:', error);
-      });
+      }
     }
   };
 

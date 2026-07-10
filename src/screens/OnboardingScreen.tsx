@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, ArrowRight, Camera, Check, PenLine, Sparkles } from 'lucide-react-native';
 import { ProductDraft, RootStackParamList } from '../types';
 import { useUser } from '../context/UserContext';
+import { userService } from '../services/userService';
 import { useRoute } from '@react-navigation/native';
 // KRAVAT IMPORT: authService import edildi
 import { authService } from '../services/authService'; 
@@ -104,43 +105,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       return;
     }
 
-    const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL; 
-    const PROFILES_API_URL = API_BASE_URL ? API_BASE_URL.replace('/auth', '/profiles') : '';
-
     const profileData = {
-      userId: userId, // DÜZELTİLDİ: Yukarıda güvenle okuduğumuz yerel değişken bağlandı
-      nickname: displayName.trim() || 'SkinShelf kullanıcısı',
-      ageRange: ageRange,
-      experience: experienceLevel,
-      sensitivity: sensitivityLevel,
-      skinTypeGuess: inferredSkinType,
-      concerns: [mainGoal], 
-      lifestyleFactors: trackingPreferences,
-      notifPref: reminderPreferences.join(', ') 
-    };
-
-    try {
-      console.log('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
-      const response = await fetch(`${PROFILES_API_URL}/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profileData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Profil sunucuya kaydedilemedi.');
-      }
-
-      const result = await response.json();
-      console.log('Profil başarıyla veritabanına kaydedildi:', result);
-    } catch (error) {
-      console.error('Cilt profili kaydedilirken hata oluştu:', error);
-    }
-
-    // Yerel cihaz hafızasını/state'ini güncellemeye devam ediyoruz
-    updateUserProfile({
       displayName: displayName.trim() || 'SkinShelf kullanıcısı',
       ageRange,
       experienceLevel,
@@ -156,7 +121,18 @@ export default function OnboardingScreen({ navigation }: Props) {
       trackingPreferences,
       reminderPreferences,
       isOnboarded: true,
-    });
+    };
+
+    try {
+      console.log('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
+      const result = await userService.updateProfile(String(userId), profileData);
+      console.log('Profil başarıyla veritabanına kaydedildi:', result);
+    } catch (error) {
+      console.error('Cilt profili kaydedilirken hata oluştu:', error);
+    }
+
+    // Yerel cihaz hafızasını/state'ini güncellemeye devam ediyoruz
+    await updateUserProfile(profileData, { persist: false });
   };
 
   // Yönlendirme buton metotları

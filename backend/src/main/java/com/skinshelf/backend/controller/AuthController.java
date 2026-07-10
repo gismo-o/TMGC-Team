@@ -1,10 +1,14 @@
 package com.skinshelf.backend.controller;
 
+import com.skinshelf.backend.dto.AuthResponse;
 import com.skinshelf.backend.dto.LoginRequest;
 import com.skinshelf.backend.dto.RegisterRequest;
+import com.skinshelf.backend.dto.UserResponse;
 import com.skinshelf.backend.entity.User;
 import com.skinshelf.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,22 +23,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            User registeredUser = userService.register(request);
-            return ResponseEntity.ok(registeredUser);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(userService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            User loggedInUser = userService.login(request);
-            return ResponseEntity.ok(loggedInUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> me(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(UserResponse.from(currentUser));
     }
 }

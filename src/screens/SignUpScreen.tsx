@@ -39,14 +39,16 @@ export default function SignUpScreen({ navigation }: Props) {
       
       console.log('Registration successful', response);
       
+      await loadProfile(response.user.id);
+
       // Kayıt olan yeni kullanıcının id değerini her iki platformda da parametre olarak Onboarding'e taşıyoruz
       if (Platform.OS === 'web') {
         alert('Hesabınız başarıyla oluşturuldu!');
         // (navigation as any) ekleyerek TypeScript engelini aşıyoruz
-        (navigation as any).navigate('Onboarding', { userId: (response as any).id });
+        (navigation as any).navigate('Onboarding', { userId: response.user.id });
       } else {
         Alert.alert('Başarılı', 'Hesabınız oluşturuldu!', [
-          { text: 'Tamam', onPress: () => (navigation as any).navigate('Onboarding', { userId: (response as any).id }) }
+          { text: 'Tamam', onPress: () => (navigation as any).navigate('Onboarding', { userId: response.user.id }) }
         ]);
       }
     } catch (error) {

@@ -38,8 +38,13 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     try {
-      await productService.updateProduct(id, updates);
-      setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+      const currentProduct = products.find(product => product.id === id);
+      if (!currentProduct) {
+        throw new Error('Ürün bulunamadı.');
+      }
+
+      const savedProduct = await productService.updateProduct(id, { ...currentProduct, ...updates });
+      setProducts(prev => prev.map(p => p.id === id ? savedProduct : p));
     } catch (error) {
       console.error('Error updating product:', error);
       throw error;
