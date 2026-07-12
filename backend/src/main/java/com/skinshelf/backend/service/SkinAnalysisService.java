@@ -132,19 +132,22 @@ public class SkinAnalysisService {
             List<Product> products,
             List<SkinLog> recentLogs,
             SkinAnalysisRequest request) {
+        boolean rateLimited = false;
+
         if (geminiApiClient.isConfigured() && request.getImageBase64() != null && !request.getImageBase64().isBlank()) {
             String prompt = shellyPromptService.buildSkinPhotoPrompt(
                     profile, products, recentLogs,
                     request.getSkinFeeling(), request.getUsedNewProduct(), request.getUserNote());
 
-            Optional<JsonNode> json = geminiApiClient.generateJson(prompt, request.getImageBase64(), request.getImageMimeType());
-            if (json.isPresent()) {
-                return parseAnalysis(json.get());
+            var result = geminiApiClient.generateJsonWithStatus(prompt, request.getImageBase64(), request.getImageMimeType());
+            if (result.json().isPresent()) {
+                return parseAnalysis(result.json().get());
             }
+            rateLimited = result.isRateLimited();
             log.warn("Gemini fotoğraf analizi başarısız; fallback yanıt kullanılacak.");
         }
 
-        return fallbackAnalysis(request);
+        return fallbackAnalysis(request, rateLimited);
     }
 
     private SkinAnalysisResponse parseAnalysis(JsonNode json) {
@@ -177,7 +180,7 @@ public class SkinAnalysisService {
                 null);
     }
 
-    private SkinAnalysisResponse fallbackAnalysis(SkinAnalysisRequest request) {
+    private SkinAnalysisResponse fallbackAnalysis(SkinAnalysisRequest request, boolean rateLimited) {
         String feeling = request.getSkinFeeling() == null ? "" : request.getSkinFeeling().toLowerCase(Locale.forLanguageTag("tr-TR"));
 
         Map<String, String> visibleChanges = new LinkedHashMap<>();
@@ -187,9 +190,12 @@ public class SkinAnalysisService {
         visibleChanges.put("blemishAppearance", feeling.contains("sivilce") ? "medium" : "unknown");
         visibleChanges.put("irritationAppearance", feeling.contains("hassas") ? "medium" : "unknown");
 
+        String reasonText = rateLimited
+                ? "Shelly şu an çok yoğun olduğu için görsel analiz yapılamadı; birazdan tekrar deneyebilirsin."
+                : "Görsel analiz şu anda yapılamadı.";
         String summary = feeling.isBlank()
-                ? "Kaydın alındı. Görsel analiz şu anda yapılamadı; bugünkü hissiyatını not ettim."
-                : "Kaydın alındı. Bugünkü hissiyatın (" + request.getSkinFeeling() + ") not edildi; görsel analiz şu anda yapılamadı.";
+                ? "Kaydın alındı. " + reasonText + " Bugünkü hissiyatını not ettim."
+                : "Kaydın alındı. Bugünkü hissiyatın (" + request.getSkinFeeling() + ") not edildi. " + reasonText;
 
         return new SkinAnalysisResponse(
                 null,

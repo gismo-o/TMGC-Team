@@ -30,13 +30,22 @@ public class GeminiApiClient {
 
     public GeminiApiClient(
             @Value("${app.gemini.api-key:}") String apiKey,
-            @Value("${app.gemini.model:gemini-2.5-flash}") String model) {
+            @Value("${app.gemini.model:gemini-2.0-flash}") String model) {
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.model = model == null || model.isBlank() ? "gemini-2.5-flash" : model.trim();
+        this.model = model == null || model.isBlank() ? "gemini-2.0-flash" : model.trim();
         this.objectMapper = new ObjectMapper();
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
+    }
+
+    /** Gemini çağrısının sonucu; başarısızsa nedenini de taşır. */
+    public enum FailureReason { NONE, RATE_LIMITED, ERROR }
+
+    public record GeminiJsonResult(Optional<JsonNode> json, FailureReason reason) {
+        public boolean isRateLimited() {
+            return reason == FailureReason.RATE_LIMITED;
+        }
     }
 
     public boolean isConfigured() {
@@ -44,15 +53,20 @@ public class GeminiApiClient {
     }
 
     public Optional<JsonNode> generateJson(String prompt) {
-        return generateJson(prompt, null, null);
+        return generateJsonWithStatus(prompt, null, null).json();
+    }
+
+    public Optional<JsonNode> generateJson(String prompt, String base64Image, String imageMimeType) {
+        return generateJsonWithStatus(prompt, base64Image, imageMimeType).json();
     }
 
     /**
      * Gemini'den JSON yanıt ister. base64Image verilirse istek multimodal (görsel + metin) olur.
+     * Kota/yoğunluk (429) durumunu ayrı raporlar ki üst katman kullanıcıya bilgi verebilsin.
      */
-    public Optional<JsonNode> generateJson(String prompt, String base64Image, String imageMimeType) {
+    public GeminiJsonResult generateJsonWithStatus(String prompt, String base64Image, String imageMimeType) {
         if (!isConfigured()) {
-            return Optional.empty();
+            return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
         }
 
         try {
@@ -65,9 +79,13 @@ public class GeminiApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 429) {
+                log.warn("Gemini API kota/yoğunluk sınırında (429).");
+                return new GeminiJsonResult(Optional.empty(), FailureReason.RATE_LIMITED);
+            }
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 log.warn("Gemini API isteği başarısız: status={} body={}", response.statusCode(), truncate(response.body()));
-                return Optional.empty();
+                return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
             }
 
             String text = objectMapper.readTree(response.body())
@@ -81,13 +99,13 @@ public class GeminiApiClient {
 
             if (text.isBlank()) {
                 log.warn("Gemini API boş yanıt döndürdü.");
-                return Optional.empty();
+                return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
             }
 
-            return Optional.of(objectMapper.readTree(stripMarkdownFence(text)));
+            return new GeminiJsonResult(Optional.of(objectMapper.readTree(stripMarkdownFence(text))), FailureReason.NONE);
         } catch (Exception exception) {
             log.warn("Gemini API çağrısı hata verdi: {}", exception.getMessage());
-            return Optional.empty();
+            return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
         }
     }
 

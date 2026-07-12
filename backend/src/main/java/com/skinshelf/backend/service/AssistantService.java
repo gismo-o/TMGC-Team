@@ -96,19 +96,46 @@ public class AssistantService {
 
         ShellyMode mode = shellyPromptService.detectMode(prompt);
         List<Product> products = productRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        boolean rateLimited = false;
 
         if (geminiApiClient.isConfigured()) {
             UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
             List<SkinLog> recentLogs = skinLogRepository.findTop30ByUserOrderByCreatedAtDesc(user);
 
             String fullPrompt = shellyPromptService.buildChatPrompt(mode, profile, products, recentLogs, prompt);
-            var json = geminiApiClient.generateJson(fullPrompt);
-            if (json.isPresent()) {
-                return parseGeminiResponse(json.get(), mode, products);
+            var result = geminiApiClient.generateJsonWithStatus(fullPrompt, null, null);
+            if (result.json().isPresent()) {
+                return parseGeminiResponse(result.json().get(), mode, products);
             }
+            rateLimited = result.isRateLimited();
         }
 
-        return buildFallbackResponse(prompt, mode, products);
+        AssistantChatResponse fallback = buildFallbackResponse(prompt, mode, products);
+        return rateLimited ? withBusyNotice(fallback) : fallback;
+    }
+
+    private static final String BUSY_NOTICE =
+            "Shelly şu an çok yoğun; bu, rafına göre hazırlanmış hızlı bir ön değerlendirme. "
+                    + "Birazdan tekrar sorarsan daha detaylı yorum yapabilirim.";
+
+    /** Kota/yoğunluk nedeniyle yedek yanıta düşüldüğünü kullanıcıya açıkça söyler. */
+    private AssistantChatResponse withBusyNotice(AssistantChatResponse fallback) {
+        List<String> tags = new ArrayList<>();
+        tags.add("Shelly yoğun");
+        tags.addAll(fallback.getTags());
+
+        return new AssistantChatResponse(
+                fallback.getIntentType(),
+                fallback.getDetectedIssue(),
+                BUSY_NOTICE + "\n" + fallback.getAiResponse(),
+                fallback.getMode(),
+                fallback.getTitle(),
+                BUSY_NOTICE + " " + fallback.getSummary(),
+                fallback.getReason(),
+                fallback.getSuggestion(),
+                fallback.getWarning(),
+                fallback.getRiskLevel(),
+                tags);
     }
 
     private AssistantChatResponse parseGeminiResponse(JsonNode json, ShellyMode mode, List<Product> products) {
