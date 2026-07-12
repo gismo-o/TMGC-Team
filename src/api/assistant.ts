@@ -1,6 +1,7 @@
 import { GeminiBotResponse, Message } from '../types';
 import { apiFetch } from '../services/apiClient';
 import { API_BASE_URL } from '../services/apiConfig';
+import { errorDev } from '../services/logger';
 
 type AssistantApiResponse = {
   intentType: 'INFO' | 'ISSUE';
@@ -50,7 +51,7 @@ export async function callAssistantAPI(userInput: string): Promise<GeminiBotResp
         : null,
     };
   } catch (error) {
-    console.error('Assistant API Error:', error);
+    errorDev('Assistant API Error:', error);
     return {
       intent_type: 'INFO',
       detected_issue: null,
@@ -70,7 +71,7 @@ export async function fetchAssistantHistory(): Promise<Message[]> {
       { id: `${entry.id}-ai`, from: 'ai', text: entry.aiResponse },
     ]);
   } catch (error) {
-    console.error('Assistant history error:', error);
+    errorDev('Assistant history error:', error);
     return [];
   }
 }

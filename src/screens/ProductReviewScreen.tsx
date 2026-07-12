@@ -8,6 +8,7 @@ import { ArrowLeft, Check, Sparkles, AlertCircle, AlertTriangle, Plus, X } from 
 import { useProducts } from '../context/ProductContext';
 import { analyzeProductIngredients } from '../services/productAnalysisService';
 import { getProductVisualSource } from '../services/productVisualCatalog';
+import { errorDev, logDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -81,7 +82,7 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
         });
         setAiSuggestedTime(analysis.suggestedTimeOfDay);
       } catch (error) {
-        console.error('Ingredient analysis error:', error);
+        errorDev('Ingredient analysis error:', error);
         if (cancelled) return;
         setAiAnalysis(null);
         setConflictData(null);
@@ -137,10 +138,10 @@ export default function ProductReviewScreen({ navigation, route }: Props) {
       } else {
         await addProduct(productToSave);
       }
-      console.log('Product saved successfully');
+      logDev('Product saved successfully');
       navigation.navigate('MainTabs');
     } catch (error) {
-      console.error('Error adding product:', error);
+      errorDev('Error adding product:', error);
       Alert.alert('Hata', 'Ürün eklenirken bir hata oluştu.');
     } finally {
       setLoading(false);

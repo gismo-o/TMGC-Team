@@ -22,6 +22,7 @@ import { useProducts } from '../context/ProductContext';
 import { useUser } from '../context/UserContext';
 import { ArrowDownUp, Bell, Camera, Clock3, Plus, ScanLine, Sparkles } from 'lucide-react-native';
 import { getProductVisualSource } from '../services/productVisualCatalog';
+import { errorDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
@@ -290,7 +291,7 @@ export default function HomeScreen({ navigation }: Props) {
     try {
       await deleteProduct(userProductId);
     } catch (error) {
-      console.error('Error deleting product:', error);
+      errorDev('Error deleting product:', error);
       Alert.alert('Hata', 'Ürün silinemedi.');
     }
   };

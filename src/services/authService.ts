@@ -1,6 +1,7 @@
 import { API_AUTH_URL } from './apiConfig';
 import { apiFetch } from './apiClient';
 import { clearAuthSession, getAuthToken, getCachedAuthUserId, saveAuthSession } from './authSession';
+import { errorDev } from './logger';
 
 type AuthUser = {
   id: string;
@@ -14,12 +15,20 @@ type AuthResponse = {
   user: AuthUser;
 };
 
+type LoginCredentials = {
+  email: string;
+  password: string;
+};
+
+type RegisterPayload = LoginCredentials & {
+  firstName: string;
+  lastName?: string;
+};
+
 // Giriş yapan aktif kullanıcının ID'sini bellekte tutacak değişken
 let activeUserId: string | null = getCachedAuthUserId();
 
 const requestAuth = async (path: string, body: unknown): Promise<AuthResponse> => {
-  console.log('İstek atılan adres:', `${API_AUTH_URL}${path}`);
-
   const response = await fetch(`${API_AUTH_URL}${path}`, {
     method: 'POST',
     headers: {
@@ -37,7 +46,6 @@ const requestAuth = async (path: string, body: unknown): Promise<AuthResponse> =
 
   activeUserId = String(responseData.user.id);
   await saveAuthSession(responseData.token, activeUserId);
-  console.log('Oturum açan kullanıcı ID\'si belleğe kaydedildi:', activeUserId);
 
   return {
     token: responseData.token,
@@ -55,21 +63,21 @@ export const authService = {
   },
 
   // Giriş İşlemi
-  login: async (credentials: any) => {
+  login: async (credentials: LoginCredentials) => {
     try {
       return await requestAuth('/login', credentials);
     } catch (error) {
-      console.error('authService.login hatası:', error);
+      errorDev('authService.login hatası:', error);
       throw error;
     }
   },
 
   // Kayıt İşlemi
-  register: async (data: any) => {
+  register: async (data: RegisterPayload) => {
     try {
       return await requestAuth('/register', data);
     } catch (error) {
-      console.error('authService.register hatası:', error);
+      errorDev('authService.register hatası:', error);
       throw error;
     }
   },
@@ -98,7 +106,15 @@ export const authService = {
   logout: async () => {
     activeUserId = null; // Belleği temizler
     await clearAuthSession();
-    console.log('Oturum kapatıldı, bellek sıfırlandı.');
+    return true;
+  },
+
+  deleteAccount: async () => {
+    await apiFetch<void>(`${API_AUTH_URL}/me`, {
+      method: 'DELETE',
+    });
+    activeUserId = null;
+    await clearAuthSession();
     return true;
   }
 };

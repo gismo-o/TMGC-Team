@@ -6,6 +6,7 @@ import { RootStackParamList } from '../types';
 import { User, Mail, Lock, ArrowLeft, ArrowRight } from 'lucide-react-native';
 import { authService } from '../services/authService';
 import { useUser } from '../context/UserContext';
+import { errorDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -51,7 +52,7 @@ export default function SignUpScreen({ navigation }: Props) {
         ]);
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      errorDev('Registration error:', error);
       Alert.alert('Hata', 'Kayıt işlemi başarısız oldu.');
     } finally {
       setLoading(false);

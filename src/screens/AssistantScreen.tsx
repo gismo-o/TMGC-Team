@@ -21,6 +21,7 @@ import { RootStackParamList, Message, GeminiBotResponse } from '../types';
 import { useUser } from '../context/UserContext';
 import { callAssistantAPI, fetchAssistantHistory } from '../api/assistant';
 import ShellyAdviceCard from '../components/ShellyAdviceCard';
+import { errorDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type AssistantScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Assistant'>;
@@ -115,7 +116,7 @@ export default function AssistantScreen({ navigation }: Props) {
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
-      console.error('Error sending message:', error);
+      errorDev('Error sending message:', error);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         from: 'ai',

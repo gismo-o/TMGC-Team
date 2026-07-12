@@ -3,8 +3,8 @@ package com.skinshelf.backend.controller;
 import com.skinshelf.backend.dto.UserProfileRequest;
 import com.skinshelf.backend.dto.UserProfileResponse;
 import com.skinshelf.backend.entity.User;
-import com.skinshelf.backend.entity.UserProfile;
 import com.skinshelf.backend.service.UserProfileService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -33,31 +33,20 @@ public class UserProfileController {
 
     // Onboarding verilerini veritabanına kaydetmek için POST isteği
     @PostMapping("/save")
-    public ResponseEntity<?> saveProfile(@RequestBody UserProfileRequest request) {
-        try {
-            UserProfile savedProfile = userProfileService.saveOrUpdateProfile(request);
-            // İlişki döngüsünü engellemek için geri dönen nesneden kullanıcı şifresini
-            // siliyoruz
-            if (savedProfile.getUser() != null) {
-                savedProfile.getUser().setPassword(null);
-            }
-            return ResponseEntity.ok(savedProfile);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<UserProfileResponse> saveProfile(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody UserProfileRequest request) {
+        return ResponseEntity.ok(userProfileService.saveOrUpdateProfile(currentUser, request));
     }
 
     // Belirli bir kullanıcıya ait cilt profilini getirmek için GET isteği
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getProfileByUserId(@PathVariable Long userId) {
-        try {
-            UserProfile profile = userProfileService.getProfileByUserId(userId);
-            if (profile.getUser() != null) {
-                profile.getUser().setPassword(null);
-            }
-            return ResponseEntity.ok(profile);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(e.getMessage());
+    public ResponseEntity<UserProfileResponse> getProfileByUserId(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long userId) {
+        if (!currentUser.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        return ResponseEntity.ok(userProfileService.getProfile(currentUser));
     }
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { userService } from '../services/userService';
+import { errorDev } from '../services/logger';
 
 export interface UserProfile {
   displayName?: string;
@@ -65,7 +66,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         await userService.updateProfile(userId, updates);
       } catch (error) {
-        console.error('Profil güncellenemedi:', error);
+        errorDev('Profil güncellenemedi:', error);
       }
     }
   };
@@ -77,7 +78,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setProfile(data);
       return data;
     } catch (error) {
-      console.error('Profil yüklenemedi:', error);
+      errorDev('Profil yüklenemedi:', error);
       setProfile(emptyProfile);
       return null;
     }

@@ -8,6 +8,7 @@ import { userService } from '../services/userService';
 import { useRoute } from '@react-navigation/native';
 // KRAVAT IMPORT: authService import edildi
 import { authService } from '../services/authService';
+import { errorDev, logDev, warnDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -101,7 +102,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   const saveProfile = async () => {
     // EĞER KULLANICI ID BULUNAMAZSA İŞLEMİ İPTAL EDER
     if (!userId) {
-      console.warn('Oturum açmış kullanıcı ID bilgisi bulunamadı!');
+      warnDev('Oturum açmış kullanıcı ID bilgisi bulunamadı!');
       alert('Lütfen önce giriş yapın.');
       return;
     }
@@ -125,11 +126,11 @@ export default function OnboardingScreen({ navigation }: Props) {
     };
 
     try {
-      console.log('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
+      logDev('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
       const result = await userService.updateProfile(String(userId), profileData);
-      console.log('Profil başarıyla veritabanına kaydedildi:', result);
+      logDev('Profil başarıyla veritabanına kaydedildi:', result);
     } catch (error) {
-      console.error('Cilt profili kaydedilirken hata oluştu:', error);
+      errorDev('Cilt profili kaydedilirken hata oluştu:', error);
     }
 
     // Yerel cihaz hafızasını/state'ini güncellemeye devam ediyoruz

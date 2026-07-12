@@ -14,14 +14,14 @@ Required host secrets:
 
 | Variable | Purpose |
 | --- | --- |
-| `DB_URL` | Supabase PostgreSQL JDBC URL |
-| `DB_USERNAME` | Supabase database username |
+| `DB_URL` | Supabase pooler JDBC URL, including `sslmode=require&prepareThreshold=0` |
+| `DB_USERNAME` | Supabase pooler username, e.g. `postgres.PROJECT_REF` |
 | `DB_PASSWORD` | Supabase database password |
 | `JWT_SECRET` | Long random JWT signing secret |
 | `JWT_EXPIRATION_SECONDS` | Session lifetime, default `604800` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins |
 | `GEMINI_API_KEY` | Gemini API key |
-| `GEMINI_MODEL` | Default `gemini-2.5-flash` |
+| `GEMINI_MODEL` | Optional model override; default `gemini-2.0-flash` |
 
 Post-deploy checks:
 
@@ -43,7 +43,7 @@ The Expo production setup is deploy-ready with:
 Before cloud builds, set:
 
 ```bash
-EXPO_PUBLIC_API_URL=https://BACKEND_DOMAIN/api/auth
+EXPO_PUBLIC_API_URL=https://skinshelf-backend.onrender.com/api/auth
 ```
 
 Preview Android build:
@@ -70,9 +70,18 @@ npx eas-cli build --profile production --platform ios
 - Android emulator smoke: login/session, home, scanner, manual product add, assistant.
 - Real device smoke: same flows plus camera permission and physical barcode scan.
 - Failure checks: backend unavailable, unknown barcode, Gemini fallback, DB connection failure.
+- Account deletion smoke: register a disposable account, add profile/product/log data, delete from Profile, then verify login fails.
 
 ## Current Blockers
 
-- Real backend deploy requires a logged-in hosting account and host-level secret entry.
+- Real backend deploy requires a logged-in hosting account and host-level secret entry for `DB_PASSWORD`, `JWT_SECRET`, and `GEMINI_API_KEY`.
 - EAS cloud build requires Expo account login and project credentials.
 - Real device testing requires a connected physical Android/iOS device.
+
+## Legal Documents
+
+- Privacy policy draft: `docs/privacy-policy.md`
+- Terms of use draft: `docs/terms-of-use.md`
+- Data deletion instructions: `docs/data-deletion.md`
+
+Publish these documents and use their public URLs in the app store listing before a public release.

@@ -20,6 +20,7 @@ import { RootStackParamList } from '../types';
 import { analyzeSkinPhoto } from '../services/skinAnalysisApi';
 import PhotoUploadCard from '../components/skin/PhotoUploadCard';
 import { feelingOptions } from '../components/skin/skinLabels';
+import { errorDev } from '../services/logger';
 import { colors, fonts, gradients, radius, shadows } from '../theme';
 
 type Props = {
@@ -90,7 +91,7 @@ export default function AddSkinPhotoScreen({ navigation }: Props) {
       });
       navigation.replace('SkinAnalysisResult', { analysis });
     } catch (error) {
-      console.error('Skin analysis error:', error);
+      errorDev('Skin analysis error:', error);
       Alert.alert('Analiz yapılamadı', 'Bağlantı sorunu olabilir. Lütfen tekrar dene.');
     } finally {
       setAnalyzing(false);

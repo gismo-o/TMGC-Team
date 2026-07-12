@@ -2,6 +2,7 @@ import { Product, ProductDraft } from '../types';
 import { openBeautyFactsService } from './openBeautyFactsService';
 import { apiFetch } from './apiClient';
 import { API_PRODUCTS_URL } from './apiConfig';
+import { warnDev } from './logger';
 
 type ScanInput = {
   barcode?: string;
@@ -55,7 +56,7 @@ export const productService = {
         const product = await openBeautyFactsService.getProductByBarcode(scanInput.barcode);
         if (product) return product;
       } catch (error) {
-        console.warn('Open Beauty Facts lookup failed, using fallback product:', error);
+        warnDev('Open Beauty Facts lookup failed, using fallback product:', error);
       }
     }
 

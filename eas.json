@@ -16,7 +16,7 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_BACKEND_DOMAIN/api/auth"
+        "EXPO_PUBLIC_API_URL": "https://skinshelf-backend.onrender.com/api/auth"
       }
     }
   },

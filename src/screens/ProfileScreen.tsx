@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Ale
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { ChevronRight, Settings, Shield, CircleHelp, LogOut, Sparkles } from 'lucide-react-native';
+import { ChevronRight, Settings, Shield, CircleHelp, LogOut, Sparkles, Trash2 } from 'lucide-react-native';
 import { authService } from '../services/authService';
 import { useUser } from '../context/UserContext';
 import { useProducts } from '../context/ProductContext';
+import { errorDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -16,12 +17,6 @@ type Props = {
 export default function ProfileScreen({ navigation }: Props) {
   const { profile, account, clearProfile } = useUser();
   const { products, clearProducts } = useProducts();
-
-  const menuItems = [
-    { icon: Settings, label: 'Hesap Ayarları' },
-    { icon: Shield, label: 'Gizlilik ve Güvenlik' },
-    { icon: CircleHelp, label: 'Yardım ve Destek' },
-  ];
 
   const fullName =
     profile.displayName?.trim() ||
@@ -42,10 +37,56 @@ export default function ProfileScreen({ navigation }: Props) {
       clearProducts();
       navigation.replace('Login');
     } catch (error) {
-      console.error('Logout error:', error);
+      errorDev('Logout error:', error);
       Alert.alert('Hata', 'Çıkış yapılırken bir hata oluştu.');
     }
   };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Hesabı ve Verileri Sil',
+      'Bu işlem hesabını, cilt profilini, ürünlerini, Shelly sohbet geçmişini ve cilt takip kayıtlarını kalıcı olarak siler. Geri alınamaz.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Kalıcı Olarak Sil',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.deleteAccount();
+              clearProfile();
+              clearProducts();
+              navigation.replace('Login');
+            } catch (error) {
+              errorDev('Delete account error:', error);
+              Alert.alert('Hata', 'Hesap silinirken bir sorun oluştu. Lütfen tekrar deneyin.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const menuItems = [
+    {
+      icon: Settings,
+      label: 'Hesap Ayarları',
+      onPress: () => Alert.alert('Hesap Ayarları', 'E-posta ve profil bilgilerini bu ekrandan yönetebilir, cilt profilini düzenleyebilirsin.'),
+    },
+    {
+      icon: Shield,
+      label: 'Gizlilik ve Güvenlik',
+      onPress: () => Alert.alert(
+        'Gizlilik ve Güvenlik',
+        'Cilt fotoğrafları varsayılan olarak saklanmaz; analiz için işlenir ve yalnızca analiz sonucu kaydedilir. Hesabını silersen profil, ürün, sohbet ve cilt takip verilerin kalıcı olarak silinir.'
+      ),
+    },
+    {
+      icon: CircleHelp,
+      label: 'Yardım ve Destek',
+      onPress: () => Alert.alert('Yardım ve Destek', 'Sorun yaşarsan uygulamayı güncel tutup tekrar dene. Kalıcı hata alırsan ekran görüntüsü ve kullandığın hesap e-postasıyla destek ekibine ilet.'),
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -122,6 +163,7 @@ export default function ProfileScreen({ navigation }: Props) {
               <TouchableOpacity
                 key={index}
                 style={[styles.menuItem, index === menuItems.length - 1 && styles.menuItemLast]}
+                onPress={item.onPress}
                 activeOpacity={0.75}
               >
                 <View style={styles.menuIconBox}>
@@ -137,6 +179,11 @@ export default function ProfileScreen({ navigation }: Props) {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
           <LogOut size={19} color={colors.danger} style={{ marginRight: 11 }} />
           <Text style={styles.logoutText}>Çıkış Yap</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} activeOpacity={0.8}>
+          <Trash2 size={18} color={colors.danger} style={{ marginRight: 11 }} />
+          <Text style={styles.deleteText}>Hesabı ve Verileri Sil</Text>
         </TouchableOpacity>
 
         <Text style={styles.versionText}>SkinShelf • v1.0.0</Text>
@@ -316,6 +363,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansBold,
     color: colors.danger,
     fontSize: 15,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 15,
+    marginTop: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: '#F2D9D6',
+  },
+  deleteText: {
+    fontFamily: fonts.sansBold,
+    color: colors.danger,
+    fontSize: 14,
   },
   versionText: {
     fontFamily: fonts.sans,

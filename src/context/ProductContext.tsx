@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Product } from '../types';
 import { productService } from '../services/productService';
+import { errorDev } from '../services/logger';
 
 interface ProductContextType {
   products: Product[];
@@ -22,7 +23,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       const data = await productService.getProducts();
       setProducts(data);
     } catch (error) {
-      console.error('Error loading products:', error);
+      errorDev('Error loading products:', error);
     }
   };
 
@@ -31,7 +32,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       const newProduct = await productService.addProduct(productData);
       setProducts(prev => [...prev, newProduct]);
     } catch (error) {
-      console.error('Error adding product:', error);
+      errorDev('Error adding product:', error);
       throw error;
     }
   };
@@ -46,7 +47,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       const savedProduct = await productService.updateProduct(id, { ...currentProduct, ...updates });
       setProducts(prev => prev.map(p => p.id === id ? savedProduct : p));
     } catch (error) {
-      console.error('Error updating product:', error);
+      errorDev('Error updating product:', error);
       throw error;
     }
   };
@@ -56,7 +57,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       await productService.deleteProduct(id);
       setProducts(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error('Error deleting product:', error);
+      errorDev('Error deleting product:', error);
       throw error;
     }
   };

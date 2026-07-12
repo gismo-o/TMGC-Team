@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, ProductDraft } from '../types';
 import { X, Barcode, ScanLine, Sparkles, PenLine, CameraOff } from 'lucide-react-native';
 import { productService } from '../services/productService';
+import { errorDev } from '../services/logger';
 import { fonts, radius } from '../theme';
 
 type Props = {
@@ -50,7 +51,7 @@ export default function ScannerScreen({ navigation }: Props) {
         [{ text: 'Manuel ekle', onPress: openManualForm }]
       );
     } catch (error) {
-      console.error('Scan error:', error);
+      errorDev('Scan error:', error);
       Alert.alert('Hata', 'Ürün bilgisi alınamadı. Manuel giriş ekranını açabilirsin.', [
         { text: 'Manuel ekle', onPress: openManualForm },
         { text: 'Tekrar dene', style: 'cancel', onPress: () => setLastCode(null) },

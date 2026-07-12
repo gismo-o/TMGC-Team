@@ -5,20 +5,40 @@ import com.skinshelf.backend.dto.LoginRequest;
 import com.skinshelf.backend.dto.RegisterRequest;
 import com.skinshelf.backend.dto.UserResponse;
 import com.skinshelf.backend.entity.User;
+import com.skinshelf.backend.repository.AssistantMessageRepository;
+import com.skinshelf.backend.repository.ProductRepository;
+import com.skinshelf.backend.repository.SkinLogRepository;
+import com.skinshelf.backend.repository.UserProfileRepository;
 import com.skinshelf.backend.repository.UserRepository;
 import com.skinshelf.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final ProductRepository productRepository;
+    private final AssistantMessageRepository assistantMessageRepository;
+    private final SkinLogRepository skinLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(
+            UserRepository userRepository,
+            UserProfileRepository userProfileRepository,
+            ProductRepository productRepository,
+            AssistantMessageRepository assistantMessageRepository,
+            SkinLogRepository skinLogRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
         this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.productRepository = productRepository;
+        this.assistantMessageRepository = assistantMessageRepository;
+        this.skinLogRepository = skinLogRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -54,6 +74,19 @@ public class UserService {
         }
 
         return toAuthResponse(user);
+    }
+
+    @Transactional
+    public void deleteAccount(User user) {
+        if (user == null || user.getId() == null) {
+            throw new RuntimeException("Kullanıcı oturumu bulunamadı.");
+        }
+
+        assistantMessageRepository.deleteByUser(user);
+        skinLogRepository.deleteByUser(user);
+        productRepository.deleteByUserId(user.getId());
+        userProfileRepository.deleteByUserId(user.getId());
+        userRepository.delete(user);
     }
 
     private AuthResponse toAuthResponse(User user) {

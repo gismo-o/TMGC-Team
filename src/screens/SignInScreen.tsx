@@ -7,6 +7,7 @@ import { Mail, Lock, ArrowLeft, ArrowRight } from 'lucide-react-native';
 import { authService } from '../services/authService';
 import { useUser } from '../context/UserContext';
 import { useProducts } from '../context/ProductContext';
+import { errorDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -49,7 +50,7 @@ export default function SignInScreen({ navigation }: Props) {
         navigation.replace('Onboarding');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      errorDev('Login error:', error);
       Alert.alert('Hata', 'Giriş yapılamadı. Bilgilerinizi kontrol edin.');
     } finally {
       setLoading(false);
@@ -57,7 +58,10 @@ export default function SignInScreen({ navigation }: Props) {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert('Bilgi', 'Şifre sıfırlama linki e-posta adresinize gönderilecektir.');
+    Alert.alert(
+      'Şifre Sıfırlama',
+      'Şifre sıfırlama e-postası için destek ekibiyle iletişime geçmen gerekiyor. Otomatik sıfırlama e-posta servisi prod ortamında ayrıca bağlanacak.'
+    );
   };
 
   return (

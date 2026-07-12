@@ -9,4 +9,6 @@ import java.util.List;
 public interface AssistantMessageRepository extends JpaRepository<AssistantMessage, Long> {
 
     List<AssistantMessage> findTop50ByUserOrderByCreatedAtDesc(User user);
+
+    long deleteByUser(User user);
 }

@@ -21,6 +21,7 @@ import { MainTabParamList, RootStackParamList, SkinLogEntry, SkinWeeklySummary }
 import { deleteSkinLog, fetchSkinLogs, fetchWeeklySkinSummary, parseSkinLogAnalysis } from '../services/skinAnalysisApi';
 import WeeklySkinSummaryCard from '../components/skin/WeeklySkinSummaryCard';
 import SkinLogCard from '../components/skin/SkinLogCard';
+import { errorDev } from '../services/logger';
 import { colors, fonts, gradients, radius, shadows } from '../theme';
 
 type SkinTrackingNavigationProp = CompositeNavigationProp<
@@ -43,7 +44,7 @@ export default function SkinTrackingScreen({ navigation }: Props) {
       setLogs(logEntries);
       setSummary(weeklySummary);
     } catch (error) {
-      console.error('Skin tracking load error:', error);
+      errorDev('Skin tracking load error:', error);
     }
   }, []);
 

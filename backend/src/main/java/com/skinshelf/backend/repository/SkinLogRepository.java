@@ -15,4 +15,6 @@ public interface SkinLogRepository extends JpaRepository<SkinLog, Long> {
     List<SkinLog> findByUserAndCreatedAtAfterOrderByCreatedAtDesc(User user, LocalDateTime after);
 
     Optional<SkinLog> findByIdAndUser(Long id, User user);
+
+    long deleteByUser(User user);
 }
