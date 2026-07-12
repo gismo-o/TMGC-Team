@@ -38,6 +38,13 @@
         {
           "cameraPermission": "SkinShelf barkod okutmak ve ürün ekleme akışında kamerayı kullanmak için izin ister."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SkinShelf cilt takibi için galerinden fotoğraf seçmene izin verir.",
+          "cameraPermission": "SkinShelf cilt takibi fotoğrafı çekmek için kamerayı kullanır."
+        }
       ]
     ],
     "extra": {

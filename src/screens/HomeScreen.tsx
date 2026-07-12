@@ -20,7 +20,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList, Product } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useUser } from '../context/UserContext';
-import { ArrowDownUp, Bell, Plus, ScanLine, Sparkles } from 'lucide-react-native';
+import { ArrowDownUp, Bell, Camera, Clock3, Plus, ScanLine, Sparkles } from 'lucide-react-native';
 import { getProductVisualSource } from '../services/productVisualCatalog';
 import { colors, fonts, radius, shadows } from '../theme';
 
@@ -332,6 +332,10 @@ export default function HomeScreen({ navigation }: Props) {
   });
 
   const firstName = profile.displayName?.trim().split(' ')[0];
+  const expiringCount = useMemo(
+    () => products.filter(product => isExpiringSoon(product.expiryDate) || isExpired(product.expiryDate)).length,
+    [products]
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -343,10 +347,7 @@ export default function HomeScreen({ navigation }: Props) {
         <TouchableOpacity
           style={styles.notificationButton}
           activeOpacity={0.8}
-          onPress={() => Alert.alert(
-            'Biliyor musun?',
-            'Retinol ve peeling gibi güçlü aktifleri aynı gece kullanmamak cildi daha az yorabilir. Shelly haftalık plan hazırlarken bu bilgiyi dikkate alır.'
-          )}
+          onPress={() => navigation.navigate('Notifications')}
         >
           <Bell size={20} color={colors.forest} />
           <View style={styles.notificationDot} />
@@ -380,6 +381,20 @@ export default function HomeScreen({ navigation }: Props) {
               <Sparkles size={12} color={colors.gold} />
               <Text style={styles.cabinetMetaText}>{products.length} ürün rafında</Text>
             </View>
+            {expiringCount > 0 && (
+              <View style={[styles.cabinetMetaPill, styles.cabinetMetaPillWarning]}>
+                <Clock3 size={12} color={colors.warning} />
+                <Text style={[styles.cabinetMetaText, { color: colors.warning }]}>{expiringCount} ürün SKT takibinde</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={[styles.cabinetMetaPill, styles.cabinetMetaPillSage]}
+              onPress={() => navigation.navigate('SkinTracking')}
+              activeOpacity={0.8}
+            >
+              <Camera size={12} color={colors.sage} />
+              <Text style={[styles.cabinetMetaText, { color: colors.sage }]}>Cilt Takibi</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -407,9 +422,13 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.cabinetShell}>
+          <LinearGradient
+            colors={['#FDFBF4', '#F6F3E8', '#EFEBDC']}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
           <View style={styles.cabinetTopLip} />
-          <View style={styles.backGlowTop} />
-          <View style={styles.backGlowBottom} />
           <View style={styles.leftWallShadow} />
           <View style={styles.rightWallShadow} />
 
@@ -586,7 +605,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     color: colors.onDark,
   },
-  cabinetMetaRow: { flexDirection: 'row', gap: 8, marginTop: 13 },
+  cabinetMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 13 },
   cabinetMetaPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -598,6 +617,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lineGold,
   },
+  cabinetMetaPillWarning: { borderColor: '#EFDDB4', backgroundColor: colors.warningSurface },
+  cabinetMetaPillSage: { borderColor: colors.lineSage, backgroundColor: colors.surfaceSage },
   cabinetMetaText: {
     fontFamily: fonts.sansBold,
     fontSize: 12,
@@ -642,7 +663,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     backgroundColor: '#F7F6EF',
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: '#E3E0D2',
     overflow: 'hidden',
     minHeight: 820,
     position: 'relative',
@@ -650,25 +671,9 @@ const styles = StyleSheet.create({
   },
   cabinetTopLip: {
     height: 22,
-    backgroundColor: '#FDFCF8',
+    backgroundColor: 'rgba(255,255,255,0.85)',
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-  },
-  backGlowTop: {
-    position: 'absolute',
-    top: 22,
-    left: 0,
-    right: 0,
-    height: 180,
-    backgroundColor: 'rgba(255,255,255,0.62)',
-  },
-  backGlowBottom: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 170,
-    backgroundColor: 'rgba(222,220,208,0.32)',
+    borderBottomColor: '#E9E6D8',
   },
   leftWallShadow: {
     position: 'absolute',
@@ -709,21 +714,23 @@ const styles = StyleSheet.create({
   },
   referenceShelfBoard: {
     height: 18,
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    backgroundColor: '#FCFAF3',
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: '#E6E2D2',
+    borderBottomWidth: 2,
+    borderBottomColor: '#D9D4C1',
     shadowColor: '#2A2F2A',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.14,
-    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
     elevation: 3,
   },
   referenceShelfHighlight: {
-    height: 4,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    height: 5,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   emptyShelfHint: {
     position: 'absolute',

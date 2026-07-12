@@ -20,6 +20,7 @@ import { ArrowLeft, Send, Sparkles, Bot, Shield, RotateCcw } from 'lucide-react-
 import { RootStackParamList, Message, GeminiBotResponse } from '../types';
 import { useUser } from '../context/UserContext';
 import { callAssistantAPI, fetchAssistantHistory } from '../api/assistant';
+import ShellyAdviceCard from '../components/ShellyAdviceCard';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type AssistantScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Assistant'>;
@@ -31,8 +32,10 @@ type Props = {
 const QUICK_ACTIONS = [
   { label: 'Rutinimi kontrol et', prompt: 'Bugünkü rutinim ağır mı?' },
   { label: 'Yeni ürün ekledim', prompt: 'Yeni eklediğim ürün rutinime uygun mu?' },
+  { label: 'Birlikte kullanılır mı?', prompt: 'Bu iki ürün birlikte kullanılır mı?' },
   { label: 'Cildim tepki verdi', prompt: 'Cildim kızardı ve tepki verdi' },
-  { label: 'İçerik analizi yap', prompt: 'Bu iki ürün birlikte kullanılır mı?' },
+  { label: 'İçerik analizi yap', prompt: 'Rafımdaki ürünlerin içeriklerini analiz eder misin?' },
+  { label: 'Haftalık plan oluştur', prompt: 'Bana haftalık rutin planı oluşturur musun?' },
 ];
 
 const QUICK_PROMPTS = ['Bu ürün rutinime uygun mu?', 'Bugünkü rutinim ağır mı?', 'Cildim tepki verdi'];
@@ -108,6 +111,7 @@ export default function AssistantScreen({ navigation }: Props) {
         id: (Date.now() + 1).toString(),
         from: 'ai',
         text: response.ai_response,
+        structured: response.structured ?? undefined,
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
@@ -239,9 +243,13 @@ export default function AssistantScreen({ navigation }: Props) {
 
         {hasMessages && (
           <View style={styles.chatContainer}>
-            {messages.map(msg => (
-              <ChatBubble key={msg.id} from={msg.from} text={msg.text} />
-            ))}
+            {messages.map(msg =>
+              msg.from === 'ai' && msg.structured ? (
+                <ShellyAdviceCard key={msg.id} response={msg.structured} />
+              ) : (
+                <ChatBubble key={msg.id} from={msg.from} text={msg.text} />
+              )
+            )}
 
             {isLoading && (
               <View style={styles.chatRow}>

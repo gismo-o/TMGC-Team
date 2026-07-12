@@ -22,6 +22,9 @@ export type RoutineReview = {
   morningNote: string;
   eveningNote: string;
   riskNote: string;
+  /** 10 üzerinden rutin uyum skoru. */
+  score: number;
+  riskLevel: 'Düşük' | 'Orta' | 'Yüksek';
 };
 
 const normalize = (value = '') => value.toLocaleLowerCase('tr-TR');
@@ -98,7 +101,19 @@ export const getRoutineReview = (morningProducts: Product[], eveningProducts: Pr
   const hasEveningRetinol = eveningProducts.some(product => getProductRole(product) === 'retinol');
   const hasEveningPeeling = eveningProducts.some(product => getProductRole(product) === 'peeling');
 
+  let score = 10;
+  if (!hasMorningSpf) score -= 2;
+  if (hasEveningRetinol && hasEveningPeeling) score -= 3;
+  else if (hasEveningRetinol || hasEveningPeeling) score -= 1;
+  if (hasMorningVitaminC && !hasMorningSpf) score -= 1;
+  score = Math.max(3, score);
+
+  const riskLevel: RoutineReview['riskLevel'] =
+    hasEveningRetinol && hasEveningPeeling ? 'Yüksek' : score <= 7 ? 'Orta' : 'Düşük';
+
   return {
+    score,
+    riskLevel,
     morningNote: hasMorningVitaminC && hasMorningSpf
       ? 'C vitamini sonrası SPF50+ kullanman leke görünümü hedefini destekler.'
       : hasMorningSpf

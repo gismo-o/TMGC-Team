@@ -173,6 +173,16 @@ export default function RoutineScreen({ navigation }: Props) {
               <Text style={styles.summarySubtitle}>Cilt tipi: {profile.skinType || 'Belirlenmedi'} • Kaynak: Dolabım</Text>
             </View>
           </View>
+          <View style={styles.summaryScoreRow}>
+            <View style={styles.summaryScorePill}>
+              <Text style={styles.summaryScoreValue}>{routineReview.score}/10</Text>
+              <Text style={styles.summaryScoreLabel}>Uyum skoru</Text>
+            </View>
+            <View style={styles.summaryScorePill}>
+              <Text style={styles.summaryScoreValue}>{routineReview.riskLevel}</Text>
+              <Text style={styles.summaryScoreLabel}>Risk seviyesi</Text>
+            </View>
+          </View>
           <Text style={styles.summaryText}>
             {routineReview.morningNote} {routineReview.eveningNote}
           </Text>
@@ -338,6 +348,27 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.88)',
     fontSize: 13.5,
     lineHeight: 21,
+  },
+  summaryScoreRow: { flexDirection: 'row', gap: 9, marginBottom: 12 },
+  summaryScorePill: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.09)',
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  summaryScoreValue: {
+    fontFamily: fonts.sansExtraBold,
+    fontSize: 15,
+    color: colors.goldSoft,
+  },
+  summaryScoreLabel: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 10.5,
+    color: colors.onDarkSoft,
+    marginTop: 2,
   },
   todayHeader: {
     flexDirection: 'row',

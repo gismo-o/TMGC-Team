@@ -1,0 +1,23 @@
+package com.skinshelf.backend.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.List;
+import java.util.Map;
+
+@Getter
+@AllArgsConstructor
+public class SkinAnalysisResponse {
+    private Long logId;
+    private String title;
+    private String summary;
+    /** redness / dryness / oiliness / blemishAppearance / irritationAppearance -> low|medium|high|unknown */
+    private Map<String, String> visibleChanges;
+    private String routineConnection;
+    private String suggestion;
+    private String warning;
+    private String riskLevel;
+    private List<String> tags;
+    private String createdAt;
+}

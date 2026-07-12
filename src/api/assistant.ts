@@ -6,6 +6,14 @@ type AssistantApiResponse = {
   intentType: 'INFO' | 'ISSUE';
   detectedIssue: string | null;
   aiResponse: string;
+  mode?: string;
+  title?: string;
+  summary?: string;
+  reason?: string | null;
+  suggestion?: string | null;
+  warning?: string | null;
+  riskLevel?: 'low' | 'medium' | 'high';
+  tags?: string[];
 };
 
 type AssistantHistoryEntry = {
@@ -28,6 +36,18 @@ export async function callAssistantAPI(userInput: string): Promise<GeminiBotResp
       intent_type: response.intentType,
       detected_issue: response.detectedIssue,
       ai_response: response.aiResponse,
+      structured: response.summary
+        ? {
+            mode: response.mode ?? 'GENERAL_CHAT',
+            title: response.title ?? "Shelly'nin Yorumu",
+            summary: response.summary,
+            reason: response.reason ?? null,
+            suggestion: response.suggestion ?? null,
+            warning: response.warning ?? null,
+            riskLevel: response.riskLevel ?? 'low',
+            tags: response.tags ?? [],
+          }
+        : null,
     };
   } catch (error) {
     console.error('Assistant API Error:', error);
@@ -35,6 +55,7 @@ export async function callAssistantAPI(userInput: string): Promise<GeminiBotResp
       intent_type: 'INFO',
       detected_issue: null,
       ai_response: 'Şu anda bağlantı kurulamıyor. Lütfen tekrar deneyin.',
+      structured: null,
     };
   }
 }

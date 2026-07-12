@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Calendar, Home, User } from 'lucide-react-native';
+import { Calendar, Camera, Home, User } from 'lucide-react-native';
 
 import { RootStackParamList, MainTabParamList } from '../types';
 import { colors, fonts, tabBarStyle } from '../theme';
@@ -22,6 +22,10 @@ import ProfileScreen from '../screens/ProfileScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import ProductReviewScreen from '../screens/ProductReviewScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import SkinTrackingScreen from '../screens/SkinTrackingScreen';
+import AddSkinPhotoScreen from '../screens/AddSkinPhotoScreen';
+import SkinAnalysisResultScreen from '../screens/SkinAnalysisResultScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -69,6 +73,14 @@ function MainTabs() {
         options={{
           tabBarLabel: 'Rutinim',
           tabBarIcon: ({ color, focused }) => <Calendar color={color} size={focused ? 23 : 21} strokeWidth={focused ? 2.4 : 2} />,
+        }}
+      />
+      <Tab.Screen
+        name="SkinTracking"
+        component={SkinTrackingScreen}
+        options={{
+          tabBarLabel: 'Cilt Takibi',
+          tabBarIcon: ({ color, focused }) => <Camera color={color} size={focused ? 23 : 21} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />
       <Tab.Screen
@@ -153,6 +165,17 @@ export default function RootNavigator() {
           name="ProductDetail"
           component={ProductDetailScreen}
           options={{ presentation: 'transparentModal', animation: 'slide_from_bottom', contentStyle: { backgroundColor: 'transparent' } }}
+        />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen
+          name="AddSkinPhoto"
+          component={AddSkinPhotoScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="SkinAnalysisResult"
+          component={SkinAnalysisResultScreen}
+          options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

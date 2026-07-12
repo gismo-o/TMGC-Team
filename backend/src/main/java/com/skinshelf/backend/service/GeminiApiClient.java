@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.Optional;
 
 @Service
 public class GeminiApiClient {
+
+    private static final Logger log = LoggerFactory.getLogger(GeminiApiClient.class);
 
     private final String apiKey;
     private final String model;
@@ -40,6 +44,13 @@ public class GeminiApiClient {
     }
 
     public Optional<JsonNode> generateJson(String prompt) {
+        return generateJson(prompt, null, null);
+    }
+
+    /**
+     * Gemini'den JSON yanıt ister. base64Image verilirse istek multimodal (görsel + metin) olur.
+     */
+    public Optional<JsonNode> generateJson(String prompt, String base64Image, String imageMimeType) {
         if (!isConfigured()) {
             return Optional.empty();
         }
@@ -47,13 +58,15 @@ public class GeminiApiClient {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(buildUri())
-                    .timeout(Duration.ofSeconds(25))
+                    .timeout(Duration.ofSeconds(40))
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(buildRequest(prompt)))
+                    .header("x-goog-api-key", apiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(buildRequest(prompt, base64Image, imageMimeType)))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                log.warn("Gemini API isteği başarısız: status={} body={}", response.statusCode(), truncate(response.body()));
                 return Optional.empty();
             }
 
@@ -67,30 +80,38 @@ public class GeminiApiClient {
                     .asText("");
 
             if (text.isBlank()) {
+                log.warn("Gemini API boş yanıt döndürdü.");
                 return Optional.empty();
             }
 
             return Optional.of(objectMapper.readTree(stripMarkdownFence(text)));
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.warn("Gemini API çağrısı hata verdi: {}", exception.getMessage());
             return Optional.empty();
         }
     }
 
     private URI buildUri() {
         String encodedModel = URLEncoder.encode(model, StandardCharsets.UTF_8);
-        String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
         return URI.create("https://generativelanguage.googleapis.com/v1beta/models/"
                 + encodedModel
-                + ":generateContent?key="
-                + encodedKey);
+                + ":generateContent");
     }
 
-    private String buildRequest(String prompt) throws Exception {
+    private String buildRequest(String prompt, String base64Image, String imageMimeType) throws Exception {
         ObjectNode root = objectMapper.createObjectNode();
         ArrayNode contents = root.putArray("contents");
         ObjectNode content = contents.addObject();
         content.put("role", "user");
-        content.putArray("parts").addObject().put("text", prompt);
+        ArrayNode parts = content.putArray("parts");
+
+        if (base64Image != null && !base64Image.isBlank()) {
+            ObjectNode inlineData = parts.addObject().putObject("inline_data");
+            inlineData.put("mime_type", imageMimeType == null || imageMimeType.isBlank() ? "image/jpeg" : imageMimeType);
+            inlineData.put("data", base64Image);
+        }
+
+        parts.addObject().put("text", prompt);
 
         ObjectNode generationConfig = root.putObject("generationConfig");
         generationConfig.put("temperature", 0.25);
@@ -109,5 +130,12 @@ public class GeminiApiClient {
                 .replaceFirst("^```(?:json)?\\s*", "")
                 .replaceFirst("\\s*```$", "")
                 .trim();
+    }
+
+    private String truncate(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.length() <= 300 ? value : value.substring(0, 300) + "...";
     }
 }
