@@ -120,7 +120,8 @@ public class ShellyPromptService {
     public ShellyMode detectMode(String message) {
         String normalized = message == null ? "" : message.toLowerCase(Locale.forLanguageTag("tr-TR"));
 
-        if (containsAny(normalized, "tepki", "kızardı", "kızarıklık", "yandı", "sivilce çıktı", "pullan", "kaşın")) {
+        if (containsAny(normalized, "tepki", "kızar", "yandı", "yanıyor", "sivilce", "akne", "siyah nokta",
+                "pullan", "kaşın", "batma", "tahriş", "kuru", "gergin", "yağlan", "parla")) {
             return ShellyMode.SKIN_REACTION;
         }
         if (containsAny(normalized, "birlikte kullanılır", "içerik analizi", "içerik listesi", "inci", "bu iki ürün")) {
@@ -143,10 +144,15 @@ public class ShellyPromptService {
             case PRODUCT_ANALYSIS -> "Mod: PRODUCT_ANALYSIS. Kullanicinin sordugu urunun rafiyla ve cilt hedefiyle uyumuna odaklan; kullanim zamani ve olasi cakismalari belirt.";
             case ROUTINE_CHECK -> "Mod: ROUTINE_CHECK. Sabah/aksam rutin sirasini, adim yogunlugunu ve SPF durumunu degerlendir; gerekiyorsa sadelestirme oner.";
             case INGREDIENT_ANALYSIS -> "Mod: INGREDIENT_ANALYSIS. Icerik listesini bilgi tabanindaki kurallarla karsilastir; cakisma ve eslesmeleri acikca yaz.";
-            case SKIN_REACTION -> "Mod: SKIN_REACTION. Olasi tetikleyicileri rutin ve son urunlerle iliskilendir; sakinlestirici sade bir plan oner; intentType'i ISSUE yap ve detectedIssue alanini doldur.";
+            case SKIN_REACTION -> """
+                    Mod: SKIN_REACTION. Kullanicinin cilt derdini (sivilce, kuruluk, kizariklik, yaglanma vb.) ciddiye al.
+                    1) Once rafindaki urunlere bak: derde destek olabilecek urun varsa MARKA + URUN ADIYLA oner ve nasil kullanacagini soyle.
+                    2) Rafta uygun urun yoksa marka dayatmadan icerik/kategori oner (or. sivilce icin BHA/niacinamide, kuruluk icin seramid/hyaluronik asit).
+                    3) Derdi tetikleyebilecek raf urunlerini de belirt (or. ayni gece retinol + peeling).
+                    intentType'i ISSUE yap ve detectedIssue alanini kisa bir etiketle doldur (or. "Sivilce gorunumu").""";
             case WEEKLY_PLAN -> "Mod: WEEKLY_PLAN. Aktif icerikleri haftaya dengeli yay; retinol ve peeling gecelerini ayir; SPF hatirlat.";
             case SKIN_PHOTO_ANALYSIS -> "Mod: SKIN_PHOTO_ANALYSIS. Fotograftaki gorunumu yalnizca gorunum diliyle degerlendir; rutin ve son cilt kayitlariyla olasi baglantiyi kur; kesin konusma.";
-            case GENERAL_CHAT -> "Mod: GENERAL_CHAT. Genel cilt bakim sorusunu kullanicinin profili ve rafi baglaminda yanitla.";
+            case GENERAL_CHAT -> "Mod: GENERAL_CHAT. Genel cilt bakim sorusunu kullanicinin profili ve rafi baglaminda yanitla. Uygun oldugunda rafindaki urunleri adiyla referans ver; soyut degil somut ve uygulanabilir konus.";
         };
     }
 

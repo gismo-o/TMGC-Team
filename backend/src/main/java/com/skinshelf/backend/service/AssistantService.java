@@ -95,23 +95,23 @@ public class AssistantService {
         }
 
         ShellyMode mode = shellyPromptService.detectMode(prompt);
+        List<Product> products = productRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
 
         if (geminiApiClient.isConfigured()) {
             UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
-            List<Product> products = productRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
             List<SkinLog> recentLogs = skinLogRepository.findTop30ByUserOrderByCreatedAtDesc(user);
 
             String fullPrompt = shellyPromptService.buildChatPrompt(mode, profile, products, recentLogs, prompt);
             var json = geminiApiClient.generateJson(fullPrompt);
             if (json.isPresent()) {
-                return parseGeminiResponse(json.get(), mode);
+                return parseGeminiResponse(json.get(), mode, products);
             }
         }
 
-        return buildFallbackResponse(prompt, mode);
+        return buildFallbackResponse(prompt, mode, products);
     }
 
-    private AssistantChatResponse parseGeminiResponse(JsonNode json, ShellyMode mode) {
+    private AssistantChatResponse parseGeminiResponse(JsonNode json, ShellyMode mode, List<Product> products) {
         String intentType = json.path("intentType").asText("INFO").equals("ISSUE") ? "ISSUE" : "INFO";
         String detectedIssue = json.path("detectedIssue").isNull() ? null : blankToNull(json.path("detectedIssue").asText(null));
         String summary = json.path("summary").asText("").trim();
@@ -122,7 +122,7 @@ public class AssistantService {
         String title = json.path("title").asText("Shelly'nin Yorumu").trim();
 
         if (summary.isBlank()) {
-            return buildFallbackResponse("rutin", mode);
+            return buildFallbackResponse("rutin", mode, products);
         }
 
         List<String> tags = new ArrayList<>();
@@ -163,24 +163,57 @@ public class AssistantService {
         return builder.toString();
     }
 
-    private AssistantChatResponse buildFallbackResponse(String prompt, ShellyMode mode) {
+    /** Cilt derdi türleri ve her biri için rafta aranacak destekleyici içerikler. */
+    private record ConcernRule(
+            String issueLabel,
+            List<String> promptTerms,
+            List<String> helpfulIngredients,
+            String ingredientAdvice,
+            String routineAdvice,
+            String warning) {
+    }
+
+    private static final List<ConcernRule> CONCERN_RULES = List.of(
+            new ConcernRule(
+                    "Sivilce görünümü",
+                    List.of("sivilce", "akne", "siyah nokta", "komedon", "gözenek tıkan"),
+                    List.of("salicylic", "salisilik", "bha", "niacinamide", "niasinamid", "benzoyl", "benzoil",
+                            "azelaic", "azelaik", "zinc", "çinko", "tea tree", "çay ağacı"),
+                    "Sivilce benzeri görünüm için BHA (salisilik asit), niacinamide veya azelaik asit içeren bir ürün rutine eklenebilir.",
+                    "Bölgeyi sıkmadan nazik temizleyici + hafif nemlendirici kullan; sabah SPF'i atlama. Aktifi haftada 2-3 gece bölgesel başlatmak daha güvenli.",
+                    "Aynı gece retinol/peeling ile üst üste kullanma. Ağrılı, iltihaplı veya yaygınlaşan görünümde dermatoloğa danışmak daha güvenli olur."),
+            new ConcernRule(
+                    "Kuruluk görünümü",
+                    List.of("kuru", "gergin", "pullan", "çatla"),
+                    List.of("hyaluronic", "hyaluronik", "hiyalüronik", "ceramide", "seramid", "panthenol",
+                            "glycerin", "gliserin", "squalane", "skualan", "urea"),
+                    "Kuruluk hissi için hyaluronik asit, seramid veya panthenol içeren nem/bariyer destekli bir ürün iyi gelir.",
+                    "Birkaç gün peeling ve güçlü aktiflere ara verip nemlendirici katmanını artır; temizleyicinin köpürtücü/sert olmadığından emin ol.",
+                    "Pullanmayla birlikte şiddetli kaşıntı veya çatlama varsa dermatolog kontrolü daha güvenli."),
+            new ConcernRule(
+                    "Kızarıklık/tahriş görünümü",
+                    List.of("kızar", "tahriş", "yandı", "yanıyor", "batma", "hassas", "tepki"),
+                    List.of("centella", "cica", "madecassoside", "panthenol", "ceramide", "seramid", "allantoin",
+                            "aloe", "oat", "yulaf"),
+                    "Kızarıklık görünümünü yatıştırmak için centella (cica), panthenol veya seramid içerikli sakinleştirici bir ürün destek olur.",
+                    "2-3 gün tüm aktifleri (retinol, asitler, C vitamini) durdur; sadece nazik temizleyici + yatıştırıcı nemlendirici + SPF kullan.",
+                    "Şiddetli yanma, şişlik, su toplama veya göz çevresinde reaksiyon olursa ürünleri bırakıp dermatoloğa danış."),
+            new ConcernRule(
+                    "Yağlanma görünümü",
+                    List.of("yağlan", "parla", "parlama", "sebum"),
+                    List.of("niacinamide", "niasinamid", "salicylic", "salisilik", "bha", "zinc", "çinko", "clay", "kil"),
+                    "Parlama/yağlanma görünümü için niacinamide veya BHA içeren bir ürün sebum dengesine destek olur.",
+                    "Nemlendiriciyi atlamak yağlanmayı artırabilir; hafif, jel bazlı bir nemlendirici ve sabah SPF ile devam et.",
+                    "Yağlanmayla birlikte ağrılı sivilce artışı olursa rutini sadeleştirip gözlemlemek iyi olur."));
+
+    private AssistantChatResponse buildFallbackResponse(String prompt, ShellyMode mode, List<Product> products) {
         String normalized = prompt.toLowerCase(Locale.forLanguageTag("tr-TR"));
 
-        if (mode == ShellyMode.SKIN_REACTION
-                || normalized.contains("kızarıklık") || normalized.contains("tepki") || normalized.contains("kızardı")) {
-            return new AssistantChatResponse(
-                    "ISSUE",
-                    "Kızarıklık",
-                    "Cildindeki kızarıklık görünümünü algıladım. Bu geçici hassasiyet veya tahriş ihtimali olabilir. "
-                            + "Güvenli modda agresif aktifleri durdurup bariyer destekli, sade bir rutine geçmeni öneririm.",
-                    mode.name(),
-                    "Shelly'nin Yorumu",
-                    "Cildinde kızarıklık görünümü ve hassasiyet belirtisi olabilir.",
-                    "Aktif içerikler (retinol, asitler) veya yeni bir ürün geçici tahriş ihtimali oluşturmuş olabilir.",
-                    "Birkaç gün rutini sade tut: nazik temizleyici, bariyer destekli nemlendirici ve gündüz SPF.",
-                    "Şiddetli yanma, şişlik veya su toplama olursa dermatoloğa danışman daha güvenli olur.",
-                    "medium",
-                    List.of("Hassasiyet", "Bariyer desteği"));
+        // Önce cilt derdini yakala: rafındaki ürünlerden somut öneri kur.
+        for (ConcernRule rule : CONCERN_RULES) {
+            if (rule.promptTerms().stream().anyMatch(normalized::contains)) {
+                return buildConcernResponse(rule, mode, products);
+            }
         }
 
         Map<String, List<String>> matchedRules = knowledgeBase.matchRules(normalized);
@@ -225,16 +258,79 @@ public class AssistantService {
         return new AssistantChatResponse(
                 "INFO",
                 null,
-                "Anladığım kadarıyla: " + prompt + ". Rafındaki ürünlere göre en güvenli yaklaşım rutini sade tutmak, "
+                "Sorunu rafındaki ürünler üzerinden değerlendirdim. En güvenli yaklaşım rutini sade tutmak, "
                         + "yeni ürünleri tek tek eklemek ve beklenmeyen reaksiyonda aktifleri geçici olarak durdurmaktır.",
                 mode.name(),
                 "Shelly'nin Yorumu",
                 "Sorunu rafındaki ürünler ve profilin üzerinden değerlendirdim.",
                 "Yeni değişkenleri tek tek eklemek, olası tepkinin kaynağını ayırt etmeyi kolaylaştırır.",
-                "Rutini sade tut; yeni ürünleri tek tek ekle ve cilt tepkisini gözlemle.",
+                "Rutini sade tut; yeni ürünleri tek tek ekle ve cilt tepkisini gözlemle. Derdini biraz daha detaylı yazarsan (ör. \"yanaklarımda sivilce çıktı\") daha net öneri verebilirim.",
                 "Beklenmeyen reaksiyonda aktifleri geçici olarak durdur.",
                 "low",
                 List.of("Genel"));
+    }
+
+    /** Rafta derde uygun ürünleri bulup somut kullanım önerisi kurar. */
+    private AssistantChatResponse buildConcernResponse(ConcernRule rule, ShellyMode mode, List<Product> products) {
+        List<Product> helpful = products.stream()
+                .filter(product -> matchesAny(productSearchText(product), rule.helpfulIngredients()))
+                .limit(3)
+                .toList();
+
+        String reason;
+        String suggestion;
+        if (helpful.isEmpty()) {
+            reason = products.isEmpty()
+                    ? "Rafında henüz kayıtlı ürün yok, bu yüzden içerik bazlı öneri veriyorum."
+                    : "Rafındaki ürünlerde bu derde yönelik belirgin bir aktif içerik görünmüyor.";
+            suggestion = rule.ingredientAdvice() + " " + rule.routineAdvice();
+        } else {
+            reason = "Rafında destek olabilecek ürünler var: " + helpful.stream()
+                    .map(product -> product.getBrand() + " " + product.getName()
+                            + (product.getActiveIngredients() == null || product.getActiveIngredients().isEmpty()
+                                    ? ""
+                                    : " (" + String.join(", ", product.getActiveIngredients()) + ")"))
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+            suggestion = "Bu ürünlerden biriyle başla; " + rule.routineAdvice();
+        }
+
+        boolean hasSpf = products.stream()
+                .anyMatch(product -> matchesAny(productSearchText(product), List.of("spf", "güneş", "sunscreen")));
+        if (!hasSpf) {
+            suggestion += " Rafında güneş koruyucu görünmüyor; aktif içerik kullanırken sabah SPF önemli.";
+        }
+
+        return new AssistantChatResponse(
+                "ISSUE",
+                rule.issueLabel(),
+                composePlainText(rule.issueLabel() + " için rafını kontrol ettim.", reason, suggestion, rule.warning()),
+                mode.name(),
+                "Shelly'nin Yorumu",
+                rule.issueLabel() + " için rafını ve rutinini kontrol ettim.",
+                reason,
+                suggestion,
+                rule.warning(),
+                "medium",
+                List.of(rule.issueLabel(), hasSpf ? "Rutin desteği" : "SPF gerekli"));
+    }
+
+    private String productSearchText(Product product) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(product.getBrand()).append(' ')
+                .append(product.getName()).append(' ')
+                .append(product.getCategory()).append(' ');
+        if (product.getDescription() != null) {
+            builder.append(product.getDescription()).append(' ');
+        }
+        if (product.getActiveIngredients() != null) {
+            builder.append(String.join(" ", product.getActiveIngredients()));
+        }
+        return builder.toString().toLowerCase(Locale.forLanguageTag("tr-TR"));
+    }
+
+    private boolean matchesAny(String text, List<String> terms) {
+        return terms.stream().anyMatch(text::contains);
     }
 
     private String normalizeRisk(String risk) {
