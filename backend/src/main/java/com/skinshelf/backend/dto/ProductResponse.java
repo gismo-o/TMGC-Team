@@ -20,6 +20,7 @@ public class ProductResponse {
     private String expiryDate;
     private List<String> activeIngredients;
     private Boolean isFavorite;
+    private Boolean isActive; // GÜNCELLEME: Aktiflik alanı DTO'ya eklendi
 
     public static ProductResponse from(Product product) {
         return new ProductResponse(
@@ -33,6 +34,9 @@ public class ProductResponse {
                 product.getDescription() == null ? "" : product.getDescription(),
                 product.getExpiryDate(),
                 product.getActiveIngredients() == null ? List.of() : product.getActiveIngredients(),
-                Boolean.TRUE.equals(product.getFavorite()));
+                Boolean.TRUE.equals(product.getFavorite()),
+                // GÜNCELLEME: Veritabanındaki aktiflik bilgisini telefona dönecek olan nesneye
+                // kopyalıyoruz
+                product.getIsActive() == null || product.getIsActive());
     }
 }

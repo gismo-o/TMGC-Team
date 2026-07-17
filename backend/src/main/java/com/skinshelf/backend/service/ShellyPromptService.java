@@ -3,14 +3,17 @@ package com.skinshelf.backend.service;
 import com.skinshelf.backend.entity.Product;
 import com.skinshelf.backend.entity.SkinLog;
 import com.skinshelf.backend.entity.UserProfile;
+import com.skinshelf.backend.entity.AssistantMessage; // GÜNCELLEME: Sohbet geçmişi için eklendi
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
 
 /**
- * Shelly'nin merkezi system prompt'u, kullanıcı context'i ve mod algılama mantığı.
- * Her Gemini isteği bu servis üzerinden hazırlanır.
+ * Shelly'nin merkezi system prompt'u, kullanıcı context'i ve zengin JSON
+ * şeması.
+ * Tüm karar verme, mod algılama ve ürün eşleştirme süreçleri doğrudan bu prompt
+ * üzerinden yönetilir.
  */
 @Service
 public class ShellyPromptService {
@@ -32,52 +35,79 @@ public class ShellyPromptService {
         this.knowledgeBase = knowledgeBase;
     }
 
+    // Shelly'ye tüm modları ve hangi durumda hangisini seçeceğini master prompt
+    // olarak tanımlıyoruz
     public static final String SYSTEM_PROMPT = """
-            Sen SkinShelf uygulamasindaki Shelly adli yapay zeka cilt bakim asistanisin.
-            Gorevin: kullanicinin cilt bakim urunlerini, iceriklerini, rutinini ve cilt hedefini yorumlamak.
+            Sen SkinShelf uygulamasindaki akilli, empatik ve uzman yapay zeka cilt bakim asistanisin. Adin 'Shelly'.
+            Gorevin: kullanicinin cilt bakim urunlerini, iceriklerini, rutinini ve cilt durumunu analiz etmek, teshis koymadan yonlendirmek.
+
+            Uygulayabilecegin Karar Modlari (Kullanicinin sorusuna gore en uygun modu bizzat sen sec ve JSON'daki 'mode' alanina yaz):
+            1. PRODUCT_ANALYSIS: Kullanici yeni bir urunun veya dolabindaki bir urunun cildine uygun olup olmadigini sordugunda.
+            2. ROUTINE_CHECK: Kullanici sabah/aksam rutin siralamasi, adim yogunlugu veya rutin ağırlığı sordugunda.
+            3. INGREDIENT_ANALYSIS: İceriklerin eslesmelerini, aktif icerik uyumunu veya çakışmasını sordugunda.
+            4. SKIN_REACTION: Kullanici sivilce, kizariklik, kuruluk, yaglanma gibi anlik reaksiyonlardan ve cilt dertlerinden bahsettiginde.
+            5. WEEKLY_PLAN: Aktif icerikleri haftaya dengeli yayma, retinol ve peeling gecelerini ayirma plani istendiginde.
+            6. SKIN_PHOTO_ANALYSIS: Cilt fotografi analizi yapildiginda.
+            7. GENERAL_CHAT: Genel cilt bakim sorulari soruldugunda.
 
             Kurallar:
-            - Dermatolog degilsin, teshis koymazsin.
-            - "Sende egzama var", "rozasea olmussun", "aknen var" gibi kesin hastalik cumleleri kurmazsin.
-              Bunun yerine "kizariklik gorunumu", "kuruluk/pullanma gorunumu", "sivilce benzeri gorunum",
-              "tahris ihtimali", "hassasiyet belirtisi olabilir" gibi gorunum dili kullanirsin.
-            - Receteli ilac, antibiyotik, izotretinoin, tretinoin, kortizon vb. tedavi onermezsin.
-            - Ciddi yanma, sislik, su toplama, acik yara, goz cevresi reaksiyon, enfeksiyon suphesi gibi
-              durumlarda dermatologa veya saglik profesyoneline yonlendirirsin.
-            - Cevaplarin kisa, samimi, guven veren ve uygulanabilir olsun. Korkutucu degil, yonlendirici konus.
-            - Kesin ifadeler yerine "olabilir", "risk olusturabilir", "dikkat etmek iyi olur" gibi guvenli dil kullan.
-            - Urunleri ilac gibi sunma. Urun onerirken marka dayatma; once icerik/kategori oner.
-            - Aktif icerik cakismalarini kontrol et.
-            - SPF eksikse ozellikle retinol, AHA/BHA ve C vitamini kullaniminda hatirlat.
-            - Yanitini su mantikta kur: 1) kisa degerlendirme 2) neden 3) ne yapabilirsin 4) dikkat.
-            - Turkce yanit ver.
+            - Kesinlikle dermatolog degilsin, tibbi teshis koyma. "Sende egzama var" demek yerine "egzama benzeri pullanma ve kizariklik gorunumu" de.
+            - Receteli ilac önerme. Acil durumlarda (sislik, su toplama, acik yara vb.) dermatologa veya acil saglik profesyoneline yonlendir.
+            - Kullaniciyla dinamik ve cok turlu bir sohbet (interaktif tani dongusu) yurut.
+            - Tek seferde her seyi anlatip konuyu kapatma. Kullaniciya cilt durumunu netlestirecek kisa, mantikli takip sorulari sor (followUpQuestions).
+            - Onerdigin veya kacin dedigin urunleri YALNIZCA kullanicinin kendi "userProducts" listesinde yer alan gercek ID'ler ile eslestir.
+            - Asla kullanicinin rafında olmayan uydurma bir urun ID'si üretme.
+            - Turkce samimi ve guven veren bir dille yanit ver.
             """;
 
+    // GÜNCELLEME: ShellyMode parametresi ve Java'daki tüm statik mod süzgeçleri
+    // kaldırıldı, karar AI'a devredildi
     public String buildChatPrompt(
-            ShellyMode mode,
             UserProfile profile,
             List<Product> products,
             List<SkinLog> recentLogs,
+            List<AssistantMessage> chatHistory,
             String userMessage) {
         return SYSTEM_PROMPT
                 + "\n" + knowledgeBase.asPromptSection()
-                + "\n" + modeInstruction(mode)
-                + "\nCevabi YALNIZCA su JSON semasiyla don:\n"
+                + "\nCevabi YALNIZCA su zengin JSON semasiyla don (baska hicbir aciklama ekleme, doğrudan { ile basla ve } ile bitir):\n"
                 + """
-                {
-                  "intentType": "INFO|ISSUE",
-                  "detectedIssue": "string veya null",
-                  "title": "Shelly'nin Yorumu",
-                  "summary": "kisa degerlendirme",
-                  "reason": "neden",
-                  "suggestion": "ne yapabilirsin",
-                  "warning": "dikkat (yoksa bos string)",
-                  "riskLevel": "low|medium|high",
-                  "tags": ["kisa etiketler"]
-                }
-                """
+                        {
+                          "intentType": "INFO|ISSUE",
+                          "detectedIssue": "string veya null (örn: 'Kızarıklık')",
+                          "mode": "PRODUCT_ANALYSIS|ROUTINE_CHECK|INGREDIENT_ANALYSIS|SKIN_REACTION|WEEKLY_PLAN|GENERAL_CHAT",
+                          "title": "Shelly'nin Yorumu",
+                          "summary": "kullanıcıya kişisel, kısa ve empati dolu karşılama/özet cümlesi",
+                          "analysis": "kullanıcının cilt durumunu ve ürünlerini inceleyen detaylı uzman analiz sonucun",
+                          "recommendedProducts": [
+                            { "id": 12, "reason": "Bu ürünün içindeki Centella cildini yatıştıracaktır." }
+                          ],
+                          "avoidProducts": [
+                            { "id": 5, "reason": "Sivilce döneminde bu yoğun yağlı nemlendiriciye 2 gün ara vermelisin." }
+                          ],
+                          "followUpQuestions": [
+                            "Bu kızarıklık ne zamandır var?",
+                            "Son 2 gün içinde yeni bir ürün kullandın mı?"
+                          ],
+                          "riskLevel": "low|medium|high",
+                          "tags": ["kisa etiketler"]
+                        }
+                        """
                 + "\n" + buildUserContext(profile, products, recentLogs)
-                + "\nKullanici mesaji:\n" + userMessage;
+                + "\n" + buildConversationState(chatHistory)
+                + "\n" + buildChatHistoryContext(chatHistory)
+                + "\nKullanici son mesaji:\n" + userMessage;
+    }
+
+    private String buildConversationState(List<AssistantMessage> chatHistory) {
+        if (chatHistory == null || chatHistory.isEmpty()) {
+            return "Aktif Konusma Durumu (State): Kullanici ile ilk kez konusuluyor. Cilt yapisini ve seçecegi hedefi analiz etmeye basla.";
+        }
+        return """
+                Aktif Konusma Durumu (State):
+                - Kullanici ile aktif bir sohbet sureci yurutuluyor.
+                - Gemini, onceki mesajlari analiz ederek kullanicinin o anki aktif cilt derdini, sivilce/tahris durumunu ve anlik hedeflerini aklimda tutmali ve buna gore yonlendirmelidir.
+                """;
     }
 
     public String buildSkinPhotoPrompt(
@@ -89,26 +119,25 @@ public class ShellyPromptService {
             String userNote) {
         return SYSTEM_PROMPT
                 + "\n" + knowledgeBase.asPromptSection()
-                + "\n" + modeInstruction(ShellyMode.SKIN_PHOTO_ANALYSIS)
                 + "\nCevabi YALNIZCA su JSON semasiyla don:\n"
                 + """
-                {
-                  "title": "Shelly'nin Cilt Yorumu",
-                  "summary": "kisa ve kisisel yorum",
-                  "visibleChanges": {
-                    "redness": "low|medium|high|unknown",
-                    "dryness": "low|medium|high|unknown",
-                    "oiliness": "low|medium|high|unknown",
-                    "blemishAppearance": "low|medium|high|unknown",
-                    "irritationAppearance": "low|medium|high|unknown"
-                  },
-                  "routineConnection": "rutin ve urunlerle olasi baglanti (kesin konusma)",
-                  "suggestion": "bugunku oneri",
-                  "warning": "dikkat notu",
-                  "riskLevel": "low|medium|high",
-                  "tags": ["kisa etiketler"]
-                }
-                """
+                        {
+                          "title": "Shelly'nin Cilt Yorumu",
+                          "summary": "kisa ve kisisel yorum",
+                          "visibleChanges": {
+                            "redness": "low|medium|high|unknown",
+                            "dryness": "low|medium|high|unknown",
+                            "oiliness": "low|medium|high|unknown",
+                            "blemishAppearance": "low|medium|high|unknown",
+                            "irritationAppearance": "low|medium|high|unknown"
+                          },
+                          "routineConnection": "rutin ve urunlerle olasi baglanti (kesin konusma)",
+                          "suggestion": "bugunku oneri",
+                          "warning": "dikkat notu",
+                          "riskLevel": "low|medium|high",
+                          "tags": ["kisa etiketler"]
+                        }
+                        """
                 + "\n" + buildUserContext(profile, products, recentLogs)
                 + "\nBugunku gunluk:\n"
                 + "- Cilt hissi: " + value(skinFeeling) + "\n"
@@ -117,46 +146,6 @@ public class ShellyPromptService {
                 + "\nFotograftaki cilt gorunumunu degerlendir. Teshis koyma; yalnizca gorunum dili kullan.";
     }
 
-    public ShellyMode detectMode(String message) {
-        String normalized = message == null ? "" : message.toLowerCase(Locale.forLanguageTag("tr-TR"));
-
-        if (containsAny(normalized, "tepki", "kızar", "yandı", "yanıyor", "sivilce", "akne", "siyah nokta",
-                "pullan", "kaşın", "batma", "tahriş", "kuru", "gergin", "yağlan", "parla")) {
-            return ShellyMode.SKIN_REACTION;
-        }
-        if (containsAny(normalized, "birlikte kullanılır", "içerik analizi", "içerik listesi", "inci", "bu iki ürün")) {
-            return ShellyMode.INGREDIENT_ANALYSIS;
-        }
-        if (containsAny(normalized, "haftalık plan", "haftalık rutin", "haftaya yay")) {
-            return ShellyMode.WEEKLY_PLAN;
-        }
-        if (containsAny(normalized, "yeni ürün", "eklediğim ürün", "bu ürün", "uygun mu")) {
-            return ShellyMode.PRODUCT_ANALYSIS;
-        }
-        if (containsAny(normalized, "rutin", "sabah", "akşam", "sıra", "ağır mı")) {
-            return ShellyMode.ROUTINE_CHECK;
-        }
-        return ShellyMode.GENERAL_CHAT;
-    }
-
-    private String modeInstruction(ShellyMode mode) {
-        return switch (mode) {
-            case PRODUCT_ANALYSIS -> "Mod: PRODUCT_ANALYSIS. Kullanicinin sordugu urunun rafiyla ve cilt hedefiyle uyumuna odaklan; kullanim zamani ve olasi cakismalari belirt.";
-            case ROUTINE_CHECK -> "Mod: ROUTINE_CHECK. Sabah/aksam rutin sirasini, adim yogunlugunu ve SPF durumunu degerlendir; gerekiyorsa sadelestirme oner.";
-            case INGREDIENT_ANALYSIS -> "Mod: INGREDIENT_ANALYSIS. Icerik listesini bilgi tabanindaki kurallarla karsilastir; cakisma ve eslesmeleri acikca yaz.";
-            case SKIN_REACTION -> """
-                    Mod: SKIN_REACTION. Kullanicinin cilt derdini (sivilce, kuruluk, kizariklik, yaglanma vb.) ciddiye al.
-                    1) Once rafindaki urunlere bak: derde destek olabilecek urun varsa MARKA + URUN ADIYLA oner ve nasil kullanacagini soyle.
-                    2) Rafta uygun urun yoksa marka dayatmadan icerik/kategori oner (or. sivilce icin BHA/niacinamide, kuruluk icin seramid/hyaluronik asit).
-                    3) Derdi tetikleyebilecek raf urunlerini de belirt (or. ayni gece retinol + peeling).
-                    intentType'i ISSUE yap ve detectedIssue alanini kisa bir etiketle doldur (or. "Sivilce gorunumu").""";
-            case WEEKLY_PLAN -> "Mod: WEEKLY_PLAN. Aktif icerikleri haftaya dengeli yay; retinol ve peeling gecelerini ayir; SPF hatirlat.";
-            case SKIN_PHOTO_ANALYSIS -> "Mod: SKIN_PHOTO_ANALYSIS. Fotograftaki gorunumu yalnizca gorunum diliyle degerlendir; rutin ve son cilt kayitlariyla olasi baglantiyi kur; kesin konusma.";
-            case GENERAL_CHAT -> "Mod: GENERAL_CHAT. Genel cilt bakim sorusunu kullanicinin profili ve rafi baglaminda yanitla. Uygun oldugunda rafindaki urunleri adiyla referans ver; soyut degil somut ve uygulanabilir konus.";
-        };
-    }
-
-    /** Kullanıcı context'ini prompt'a eklenecek okunabilir JSON benzeri blok olarak hazırlar. */
     public String buildUserContext(UserProfile profile, List<Product> products, List<SkinLog> recentLogs) {
         StringBuilder builder = new StringBuilder("Kullanici context'i:\n");
 
@@ -172,28 +161,30 @@ public class ShellyPromptService {
             builder.append("- reactionHistory: ").append(value(profile.getReactionHistory())).append('\n');
         }
 
-        builder.append("userProducts:\n");
+        builder.append("userProducts (Kullanicinin Rafındaki Urunler ve ID'leri):\n");
         if (products == null || products.isEmpty()) {
             builder.append("- (raf bos)\n");
         } else {
+            // GÜNCELLEME: Ürünler ID'leri, kategorileri ve aktif içerikleri ile birlikte
+            // detaylı olarak prompt'a yazılıyor
             products.stream().limit(15).forEach(product -> builder
-                    .append("- ").append(value(product.getBrand())).append(' ').append(value(product.getName()))
+                    .append("- id: ").append(product.getId())
+                    .append(" | marka: ").append(value(product.getBrand()))
+                    .append(" | isim: ").append(value(product.getName()))
                     .append(" | kategori: ").append(value(product.getCategory()))
-                    .append(" | kullanim: ").append(value(product.getTimeOfDay()))
-                    .append(" | icerikler: ").append(product.getActiveIngredients() == null ? "[]" : product.getActiveIngredients())
+                    .append(" | icerikler: ")
+                    .append(product.getActiveIngredients() == null ? "[]"
+                            : String.join(", ", product.getActiveIngredients()))
                     .append('\n'));
         }
 
-        builder.append("routines:\n");
-        builder.append("- sabah: ").append(routineSteps(products, "morning")).append('\n');
-        builder.append("- aksam: ").append(routineSteps(products, "evening")).append('\n');
-
-        builder.append("recentSkinLogs:\n");
+        builder.append("recentSkinLogs (Cilt Günlüğü):\n");
         if (recentLogs == null || recentLogs.isEmpty()) {
             builder.append("- (kayit yok)\n");
         } else {
             recentLogs.stream().limit(7).forEach(skinLog -> builder
-                    .append("- ").append(skinLog.getCreatedAt() == null ? "" : skinLog.getCreatedAt().toLocalDate())
+                    .append("- tarih: ")
+                    .append(skinLog.getCreatedAt() == null ? "" : skinLog.getCreatedAt().toLocalDate())
                     .append(" | his: ").append(value(skinLog.getSkinFeeling()))
                     .append(" | kuruluk: ").append(value(skinLog.getDrynessLevel()))
                     .append(" | kizariklik: ").append(value(skinLog.getRednessLevel()))
@@ -203,6 +194,18 @@ public class ShellyPromptService {
                     .append('\n'));
         }
 
+        return builder.toString();
+    }
+
+    private String buildChatHistoryContext(List<AssistantMessage> chatHistory) {
+        if (chatHistory == null || chatHistory.isEmpty()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder("Sohbet Gecmisi (Hafiza):\n");
+        for (AssistantMessage msg : chatHistory) {
+            builder.append("- Kullanici: ").append(msg.getPrompt()).append('\n');
+            builder.append("- Shelly: ").append(msg.getAiResponse()).append('\n');
+        }
         return builder.toString();
     }
 
@@ -229,5 +232,29 @@ public class ShellyPromptService {
 
     private String value(String value) {
         return value == null || value.isBlank() ? "-" : value.trim();
+    }
+
+    // GÜNCELLEME: detectMode metodu diğer servislerin (ve cankurtaran yedek
+    // sisteminin) derlenebilmesi için korundu!
+    public ShellyMode detectMode(String message) {
+        String normalized = message == null ? "" : message.toLowerCase(Locale.forLanguageTag("tr-TR"));
+
+        if (containsAny(normalized, "tepki", "kızar", "yandı", "yanıyor", "sivilce", "akne", "siyah nokta",
+                "pullan", "kaşın", "batma", "tahriş", "kuru", "gergin", "yağlan", "parla")) {
+            return ShellyMode.SKIN_REACTION;
+        }
+        if (containsAny(normalized, "birlikte kullanılır", "içerik analizi", "içerik listesi", "inci", "bu iki ürün")) {
+            return ShellyMode.INGREDIENT_ANALYSIS;
+        }
+        if (containsAny(normalized, "haftalık plan", "haftalık rutin", "haftaya yay")) {
+            return ShellyMode.WEEKLY_PLAN;
+        }
+        if (containsAny(normalized, "yeni ürün", "eklediğim ürün", "bu ürün", "uygun mu")) {
+            return ShellyMode.PRODUCT_ANALYSIS;
+        }
+        if (containsAny(normalized, "rutin", "sabah", "akşam", "sıra", "ağır mı")) {
+            return ShellyMode.ROUTINE_CHECK;
+        }
+        return ShellyMode.GENERAL_CHAT;
     }
 }

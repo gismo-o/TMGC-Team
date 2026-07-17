@@ -30,17 +30,25 @@ public class GeminiApiClient {
 
     public GeminiApiClient(
             @Value("${app.gemini.api-key:}") String apiKey,
-            @Value("${app.gemini.model:gemini-2.0-flash}") String model) {
+            @Value("${app.gemini.model:gemini-2.5-flash}") String model) {
+
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.model = model == null || model.isBlank() ? "gemini-2.0-flash" : model.trim();
+        this.model = (model == null || model.isBlank())
+                ? "gemini-2.5-flash"
+                : model.trim();
+
         this.objectMapper = new ObjectMapper();
+
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
     }
 
-    /** Gemini çağrısının sonucu; başarısızsa nedenini de taşır. */
-    public enum FailureReason { NONE, RATE_LIMITED, ERROR }
+    public enum FailureReason {
+        NONE,
+        RATE_LIMITED,
+        ERROR
+    }
 
     public record GeminiJsonResult(Optional<JsonNode> json, FailureReason reason) {
         public boolean isRateLimited() {
@@ -56,40 +64,48 @@ public class GeminiApiClient {
         return generateJsonWithStatus(prompt, null, null).json();
     }
 
-    public Optional<JsonNode> generateJson(String prompt, String base64Image, String imageMimeType) {
+    public Optional<JsonNode> generateJson(String prompt,
+            String base64Image,
+            String imageMimeType) {
         return generateJsonWithStatus(prompt, base64Image, imageMimeType).json();
     }
 
-    /**
-     * Gemini'den JSON yanıt ister. base64Image verilirse istek multimodal (görsel + metin) olur.
-     * Kota/yoğunluk (429) durumunu ayrı raporlar ki üst katman kullanıcıya bilgi verebilsin.
-     */
-    public GeminiJsonResult generateJsonWithStatus(String prompt, String base64Image, String imageMimeType) {
+    public GeminiJsonResult generateJsonWithStatus(String prompt,
+            String base64Image,
+            String imageMimeType) {
+
         if (!isConfigured()) {
+            log.error("Gemini API Key bulunamadı.");
             return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
         }
 
         try {
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(buildUri())
-                    .timeout(Duration.ofSeconds(40))
+                    .timeout(Duration.ofSeconds(60))
                     .header("Content-Type", "application/json")
-                    .header("x-goog-api-key", apiKey)
-                    .POST(HttpRequest.BodyPublishers.ofString(buildRequest(prompt, base64Image, imageMimeType)))
+                    .POST(HttpRequest.BodyPublishers.ofString(
+                            buildRequest(prompt, base64Image, imageMimeType)))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            log.info("Gemini Status : {}", response.statusCode());
+
             if (response.statusCode() == 429) {
-                log.warn("Gemini API kota/yoğunluk sınırında (429).");
+                log.warn("Gemini kota sınırına ulaşıldı.");
                 return new GeminiJsonResult(Optional.empty(), FailureReason.RATE_LIMITED);
             }
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("Gemini API isteği başarısız: status={} body={}", response.statusCode(), truncate(response.body()));
+
+            if (response.statusCode() != 200) {
+                log.error("Gemini Hata Body:\n{}", response.body());
                 return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
             }
 
-            String text = objectMapper.readTree(response.body())
-                    .path("candidates")
+            JsonNode root = objectMapper.readTree(response.body());
+
+            String text = root.path("candidates")
                     .path(0)
                     .path("content")
                     .path("parts")
@@ -98,40 +114,64 @@ public class GeminiApiClient {
                     .asText("");
 
             if (text.isBlank()) {
-                log.warn("Gemini API boş yanıt döndürdü.");
+                log.error("Gemini boş cevap döndürdü.");
                 return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
             }
 
-            return new GeminiJsonResult(Optional.of(objectMapper.readTree(stripMarkdownFence(text))), FailureReason.NONE);
-        } catch (Exception exception) {
-            log.warn("Gemini API çağrısı hata verdi: {}", exception.getMessage());
+            JsonNode json = objectMapper.readTree(stripMarkdownFence(text));
+
+            return new GeminiJsonResult(Optional.of(json), FailureReason.NONE);
+
+        } catch (Exception e) {
+            log.error("Gemini Exception", e);
             return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
         }
     }
 
     private URI buildUri() {
+
         String encodedModel = URLEncoder.encode(model, StandardCharsets.UTF_8);
-        return URI.create("https://generativelanguage.googleapis.com/v1beta/models/"
-                + encodedModel
-                + ":generateContent");
+
+        String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
+
+        return URI.create(
+                "https://generativelanguage.googleapis.com/v1beta/models/"
+                        + encodedModel
+                        + ":generateContent?key="
+                        + encodedKey);
+
     }
 
-    private String buildRequest(String prompt, String base64Image, String imageMimeType) throws Exception {
+    private String buildRequest(String prompt,
+            String base64Image,
+            String imageMimeType) throws Exception {
+
         ObjectNode root = objectMapper.createObjectNode();
+
         ArrayNode contents = root.putArray("contents");
+
         ObjectNode content = contents.addObject();
         content.put("role", "user");
+
         ArrayNode parts = content.putArray("parts");
 
         if (base64Image != null && !base64Image.isBlank()) {
+
             ObjectNode inlineData = parts.addObject().putObject("inline_data");
-            inlineData.put("mime_type", imageMimeType == null || imageMimeType.isBlank() ? "image/jpeg" : imageMimeType);
+
+            inlineData.put(
+                    "mime_type",
+                    imageMimeType == null || imageMimeType.isBlank()
+                            ? "image/jpeg"
+                            : imageMimeType);
+
             inlineData.put("data", base64Image);
         }
 
         parts.addObject().put("text", prompt);
 
         ObjectNode generationConfig = root.putObject("generationConfig");
+
         generationConfig.put("temperature", 0.25);
         generationConfig.put("responseMimeType", "application/json");
 
@@ -139,7 +179,9 @@ public class GeminiApiClient {
     }
 
     private String stripMarkdownFence(String value) {
+
         String trimmed = value.trim();
+
         if (!trimmed.startsWith("```")) {
             return trimmed;
         }
@@ -148,12 +190,5 @@ public class GeminiApiClient {
                 .replaceFirst("^```(?:json)?\\s*", "")
                 .replaceFirst("\\s*```$", "")
                 .trim();
-    }
-
-    private String truncate(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.length() <= 300 ? value : value.substring(0, 300) + "...";
     }
 }

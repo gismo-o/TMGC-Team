@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react'; // GÜNCELLEME: useCallback eklendi
 import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { CompositeNavigationProp } from '@react-navigation/native';
+import { CompositeNavigationProp, useFocusEffect } from '@react-navigation/native'; // GÜNCELLEME: useFocusEffect eklendi
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AlertTriangle, Bot, Calendar, CheckCircle2, MessageCircle, Moon, Send, Sparkles, Sun, X } from 'lucide-react-native';
 import { MainTabParamList, Product, RootStackParamList } from '../types';
@@ -98,12 +98,27 @@ export default function RoutineScreen({ navigation }: Props) {
   const { products } = useProducts();
   const { profile, activeIssue, setActiveIssue } = useUser();
   const [isWeekPlanVisible, setIsWeekPlanVisible] = useState(false);
+  const activeProducts = useMemo(() => {
+    return products.filter(p => (p as any).isActive ?? (p as any).is_active ?? true);
+  }, [products]);
 
-  const weekPlan = useMemo(() => buildWeekPlan(products, 'standard'), [products]);
+  // GÜNCELLEME: Kullanıcı sekmeyi her açtığında tetiklenecek bir state kurguladık
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Sekme her odaklandığında tetikleyiciyi artırarak useMemo'ları yenilemeye zorlar
+      setUpdateTrigger(prev => prev + 1);
+    }, [])
+  );
+
+  // GÜNCELLEME: Hesaplama bağımlılıklarına [updateTrigger] eklendi
+  const weekPlan = useMemo(() => buildWeekPlan(activeProducts, 'standard'), [products, updateTrigger]);
   const todayPlan = weekPlan[0];
+  
   const routineReview = useMemo(
     () => getRoutineReview(todayPlan?.morning || [], todayPlan?.evening || []),
-    [todayPlan]
+    [todayPlan, updateTrigger]
   );
 
   const handleRecovery = () => {

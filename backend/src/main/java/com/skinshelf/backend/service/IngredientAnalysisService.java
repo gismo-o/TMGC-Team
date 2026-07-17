@@ -38,7 +38,7 @@ public class IngredientAnalysisService {
         if (geminiApiClient.isConfigured()) {
             Optional<JsonNode> json = geminiApiClient.generateJson(buildPrompt(profile.orElse(null), shelfProducts, request));
             if (json.isPresent()) {
-                return fromJson(json.get(), request);
+                return fromJson(json.get(), request, shelfProducts);
             }
         }
 
@@ -49,7 +49,7 @@ public class IngredientAnalysisService {
         return """
                 SkinShelf icin kozmetik urun icerik analizi yap.
                 Tani koyma, medikal iddia uretme, dermatolog uyarisi gereken yerlerde guvenli dil kullan.
-                Cevabi yalnizca JSON olarak don.
+                Cevabi yalnizca JSON olarak don (doğrudan { ile basla).
 
                 JSON semasi:
                 {
@@ -58,6 +58,9 @@ public class IngredientAnalysisService {
                   "compatibilityMessage": "Turkce uyumluluk mesaji",
                   "suggestedTimeOfDay": "morning|evening|both",
                   "notableIngredients": ["..."],
+                  "clashingProducts": [
+                    { "id": 12, "reason": "Bu yeni urundeki Retinol, dolabindaki 12 id'li AHA asidi ile ayni gece kullanilamaz." }
+                  ],
                   "warnings": ["..."]
                 }
 
@@ -67,7 +70,7 @@ public class IngredientAnalysisService {
                 - Hassasiyet: %s
                 - Reaksiyon gecmisi: %s
 
-                Rafindaki urunler:
+                Rafindaki urunler (ID'leri kullanarak clashingProducts eslestirmesi yap):
                 %s
 
                 Analiz edilecek urun:
@@ -89,11 +92,25 @@ public class IngredientAnalysisService {
                 emptyIfNull(request.getActiveIngredients()));
     }
 
-    private IngredientAnalysisResponse fromJson(JsonNode json, IngredientAnalysisRequest request) {
+    // GÜNCELLEME: AI'dan gelen clashingProducts verilerini okuyup gerçek ürün adlarıyla eşleştiriyoruz
+    private IngredientAnalysisResponse fromJson(JsonNode json, IngredientAnalysisRequest request, List<Product> shelfProducts) {
         List<String> notableIngredients = toStringList(json.path("notableIngredients"));
         if (notableIngredients.isEmpty()) {
             notableIngredients = emptyIfNull(request.getActiveIngredients());
         }
+
+        // Standart uyarıları alıyoruz
+        List<String> warnings = new ArrayList<>(toStringList(json.path("warnings")));
+
+        // GÜNCELLEME: AI'ın bizzat veritabanı ID'si ile eşleştirdiği çakışan ürünleri doğrulayıp uyarılara ekliyoruz
+        json.path("clashingProducts").forEach(node -> {
+            Long id = node.path("id").asLong();
+            String reason = node.path("reason").asText("");
+            shelfProducts.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .ifPresent(p -> warnings.add("Dolabındaki \"" + p.getBrand() + " " + p.getName() + "\" ürünü ile çakışıyor: " + reason));
+        });
 
         return new IngredientAnalysisResponse(
                 textOrDefault(json.path("summary"), "İçerikler cilt hedeflerinize göre dengeli şekilde değerlendirildi."),
@@ -101,7 +118,7 @@ public class IngredientAnalysisService {
                 textOrDefault(json.path("compatibilityMessage"), "Bu ürünü rutine eklerken cilt toleransınızı takip edin."),
                 normalizeTime(json.path("suggestedTimeOfDay").asText("both"), request.getCategory()),
                 notableIngredients,
-                toStringList(json.path("warnings")));
+                warnings);
     }
 
     private IngredientAnalysisResponse fallbackAnalysis(
@@ -202,17 +219,19 @@ public class IngredientAnalysisService {
         return false;
     }
 
+    // GÜNCELLEME: Gemini'nin akıllı eşleştirme yapabilmesi için ürünlerin ID'lerini de prompt'a ekliyoruz
     private String formatShelf(List<Product> products) {
         if (products.isEmpty()) {
             return "- Bos";
         }
         return products.stream()
                 .limit(12)
-                .map(product -> "- %s %s / %s / %s".formatted(
+                .map(product -> "- id: %d | %s %s / %s / %s".formatted(
+                        product.getId(), // ID eklendi!
                         value(product.getBrand()),
                         value(product.getName()),
                         value(product.getCategory()),
-                        emptyIfNull(product.getActiveIngredients())))
+                        product.getActiveIngredients() == null ? "[]" : String.join(", ", product.getActiveIngredients())))
                 .toList()
                 .toString();
     }

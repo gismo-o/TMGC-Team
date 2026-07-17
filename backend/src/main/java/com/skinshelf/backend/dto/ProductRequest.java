@@ -1,5 +1,6 @@
 package com.skinshelf.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty; // GÜNCELLEME: Jackson import edildi
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,4 +28,9 @@ public class ProductRequest {
     private String expiryDate;
     private List<String> activeIngredients;
     private Boolean isFavorite;
+
+    // GÜNCELLEME: Jackson'ın isimlendirme hatasını engellemek için doğrudan
+    // bağladık
+    @JsonProperty("is_active")
+    private Boolean isActive;
 }

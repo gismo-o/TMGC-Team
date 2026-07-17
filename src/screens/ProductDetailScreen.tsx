@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image } from 'react-native';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image, Switch, Platform, StatusBar } from 'react-native'; // GÜNCELLEME: Platform ve StatusBar eklendi
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useFocusEffect } from '@react-navigation/native'; // useFocusEffect eklendi
 import { RootStackParamList } from '../types';
 import { Sparkles, Droplets, Wind, Sun, Leaf, Edit2, Lightbulb, CheckCircle2, ThumbsDown, ThumbsUp, X } from 'lucide-react-native';
-import { useProducts } from '../context/ProductContext';
+import { useProducts } from '../context/ProductContext'; // useProducts kullanmaya devam ediyoruz
 import { getProductVisualSource } from '../services/productVisualCatalog';
 import { getProductShellyComment, getProductStatus } from '../services/shellyInsights';
+import { productService } from '../services/productService'; // productService import edildi
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -39,11 +40,32 @@ const isExpired = (dateString?: string) => {
 };
 
 export default function ProductDetailScreen({ navigation, route }: Props) {
-  const { products } = useProducts();
+  const { products, updateProduct } = useProducts();
   const [imageFailed, setImageFailed] = useState(false);
   const [feedback, setFeedback] = useState<'good' | 'bad' | null>(null);
+  
   const product = products.find(p => p.id === route.params.productId);
 
+  // DÜZELTİLDİ: TypeScript hata vermemesi için (product as any) olarak esnetildi ve çift aşamalı (isActive/is_active) okuma yapısı kuruldu
+  const [isActive, setIsActive] = useState((product as any)?.isActive ?? (product as any)?.is_active ?? true);
+
+  const handleToggleActive = async (value: boolean) => {
+    if (!product) return;
+    setIsActive(value); // Arayüzü anında güncelle
+    try {
+      // GÜNCELLEME: Doğrudan yerel hafızayı ve veritabanını aynı anda güncelleyen Context metodunu çağırıyoruz!
+      await updateProduct(product.id, {
+        isActive: value,
+        is_active: value 
+      } as any);
+      console.log("Ürün aktiflik durumu veritabanında güncellendi:", value);
+    } catch (error) {
+      console.error("Aktiflik güncellenirken hata oluştu:", error);
+      setIsActive(!value); // Hata durumunda anahtarı eski haline geri getir
+    }
+  };
+
+  // Koruma ekranı
   if (!product) {
     return (
       <View style={styles.overlay}>
@@ -65,7 +87,6 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
       navigation.goBack();
       return;
     }
-
     navigation.navigate('MainTabs');
   };
 
@@ -81,7 +102,7 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={handleClose} />
+      <Pressable style={styles.backdrop} onPress={handleClose} />
       <View style={styles.sheet}>
         {/* Modal Handle */}
         <View style={styles.handle} />
@@ -129,6 +150,25 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
                 </Text>
               </View>
             )}
+          </View>
+
+          {/* Aktiflik Switch Butonu */}
+          <View style={styles.activeToggleContainer}>
+            <View style={styles.activeToggleTextWrap}>
+              <Text style={styles.activeToggleTitle}>Rutinlerimde Aktif Kullan</Text>
+              <Text style={styles.activeToggleSubtitle}>
+                {isActive 
+                  ? "Bu ürün sabah/akşam cilt bakım planınıza dâhil edilir." 
+                  : "Bu ürün dolabınızda saklanır ancak rutinlerinize eklenmez."}
+              </Text>
+            </View>
+            <Switch
+              trackColor={{ false: '#e2e8e2', true: '#a3be9d' }}
+              thumbColor={isActive ? colors.forest : '#707973'}
+              ios_backgroundColor="#e2e8e2"
+              onValueChange={handleToggleActive}
+              value={isActive}
+            />
           </View>
 
           <View style={styles.infoGrid}>
@@ -200,6 +240,8 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
     </View>
   );
 }
+
+const androidHeaderPadding = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 14 : 20;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -451,4 +493,33 @@ const styles = StyleSheet.create({
   feedbackButtonText: { fontFamily: fonts.sansBold, color: colors.sage, fontSize: 13 },
   feedbackButtonTextDanger: { fontFamily: fonts.sansBold, color: colors.danger, fontSize: 13 },
   feedbackButtonTextActive: { color: colors.onDark },
+  // GÜNCELLEME: Arayüz stilleri eklendi
+  activeToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: 16,
+    marginBottom: 16,
+    ...shadows.soft,
+  },
+  activeToggleTextWrap: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  activeToggleTitle: {
+    fontFamily: fonts.sansBold,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  activeToggleSubtitle: {
+    fontFamily: fonts.sans,
+    fontSize: 11.5,
+    color: colors.inkMuted,
+    marginTop: 3,
+    lineHeight: 16,
+  },
 });
