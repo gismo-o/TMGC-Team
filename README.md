@@ -103,6 +103,8 @@ Product Backlog Notion üzerinde tutulmaktadır.
 
 Sprint 1'de backlog; kullanıcı hikayeleri, UI/UX tasarımı, kimlik doğrulama, cilt profili, ürün yönetimi, AI analiz modülleri, backend, database, test, dokümantasyon ve sunum başlıklarına ayrılmıştır.
 
+Sprint 2 backlog'u; kullanıcı akışları, UI/UX–veri entegrasyonu, kimlik doğrulama ve güvenlik mekanizmaları, cilt profili modülü, akıllı ürün dolabı (CRUD) servisleri, yapay zekâ (AI) destekli asistan ve analiz servisleri, Backend API geliştirmeleri, veritabanı tasarımı, güvenliği ve migration süreçleri, test ve hata ayıklama çalışmaları ile teknik dokümantasyon ve sprint kapanış sunumu başlıkları altında planlanmıştır.
+
 # 🧩 Sistem Tasarımı
 
 ## UML Diyagramı
@@ -112,6 +114,7 @@ Uygulamanın veri modelini ve sınıflar arası ilişkileri gösteren UML class 
 <img width="1104" height="826" alt="Ekran Resmi 2026-07-04 10 29 26" src="https://github.com/user-attachments/assets/151e7fe6-f745-4e2b-83cf-d3812bad9bce" />
 
 **Mevcut varlıklar (kodda uygulanmış):**
+
 - `User` — kimlik doğrulama bilgisi (`authService`)
 - `UserProfile` — cilt tipi, hassasiyetler, onboarding durumu (`UserContext`)
 - `Product` — dolaptaki ürün bilgisi (`ProductContext`, `productService`)
@@ -125,6 +128,7 @@ Uygulamanın temel kullanıcı akışları, Sprint 1'de geliştirilen navigasyon
 <img src="Project_Management_Files/Sprint_1/System_Design/skinshelf-user-flow.png" width="720" />
 
 **Kapsanan akışlar:**
+
 1. **Kimlik Doğrulama & Onboarding** — Login → SignIn/SignUp → Onboarding → MainTabs
 2. **Ürün Tarama & Dolaba Ekleme** — Home → Scanner (Barkod | Fotoğraf) → `productService.scanProduct()` → ProductReview → MainTabs; ayrıca Home → ProductDetail
 3. **Profil Düzenleme & Çıkış** — Profile → Login (çıkış) veya Profile → Onboarding → MainTabs (cilt profilini düzenleme)
@@ -193,11 +197,11 @@ Proje yönetimi dosyaları sprint bazlı olarak [Project_Management_Files](Proje
 
 <img src="Project_Management_Files/General_Documents/sprints-overview.svg" width="720">
 
-| Sprint | Durum | Odak | Kanıt |
-| --- | --- | --- | --- |
+| Sprint   | Durum      | Odak                                                                                    | Kanıt                                         |
+| -------- | ---------- | --------------------------------------------------------------------------------------- | --------------------------------------------- |
 | Sprint 1 | Tamamlandı | Mobil prototip, temel ekranlar, ürün dolabı, AI/tarama demo akışı, Scrum dokümantasyonu | [Sprint_1](Project_Management_Files/Sprint_1) |
-| Sprint 2 | Planlandı | Backend, database, Open Beauty Facts barkod akışı, Gemini AI analiz servisleri | [Sprint_2](Project_Management_Files/Sprint_2) |
-| Sprint 3 | Planlandı | Gelişmiş rutin önerileri, analiz geçmişi, bildirimler, final demo ve testler | [Sprint_3](Project_Management_Files/Sprint_3) |
+| Sprint 2 | Planlandı  | Backend, database, Open Beauty Facts barkod akışı, Gemini AI analiz servisleri          | [Sprint_2](Project_Management_Files/Sprint_2) |
+| Sprint 3 | Planlandı  | Gelişmiş rutin önerileri, analiz geçmişi, bildirimler, final demo ve testler            | [Sprint_3](Project_Management_Files/Sprint_3) |
 
 Sprint 1 kanıt indeksi: [Project_Management_Files/Sprint_1/README.md](Project_Management_Files/Sprint_1/README.md)
 
@@ -268,17 +272,7 @@ Sprint 1'de öncelik; uygulama iskeleti, kullanıcı giriş/onboarding akışı,
 
 ### Daily Scrum
 
-Daily scrum toplantıları ekip uygunluğuna göre WhatsApp yazışmaları ve sesli görüşme üzerinden yürütülmüştür.
-
-- Daily scrum kanıt klasörü: [Project_Management_Files/Sprint_1/Daily_Scrum](Project_Management_Files/Sprint_1/Daily_Scrum)
-- Daily scrum özeti: [sprint1-daily-summary.md](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-summary.md)
-- Sesli görüşme kanıtı: [sprint1-daily-call.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-call.png)
-- Backend karar yazışması: [sprint1-backend-decision.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-backend-decision.png)
-- Prototip geri bildirimi: [sprint1-prototype-feedback.png](Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-prototype-feedback.png)
-
-| Sesli Görüşme | Backend Kararı | Prototip Geri Bildirimi |
-| :---: | :---: | :---: |
-| <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-daily-call.png" width="220"> | <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-backend-decision.png" width="220"> | <img src="Project_Management_Files/Sprint_1/Daily_Scrum/sprint1-prototype-feedback.png" width="220"> |
+Daily scrum toplantıları ekip uygunluğuna göre WhatsApp yazışmaları ve sesli görüşme üzerinden yürütülmüş ve Imgur'da toplanmıştır: [Sprint 1 Daily Scrum Chats](https://imgur.com/a/KJmUkwi)
 
 ### Sprint Board Update
 
@@ -296,12 +290,12 @@ Sprint 1 ilerleme kanıtı, Notion board son durum görüntüsü ve daily scrum 
 
 Sprint 1 sonunda story point bazlı ilerleme aşağıdaki gibidir:
 
-| Kapsam | Story Point |
-| --- | ---: |
-| Sprint 1 hedefi | 115 SP |
-| Tamamlanan | 97 SP |
-| Kalan / To Do | 18 SP |
-| Tamamlanma oranı | %84 |
+| Kapsam           | Story Point |
+| ---------------- | ----------: |
+| Sprint 1 hedefi  |      115 SP |
+| Tamamlanan       |       97 SP |
+| Kalan / To Do    |       18 SP |
+| Tamamlanma oranı |         %84 |
 
 <img src="Project_Management_Files/Sprint_1/Burndown_Chart/sprint1-completion-summary.svg" width="720">
 
@@ -323,8 +317,8 @@ Kullanıcı kayıt aşamasında ad, yaş aralığı, cilt bakım deneyimi, cilt 
 
 Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yükledikleri ya da kozmetik ürün barkodlarını tarattıkları Sprint 1 demo akışıdır.
 
-| AI Cilt Analizi | Barkod Tarayıcı | Fotoğraf Çekim |
-| :---: | :---: | :---: |
+|                     AI Cilt Analizi                      |                    Barkod Tarayıcı                    |                     Fotoğraf Çekim                      |
+| :------------------------------------------------------: | :---------------------------------------------------: | :-----------------------------------------------------: |
 | <img src="assets/screenshots/ai_analiz.png" width="200"> | <img src="assets/screenshots/barkod.png" width="200"> | <img src="assets/screenshots/foto_cek.png" width="200"> |
 
 > Sprint 1 teknik notu: Bu akışta servis katmanı arayüz doğrulaması için demo veri üretmektedir. Gemini 2.5 Flash ve gerçek backend bağlantısı Sprint 2 kapsamına alınmıştır.
@@ -333,22 +327,22 @@ Kullanıcıların kamera veya galeri aracılığıyla cilt fotoğraflarını yü
 
 Kullanıcıların sahip oldukları kozmetik ürünleri dijital ortama aktardıkları ve ürün detaylarını inceledikleri yönetim panelidir.
 
-| Dijital Dolabım | Ürün Detay & Shelly Yorumu | Ürün Ekleme | Ürün Detay Girişi |
-| :---: | :---: | :---: | :---: |
+|                   Dijital Dolabım                    |                 Ürün Detay & Shelly Yorumu                 |                       Ürün Ekleme                        |                     Ürün Detay Girişi                     |
+| :--------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: | :-------------------------------------------------------: |
 | <img src="assets/screenshots/dolab.png" width="180"> | <img src="assets/screenshots/dolab_detay.png" width="180"> | <img src="assets/screenshots/urun_ekle.png" width="180"> | <img src="assets/screenshots/urun_ekle2.png" width="180"> |
 
 Dolap ekranı raflı dijital ürün dolabı olarak çalışır. Ürün görseli için önce ekip tarafından hazırlanan cutout katalog eşleşmesi kullanılır; katalogda ürün yoksa kategoriye göre temsili PNG gösterilir. Raf ekranı sade tutulur; ürünün aktif içerik, durum etiketi ve Shelly yorumu ürün detay ekranında gösterilir.
 
-| Android Dolabım | Android Haftalık Plan | Android Shelly | Android Profil |
-| :---: | :---: | :---: | :---: |
+|                                                                         Android Dolabım                                                                          |                                                                      Android Haftalık Plan                                                                      |                                                                           Android Shelly                                                                            |                                                                          Android Profil                                                                          |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-dolabim-shelf.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-rutinim-plan.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-shelly-assistant.png" width="180"> | <img src="https://raw.githubusercontent.com/gismo-o/TMGC-Team/main/Project_Management_Files/Sprint_1/Product_Screenshots/android-profile-fixed.png" width="180"> |
 
 Rutinim sekmesi, dolaptaki ürünleri kullanarak bugünün sabah/akşam rutinini ve tam ekran haftalık planı oluşturur. Shelly ekranı, “Rutinimi kontrol et”, “Yeni ürün ekledim”, “Cildim tepki verdi” ve “İçerik analizi yap” aksiyonlarıyla ürün/rutin uyumu danışmanı olarak prototiplenmiştir.
 
 #### 4. Profil ve Ayarlar
 
-| Kullanıcı Profili |
-| :---: |
+|                   Kullanıcı Profili                   |
+| :---------------------------------------------------: |
 | <img src="assets/screenshots/profil.png" width="200"> |
 
 Cilt profili güncelleme, hesap ayarları ve çıkış akışı bu bölümde temsil edilir.
@@ -433,22 +427,135 @@ Sonraki sprint için kararlar:
 - [Test and Verification](Project_Management_Files/Sprint_1/Test_and_Verification.md)
 - [Frontend Scope](Project_Management_Files/Sprint_1/Frontend_Scope.md)
 
-## 📌 Sprint - 2 (Planlanan)
+---
 
-Sprint 2'nin ana hedefi, Sprint 1'de hazırlanan mobil prototipi gerçek backend, database ve AI servisleriyle bağlamaktır.
-
-Planlanan işler:
-
-- Java/Spring backend API iskeleti
-- Authentication ve kullanıcı profil endpointleri
-- Ürün dolabı için kalıcı database modeli
-- Open Beauty Facts barkod verisinin gerçek kamera taramasıyla bağlanması
-- Gemini AI ingredient analiz endpointi
-- ProductReview düzenleme akışının backend update endpointiyle bağlanması
-- Open Beauty Facts'te bulunamayan ürünler için manuel ürün giriş formunun tamamlanması
-- Sprint 2 board, burndown, daily scrum ve ürün ekran kanıtlarının düzenli eklenmesi
+# 📌 Sprint - 2
 
 Sprint 2 plan dosyası: [Project_Management_Files/Sprint_2/README.md](Project_Management_Files/Sprint_2/README.md)
+
+## Sprint Notları
+
+- **Fullstack Entegrasyonu:** React Native/Expo mobil istemci katmanı, Spring Boot backend sunucu katmanı ve Supabase PostgreSQL ilişkisel veritabanı katmanı uçtan uca başarıyla bağlandı.
+- **Güvenlik ve Oturum Yönetimi (Auth & Session):** Spring Security, BCrypt şifre maskeleme/hashleme işlemleri ve istemci tarafında `authService` üzerinde aktif oturum ID'sinin (`activeUserId`) bellekte tutulmasıyla oturum yönetimi tamamen güvenli hale getirildi.
+- **Akıllı Cilt Analizi (Onboarding Entegrasyonu):** Kayıt olan kullanıcıların onboarding cilt analizi verilerinin, kullanıcı kimliği (ID) navigasyon parametresi olarak aktarılarak `/api/profiles/save` adresi üzerinden doğrudan Supabase `user_profiles` tablosuna başarıyla yazılması sağlandı.
+- **Agentic AI - Shelly:** `GeminiApiClient` (Java HTTP Client tabanlı), `SafetyGuard` ve `IngredientKnowledgeBase` entegre edilerek Shelly chatbot'u tam bir AI Agent'a dönüştürüldü. Shelly; niyet algılama, ürün eşleştirme ve güvenlik analizlerinin tamamını bizzat kendisi yapıp zengin bir JSON şemasıyla dönecek şekilde master prompt üzerinden yapılandırıldı.
+- **Sohbet Hafızası (Conversational Memory):** `AssistantService` ve `ShellyPromptService` güncellenerek Shelly'ye son 6 mesajlık bir sohbet hafızası kazandırıldı. Shelly artık ardışık ve bağlama bağlı soruları unutmadan yanıtlayabilmektedir.
+- **Yapay Zekâ ile Ürün Zenginleştirme (AI Product Enricher):** Kamerayla eklenen ve harici API'lerde içeriği eksik olan ürünlerin, Gemini tarafından marka ve adına bakılarak kategorisinin, içeriklerinin ve kullanım zamanının otomatik tamamlanıp kaydedilmesi sağlandı.
+- **Akıllı Dolap ve Rutin Senkronizasyonu (isActive Toggle):** Ürün detay ekranına (`ProductDetailScreen.tsx`) "Rutinlerimde Aktif Kullan" switch anahtarı eklendi. Yerel state (`ProductContext.tsx`) ve backend API (`ProductService.java`) bağlantıları tamamlandı. "Rutinim" ekranı (`RoutineScreen.tsx`), sadece aktif olan ürünleri süzüp planlayıcıya gönderecek ve sekme her tıklandığında (`useFocusEffect` ile) kendisini yenileyecek şekilde dinamik hale getirildi.
+
+---
+
+## 📈 Sprint İçinde Tamamlanması Tahmin Edilen Puan
+
+Sprint 2 puanlaması, devreden işlerin eritilmesi ve otonom AI ajanlarının entegrasyonu göz önüne alınarak yapılmıştır.
+
+- **Sprint 2 hedefi:** 130 SP (Sprint 1'den devreden 18 SP dahil)
+- **Sprint 2 tamamlanan:** 130 SP
+- **Sprint 2 kalan / To Do:** 0 SP
+- **Sprint 2 tamamlanma oranı:** %100
+
+Sprint 2 için hedeflenen ana kapsam; güvenli veritabanı entegrasyonu, asenkron kayıt/giriş akışları, onboarding verilerinin veritabanına yazılması, akıllı asistan sohbet hafızası, otonom ürün eşleme ve arayüz-dolap-rutin senkronizasyonudur.
+
+### Puan Tamamlama Mantığı
+
+Sprint 1'den devralınan 18 SP'lik backend/database borcu ve Sprint 2 için planlanan tüm yapay zekâ entegrasyonu, veritabanı kararlılığı ve arayüz senkronizasyonu geliştirme görevleri bu sprintte tamamen tamamlanmıştır. Yapay zekanın (Gemini 2.5 Flash) ve ilişkisel tabloların entegrasyonu sayesinde projenin teknik altyapısı **%100 tamamlanma** oranıyla başarıyla kapatılmıştır. Bir sonraki sprint (Sprint 3) için herhangi bir devreden iş bırakılmamış, tüm planlanan hedeflere tam zamanında ulaşılmıştır.
+
+---
+
+## 🛠️ Backlog Dağıtma Mantığı ve Story Seçimleri
+
+Sprint 2'de öncelik; veritabanı bütünlüğü, asenkron API entegrasyonu, yapay zekâ sohbet hafızası, çıktı doğrulama (guardrails) ve arayüz-veritabanı senkronizasyonuna verilmiştir.
+
+- **User Story & Analiz** (Tamamlandı)
+- **UI/UX Entegrasyonu** (Tamamlandı)
+- **Authentication & Hashing** (Tamamlandı)
+- **Cilt Profili Modülü (DB Entegrasyonu)** (Tamamlandı)
+- **Ürün Yönetimi (Dinamik Dolap CRUD)** (Tamamlandı)
+- **Yapay Zekâ ve Analiz Ajanları (S2-Agents)** (Tamamlandı)
+- **Sohbet Hafızası (Conversational Memory)** (Tamamlandı)
+- **Backend & API Katmanı** (Tamamlandı)
+- **Database (Supabase PostgreSQL / Flyway)** (Tamamlandı)
+- **Test & Hata Yönetimi (CORS & Port Çözümleri)** (Tamamlandı)
+- **Dokümantasyon ve Sprint Teslimi** (Tamamlandı)
+
+---
+
+### Daily Scrum
+
+Sprint-2 süreci boyunca toplantılarımız ve günlük Whatsapp konuşmalarımız Imgur'da toplanmıştır: [Sprint 2 Daily Scrum Chats](https://imgur.com/a/7xPVw1X)
+
+---
+
+## 📱 Ürün Durumu (Product Status)
+
+Sprint 2 sonunda uygulama; gerçek veritabanı bağlantısı olan, yapay zekâ asistanı geçmişi hatırlayan ve dolap-rutin dengesini anlık senkronize edebilen dinamik bir ürün haline gelmiştir.
+
+### 1. Dinamik Giriş ve Kayıt Akışı
+
+Kullanıcı kayıt ekranından (`SignUpScreen.tsx`) yeni hesap oluşturduğunda, ad-soyad bilgisi `firstName` ve `lastName` olarak ayrıştırılarak veritabanına kaydedilir. Başarılı kayıt sonrası sistem kullanıcının veritabanı ID'sini alarak onu doğrudan Onboarding ekranına taşır. Onboarding tamamlandığında, analiz verileri Supabase `user_profiles` tablosuna bu kullanıcı kimliğiyle kalıcı olarak yazılır.
+
+### 2. Canlı Yapay Zekâ Sohbet ve Akıllı Hafıza Akışı
+
+Shelly ekranı ve chat katmanı, `AssistantService` ve `ShellyPromptService` üzerinden tamamen dinamik hale getirilmiştir.
+
+- Kullanıcı Shelly ile konuşurken son 6 mesajlık sohbet geçmişi (hafıza) prompt'a eklenerek Gemini'ye gönderilir. Shelly artık zamir içeren ardışık soruları başarıyla yanıtlayabilir.
+- Güvenlik filtresi (`SafetyGuard`) aktif reaksiyonlarda tıbbi aciliyet uyarısı vererek dermatoloğa yönlendirir.
+
+### 3. Akıllı Ürün Yönetimi ve Dolap/Rutin Senkronizasyonu
+
+Kullanıcı kamerayla bir ürün tarattığında, harici API ürün içeriğini eksik dönse dahi backend'deki `enrichProductWithAi` servisi devreye girer. Gemini ürünü markası ve adıyla analiz ederek kategorisini, aktif bileşenlerini ve en güvenli kullanım zamanını (`timeOfDay`) belirleyip veritabanına kaydeder.
+
+- Ürün detay sayfasındaki "Rutinlerimde Aktif Kullan" switch anahtarı kapatıldığında, veri saniyeler içinde veritabanında `false` olarak güncellenir ve ürün "Rutinim" sayfasındaki günlük/haftalık planlardan anında kaldırılır.
+
+---
+
+## 🔍 Sprint Review
+
+Sprint 2 sonunda ekip, backend veritabanı bağlantısını ve otonom yapay zekâ entegrasyonunu başarıyla değerlendirmiştir.
+
+### Tamamlanan Başlıklar:
+
+- Supabase PostgreSQL güvenli Direct SSL veritabanı bağlantısı.
+- Spring Boot `/api/auth` ve `/api/profiles` entegrasyonu.
+- Jackson global adlandırma uyuşmazlıkları ve DTO (`ProductRequest`/`ProductResponse`) düzeltmeleri.
+- Gemini 1.5 Flash otonom chat, cilt analizi ve ürün zenginleştirme servisleri.
+- Sohbet geçmişi (Conversational Memory) kurgusu.
+- `ProductDetailScreen.tsx` switch butonu ve `RoutineScreen.tsx` anlık senkronizasyon güncellemeleri.
+
+### Değerlendirilen Konular:
+
+- Uygulamanın yapay zekâ entegrasyonu prototipten gerçek otonom ajan seviyesine çıkarıldı.
+- Arayüz ve sunucu arasındaki veri tutarlılığı doğrulandı.
+
+### Sprint Review Katılımcıları:
+
+- Tuba Köten
+- Gizem İlayda Koz
+- Ceren Sivri
+
+---
+
+## 🔄 Sprint Retrospective
+
+### İyi Gidenler:
+
+- **Uçtan Uca Fullstack Entegrasyon Başarısı:**
+  Mobil istemci (React Native), sunucu (Spring Boot) ve ilişkisel veritabanı (Supabase) katmanları arasındaki asenkron veri akışlarının planlanandan çok daha hızlı, uyumlu ve kararlı bir şekilde birbirine bağlanması.
+
+- **AI Agent Başarısı:**
+  Yapay zekâ asistanımız "Shelly"nin, basit bir soru-cevap botu olmaktan çıkarılıp; kullanıcının dolabındaki ürünleri gerçek veritabanı ID'leri ile eşleştiren, çakışan aktifleri saptayan ve son konuşmaları diyalog geçmişinden (hafızasından) hatırlayan üst düzey otonom bir cilt bakım danışmanına (AI Agent) dönüştürülmesi.
+
+- **Yüksek Veri Güvenliği ve Şifreleme Standartları:**
+  Kullanıcı güvenliği için şifrelerin `BCrypt` ile veritabanında başarıyla maskelenmesi; ayrıca veritabanı şifreleri ve API anahtarları gibi hassas bilgilerin `.gitignore` ve `.example` şablonları kullanılarak profesyonel standartlarda Git dışı bırakılması.
+
+- **Eşzamanlı Arayüz ve Dolap Senkronizasyonu (Real-time Sync):**
+  Ürün detay sayfasındaki Switch anahtarı kapatıldığı an, verinin arka planda saniyesinde veritabanında güncellenmesi ve `useFocusEffect` kancası sayesinde "Rutinim" sayfasındaki günlük/haftalık planlardan anında ve kayıpsız olarak kaldırılmasıyla mükemmel bir kullanıcı deneyimi (UX) senkronizasyonu yakalanması.
+
+### Zorlayanlar:
+
+- **Gemini API Kota Sınırları ve İstek Yoğunluğu (Rate Limiting):**
+  Ücretsiz Gemini API kotasının, özellikle geliştirme ve ardışık arayüz testleri sırasında dakikalık istek limiti (15 RPM) nedeniyle hızlıca dolması ve Google sunucularının geçici olarak 503 (Servis Meşgul) hatası döndürmesi ekibi zorlamıştır.
+  - _Çözüm:_ Bu zorluk, sistemimizi çökmekten korumak için kod tarafında çok güçlü ve kararlı bir **Yedek/Cankurtaran (Fallback) Motoru** kurgulamamızı zorunlu kılmış ve uygulama kararlılığını en üst düzeye çıkarmıştır. Ayrıca testler için yedek API anahtarlarıyla çalışma pratikleri edinilmiştir.
 
 ## 📌 Sprint - 3 (Planlanan)
 
