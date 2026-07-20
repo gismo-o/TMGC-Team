@@ -99,11 +99,29 @@ public class ShellyPromptService {
         if (chatHistory == null || chatHistory.isEmpty()) {
             return "Aktif Konusma Durumu (State): Kullanici ile ilk kez konusuluyor. Cilt yapisini ve seçecegi hedefi analiz etmeye basla.";
         }
-        return """
-                Aktif Konusma Durumu (State):
-                - Kullanici ile aktif bir sohbet sureci yurutuluyor.
-                - Gemini, onceki mesajlari analiz ederek kullanicinin o anki aktif cilt derdini, sivilce/tahris durumunu ve anlik hedeflerini aklimda tutmali ve buna gore yonlendirmelidir.
-                """;
+
+        // Onceki mesajlarda tespit edilen en guncel cilt derdi/hedefi (detectedIssue
+        // her mesajda kaydediliyor ama daha once hic geri okunmuyordu). Bunu
+        // gercek bir "state" olarak Gemini'ye aktariyoruz, boylece sohbet
+        // ilerledikce ayni konuyu takip edebiliyor.
+        String activeIssue = null;
+        for (int i = chatHistory.size() - 1; i >= 0; i--) {
+            String issue = chatHistory.get(i).getDetectedIssue();
+            if (issue != null && !issue.isBlank()) {
+                activeIssue = issue;
+                break;
+            }
+        }
+
+        StringBuilder builder = new StringBuilder("Aktif Konusma Durumu (State):\n");
+        builder.append("- Kullanici ile aktif bir sohbet sureci yurutuluyor.\n");
+        if (activeIssue != null) {
+            builder.append("- Su ana kadar tespit edilen aktif cilt derdi/hedefi: ").append(activeIssue).append(".\n");
+            builder.append("- Kullanici konuyu degistirmedikce bu derde odaklanmaya devam et, bastan sorma.\n");
+        } else {
+            builder.append("- Henuz net bir cilt derdi/hedefi tespit edilmedi; kullanicinin son mesajindan cikar.\n");
+        }
+        return builder.toString();
     }
 
     public String buildSkinPhotoPrompt(
