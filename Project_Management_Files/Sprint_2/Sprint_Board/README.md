@@ -4,6 +4,14 @@ Sprint 2 backlog'u Notion board uzerinden takip edildi. Ornek bootcamp repolarin
 
 <img src="sprint2-board-summary.svg" width="900" alt="SkinShelf board summary">
 
+## Notion Board Ekran Goruntuleri
+
+Asagidaki gorseller 20 Temmuz 2026'da canli Notion Product Backlog sayfasindan alinmistir. GitHub tarafinda SVG ozetin yaninda gercek board ekran kaniti olarak tutulur.
+
+| Board view | Full page capture |
+| --- | --- |
+| <img src="notion-board-live.png" width="420"> | <img src="notion-board-full.png" width="420"> |
+
 ## Board Kolon Mantigi
 
 | Kolon | Anlam |
@@ -27,4 +35,4 @@ Detayli puan dagilimi: [../sprint2-story-points.md](../sprint2-story-points.md)
 
 ## Kanit Notu
 
-Daily scrum ve board ekran goruntuleri takim tarafindan Notion/Imgur uzerinden saklanir. GitHub tarafinda bu klasor, board'un hangi kolon/kart mantigiyla kullanildigini ve puanlarin nasil dagitildigini aciklayan kalici teslim kanitidir.
+Daily scrum ve board ekran goruntuleri takim tarafindan Notion/Imgur uzerinden saklanir. GitHub tarafinda bu klasor, board'un hangi kolon/kart mantigiyla kullanildigini, puanlarin nasil dagitildigini ve canli Notion gorunumunun nasil takip edildigini aciklayan kalici teslim kanitidir.

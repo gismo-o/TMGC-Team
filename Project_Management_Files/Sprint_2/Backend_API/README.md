@@ -10,7 +10,7 @@ Sprint 2'de Spring Boot backend katmani mobil uygulamanin gercek veri kaynagi ha
 | API | Spring Boot | `backend/src/main/java/com/skinshelf/backend/controller` |
 | Auth | JWT + BCrypt | `SecurityConfig`, `JwtService`, `UserService` |
 | Database | Supabase PostgreSQL | `backend/src/main/resources/db/migration` |
-| AI | Gemini API | `GeminiApiClient`, `AssistantService`, `SkinAnalysisService` |
+| AI | Gemini API (`gemini-flash-latest`) | `GeminiApiClient`, `AssistantService`, `SkinAnalysisService` |
 | Product data | Open Beauty Facts | `src/services/openBeautyFactsService.ts` |
 
 ## Endpoint Ozeti
@@ -45,6 +45,18 @@ Sprint 2'de Spring Boot backend katmani mobil uygulamanin gercek veri kaynagi ha
 5. Shelly veya urun zenginlestirme akisi gerekirse Gemini servisinden yapili cevap alir.
 6. Mobil context'ler backend cevabiyla state'i yeniler; dolap ve rutin ekranlari ayni veriyle calisir.
 
+## Smoke Test Sonucu
+
+Sprint 2 kapanisinda API, canli Spring Boot sunucusu ve Supabase test verisiyle dogrulandi.
+
+| Komut | Sonuc | Kanit |
+| --- | --- | --- |
+| `npm run smoke:api` | Passed | [smoke-api-result.json](smoke-api-result.json) |
+
+Smoke test; health endpointini, test kullanicisi oturumunu, profil bilgisini, urun kaydini, ingredient analiz seviyesini, onerilen kullanim zamanini ve Shelly chat niyetini kontrol eder.
+
+Gemini client, kapanan model adlarina bagimli kalmamak icin `gemini-flash-latest` alias'i ile calisir. JSON cevabi yarim veya parse edilemez gelirse ayni istek bir kez daha kisa ve tamamlanmis JSON talimatiyla denenir.
+
 ## Teknik Guvenlik Notlari
 
 - Parolalar `BCryptPasswordEncoder` ile hashlenir.
@@ -52,4 +64,3 @@ Sprint 2'de Spring Boot backend katmani mobil uygulamanin gercek veri kaynagi ha
 - Paylasilabilir kurulum icin `backend/src/main/resources/application.properties.example` kullanilir.
 - Protected endpointler icin JWT zorunludur; sadece health, login ve register public tutulur.
 - Hesap silme akisinda kullaniciya bagli asistan mesajlari, cilt kayitlari, urunler ve profil kaydi birlikte temizlenir.
-

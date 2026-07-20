@@ -16,7 +16,8 @@ Sprint 2'de Sprint 1 prototipi; React Native/Expo istemci, Spring Boot API, Supa
 | Burndown / tamamlanma ozeti | Tamamlandi | [Burndown_Chart](Burndown_Chart) |
 | Daily scrum referanslari | Tamamlandi | [Daily_Scrum](Daily_Scrum) |
 | Review ve retrospective | Tamamlandi | [Review_and_Retrospective](Review_and_Retrospective) |
-| Build ve backend testleri | Tamamlandi | [Test_and_Verification.md](Test_and_Verification.md) |
+| Build, backend ve API smoke testleri | Tamamlandi | [Test_and_Verification.md](Test_and_Verification.md), [Backend_API/smoke-api-result.json](Backend_API/smoke-api-result.json) |
+| Canli Android emulator kanitlari | Tamamlandi | [Product_Screenshots/live](Product_Screenshots/live) |
 
 ## Tamamlanan Hedefler
 
@@ -57,3 +58,9 @@ Incelenen ornek repolarda Sprint 2 bolumleri genellikle su kanitlarla destekleni
 | Teknik mimari | [System_Design](System_Design) |
 | Review/retro | [Review_and_Retrospective](Review_and_Retrospective) |
 | Build/test kaniti | [Test_and_Verification.md](Test_and_Verification.md) |
+
+## Canli Kapanis Kanitlari
+
+| Notion board | Android Dolabim | Shelly |
+| --- | --- | --- |
+| <img src="Sprint_Board/notion-board-live.png" width="240"> | <img src="Product_Screenshots/live/android-live-dolabim.png" width="160"> | <img src="Product_Screenshots/live/android-live-shelly.png" width="160"> |

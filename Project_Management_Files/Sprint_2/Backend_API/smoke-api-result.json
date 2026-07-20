@@ -1,0 +1,50 @@
+
+{
+  "apiBaseUrl": "http://localhost:8080/api",
+  "health": {
+    "status": "ok",
+    "timestamp": "2026-07-20T08:30:12.945483Z",
+    "service": "skinshelf-backend"
+  },
+  "verified": [
+    {
+      "email": "test-kuru@example.com",
+      "mode": "existing",
+      "userId": "15",
+      "displayName": "Test Kuru",
+      "skinType": "Kuru Cilt",
+      "mainGoal": "Kızarıklık / hassasiyet",
+      "productName": "Kuru Cilt Nemlendirici",
+      "productId": "5",
+      "ingredientAnalysisLevel": "high",
+      "suggestedTimeOfDay": "both",
+      "assistantIntent": "ISSUE"
+    },
+    {
+      "email": "test-yagli@example.com",
+      "mode": "existing",
+      "userId": "16",
+      "displayName": "Test Yagli",
+      "skinType": "Yağlı Cilt",
+      "mainGoal": "Sivilce / komedon görünümü",
+      "productName": "Yagli Cilt BHA",
+      "productId": "6",
+      "ingredientAnalysisLevel": "warning",
+      "suggestedTimeOfDay": "evening",
+      "assistantIntent": "INFO"
+    },
+    {
+      "email": "test-karma@example.com",
+      "mode": "existing",
+      "userId": "17",
+      "displayName": "Test Karma",
+      "skinType": "Karma Cilt",
+      "mainGoal": "Daha düzenli rutin",
+      "productName": "Daily SPF 50",
+      "productId": "7",
+      "ingredientAnalysisLevel": "high",
+      "suggestedTimeOfDay": "morning",
+      "assistantIntent": "INFO"
+    }
+  ]
+}

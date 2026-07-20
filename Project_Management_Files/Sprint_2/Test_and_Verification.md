@@ -25,9 +25,11 @@ Son sonuc: Passed. `BackendApplicationTests` calisti; 1 test, 0 failure, 0 error
 npm run smoke:api
 ```
 
-Not: Bu komut Supabase uzerinde test kullanicisi, test urunu ve test mesajlari olusturur. Bu nedenle otomatik olarak calistirilmeden once ekip tarafindan test verisi yazma onayi verilmelidir.
+Not: Bu komut Supabase uzerinde test kullanicisi, test urunu ve test mesajlari olusturur. Sprint 2 kapanis dogrulamasi icin `test-kuru@example.com`, `test-yagli@example.com` ve `test-karma@example.com` test kullanicilariyla calistirildi.
 
-Son sonuc: Calistirilmadi. Komut canli Supabase veritabanina test kaydi yazdigi icin ekip onayi olmadan otomatik kosulmadi.
+Son sonuc: Passed. Health, auth, profile, product, ingredient analysis ve Shelly chat akisi dogrulandi.
+
+Kayitli cikti: [Backend_API/smoke-api-result.json](Backend_API/smoke-api-result.json)
 
 ## Son Dogrulama
 
@@ -35,7 +37,8 @@ Son sonuc: Calistirilmadi. Komut canli Supabase veritabanina test kaydi yazdigi 
 | --- | --- | --- |
 | 20 Temmuz 2026 | `npm run build` | Passed |
 | 20 Temmuz 2026 | `JAVA_HOME=$(/usr/libexec/java_home -v 24) ./mvnw test` | Passed |
-| 20 Temmuz 2026 | `npm run smoke:api` | Not run: Supabase'e test verisi yazar |
+| 20 Temmuz 2026 | `npm run smoke:api` | Passed |
+| 20 Temmuz 2026 | Android emulator live smoke | Passed: login, Dolabim, Rutinim, Shelly, Cilt Takibi, Profil |
 
 ## Dogrulanan Kapsam
 

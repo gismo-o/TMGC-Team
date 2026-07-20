@@ -1,5 +1,6 @@
 package com.skinshelf.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -30,11 +31,11 @@ public class GeminiApiClient {
 
     public GeminiApiClient(
             @Value("${app.gemini.api-key:}") String apiKey,
-            @Value("${app.gemini.model:gemini-2.5-flash}") String model) {
+            @Value("${app.gemini.model:gemini-flash-latest}") String model) {
 
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.model = (model == null || model.isBlank())
-                ? "gemini-2.5-flash"
+                ? "gemini-flash-latest"
                 : model.trim();
 
         this.objectMapper = new ObjectMapper();
@@ -73,6 +74,14 @@ public class GeminiApiClient {
     public GeminiJsonResult generateJsonWithStatus(String prompt,
             String base64Image,
             String imageMimeType) {
+
+        return generateJsonWithStatus(prompt, base64Image, imageMimeType, true);
+    }
+
+    private GeminiJsonResult generateJsonWithStatus(String prompt,
+            String base64Image,
+            String imageMimeType,
+            boolean retryOnJsonParseError) {
 
         if (!isConfigured()) {
             log.error("Gemini API Key bulunamadı.");
@@ -118,7 +127,21 @@ public class GeminiApiClient {
                 return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
             }
 
-            JsonNode json = objectMapper.readTree(stripMarkdownFence(text));
+            JsonNode json;
+            try {
+                json = objectMapper.readTree(stripMarkdownFence(text));
+            } catch (JsonProcessingException e) {
+                if (retryOnJsonParseError) {
+                    log.info("Gemini JSON parse edilemedi, kisa JSON icin tekrar deneniyor.");
+                    return generateJsonWithStatus(
+                            buildRetryPrompt(prompt),
+                            base64Image,
+                            imageMimeType,
+                            false);
+                }
+                log.warn("Gemini JSON parse edilemedi: {}", e.getOriginalMessage());
+                return new GeminiJsonResult(Optional.empty(), FailureReason.ERROR);
+            }
 
             return new GeminiJsonResult(Optional.of(json), FailureReason.NONE);
 
@@ -173,6 +196,7 @@ public class GeminiApiClient {
         ObjectNode generationConfig = root.putObject("generationConfig");
 
         generationConfig.put("temperature", 0.25);
+        generationConfig.put("maxOutputTokens", 8192);
         generationConfig.put("responseMimeType", "application/json");
 
         return objectMapper.writeValueAsString(root);
@@ -190,5 +214,11 @@ public class GeminiApiClient {
                 .replaceFirst("^```(?:json)?\\s*", "")
                 .replaceFirst("\\s*```$", "")
                 .trim();
+    }
+
+    private String buildRetryPrompt(String prompt) {
+        return prompt
+                + "\n\nCevabi yalnizca kisa, tamamlanmis ve gecerli JSON olarak dondur. "
+                + "Ek aciklama, markdown veya yarim kalan alan yazma.";
     }
 }

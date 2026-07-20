@@ -8,7 +8,7 @@ Bu klasor sprintlerden bagimsiz proje kararlarini ve genel referanslari takip et
 - Alan: Yapay zeka destekli cilt bakim urun dolabi ve rutin asistanı
 - Platform: React Native / Expo / TypeScript mobil uygulama
 - Hedef backend: Java / Spring
-- Hedef AI entegrasyonu: Gemini 2.5 Flash
+- Hedef AI entegrasyonu: Gemini API (`gemini-flash-latest`)
 - Acik urun verisi: Open Beauty Facts
 
 ## Sprint Yol Haritasi
