@@ -65,7 +65,7 @@ public class ShellyPromptService {
             List<AssistantMessage> chatHistory,
             String userMessage) {
         return SYSTEM_PROMPT
-                + "\n" + knowledgeBase.asPromptSection()
+                + "\n" + knowledgeBase.relevantRulesAsPromptSection(searchableContext(products, userMessage))
                 + "\nCevabi YALNIZCA su zengin JSON semasiyla don (baska hicbir aciklama ekleme, doğrudan { ile basla ve } ile bitir):\n"
                 + """
                         {
@@ -114,7 +114,8 @@ public class ShellyPromptService {
             Boolean usedNewProduct,
             String userNote) {
         return SYSTEM_PROMPT
-                + "\n" + knowledgeBase.asPromptSection()
+                + "\n" + knowledgeBase.relevantRulesAsPromptSection(
+                        searchableContext(products, value(skinFeeling) + " " + value(userNote)))
                 + "\nCevabi YALNIZCA su JSON semasiyla don:\n"
                 + """
                         {
@@ -226,6 +227,24 @@ public class ShellyPromptService {
 
     private String value(String value) {
         return value == null || value.isBlank() ? "-" : value.trim();
+    }
+
+    /**
+     * Bilgi tabanı kural eşleştirmesi için aranacak metni oluşturur: kullanıcının
+     * mesajı/notu + rafındaki ürünlerin aktif içerikleri. Böylece hem "retinol
+     * kullanabilir miyim" gibi doğrudan sorularda hem de kullanıcı ürünün adını
+     * anmasa bile rafındaki ürünlere göre ilgili kurallar eşleşir.
+     */
+    private String searchableContext(List<Product> products, String freeText) {
+        StringBuilder builder = new StringBuilder(freeText == null ? "" : freeText).append(' ');
+        if (products != null) {
+            products.stream().limit(15).forEach(product -> {
+                if (product.getActiveIngredients() != null) {
+                    builder.append(String.join(" ", product.getActiveIngredients())).append(' ');
+                }
+            });
+        }
+        return builder.toString();
     }
 
     public ShellyMode detectMode(String message) {
