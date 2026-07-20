@@ -25,7 +25,6 @@ type RegisterPayload = LoginCredentials & {
   lastName?: string;
 };
 
-// Giriş yapan aktif kullanıcının ID'sini bellekte tutacak değişken
 let activeUserId: string | null = getCachedAuthUserId();
 
 const requestAuth = async (path: string, body: unknown): Promise<AuthResponse> => {
@@ -57,12 +56,10 @@ const requestAuth = async (path: string, body: unknown): Promise<AuthResponse> =
 };
 
 export const authService = {
-  // Bellekteki aktif kullanıcı ID'sini dış dünyaya açan metot
   getUserId: () => {
     return activeUserId;
   },
 
-  // Giriş İşlemi
   login: async (credentials: LoginCredentials) => {
     try {
       return await requestAuth('/login', credentials);
@@ -72,7 +69,6 @@ export const authService = {
     }
   },
 
-  // Kayıt İşlemi
   register: async (data: RegisterPayload) => {
     try {
       return await requestAuth('/register', data);
@@ -82,7 +78,6 @@ export const authService = {
     }
   },
 
-  // Kayıtlı token varsa /auth/me ile oturumu doğrular ve kullanıcıyı döner
   restoreSession: async (): Promise<AuthUser | null> => {
     const token = await getAuthToken();
     if (!token) return null;
@@ -95,16 +90,14 @@ export const authService = {
       await saveAuthSession(token, activeUserId);
       return { ...user, id: activeUserId };
     } catch {
-      // Token süresi dolmuş veya geçersiz; sessizce temizle
       await clearAuthSession();
       activeUserId = null;
       return null;
     }
   },
 
-  // Oturumu Kapatma İşlemi
   logout: async () => {
-    activeUserId = null; // Belleği temizler
+    activeUserId = null;
     await clearAuthSession();
     return true;
   },

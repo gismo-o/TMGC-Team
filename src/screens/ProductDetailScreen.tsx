@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image, Switch, Platform, StatusBar } from 'react-native'; // GÜNCELLEME: Platform ve StatusBar eklendi
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image, Switch, Platform, StatusBar } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp, useFocusEffect } from '@react-navigation/native'; // useFocusEffect eklendi
+import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { Sparkles, Droplets, Wind, Sun, Leaf, Edit2, Lightbulb, CheckCircle2, ThumbsDown, ThumbsUp, X } from 'lucide-react-native';
-import { useProducts } from '../context/ProductContext'; // useProducts kullanmaya devam ediyoruz
+import { useProducts } from '../context/ProductContext';
 import { getProductVisualSource } from '../services/productVisualCatalog';
 import { getProductShellyComment, getProductStatus } from '../services/shellyInsights';
-import { productService } from '../services/productService'; // productService import edildi
+import { errorDev, logDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
 
 type Props = {
@@ -46,26 +46,23 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
   
   const product = products.find(p => p.id === route.params.productId);
 
-  // DÜZELTİLDİ: TypeScript hata vermemesi için (product as any) olarak esnetildi ve çift aşamalı (isActive/is_active) okuma yapısı kuruldu
   const [isActive, setIsActive] = useState((product as any)?.isActive ?? (product as any)?.is_active ?? true);
 
   const handleToggleActive = async (value: boolean) => {
     if (!product) return;
-    setIsActive(value); // Arayüzü anında güncelle
+    setIsActive(value);
     try {
-      // GÜNCELLEME: Doğrudan yerel hafızayı ve veritabanını aynı anda güncelleyen Context metodunu çağırıyoruz!
       await updateProduct(product.id, {
         isActive: value,
         is_active: value 
       } as any);
-      console.log("Ürün aktiflik durumu veritabanında güncellendi:", value);
+      logDev('Ürün aktiflik durumu güncellendi:', value);
     } catch (error) {
-      console.error("Aktiflik güncellenirken hata oluştu:", error);
-      setIsActive(!value); // Hata durumunda anahtarı eski haline geri getir
+      errorDev('Aktiflik güncellenirken hata oluştu:', error);
+      setIsActive(!value);
     }
   };
 
-  // Koruma ekranı
   if (!product) {
     return (
       <View style={styles.overlay}>
@@ -493,7 +490,6 @@ const styles = StyleSheet.create({
   feedbackButtonText: { fontFamily: fonts.sansBold, color: colors.sage, fontSize: 13 },
   feedbackButtonTextDanger: { fontFamily: fonts.sansBold, color: colors.danger, fontSize: 13 },
   feedbackButtonTextActive: { color: colors.onDark },
-  // GÜNCELLEME: Arayüz stilleri eklendi
   activeToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',

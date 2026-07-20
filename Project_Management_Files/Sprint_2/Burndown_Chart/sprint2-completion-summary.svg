@@ -1,0 +1,27 @@
+<svg width="920" height="520" viewBox="0 0 920 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="920" height="520" rx="28" fill="#F7F8F4"/>
+  <text x="48" y="58" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#143E25">Sprint 2 Burndown / Completion</text>
+  <text x="48" y="88" font-family="Arial, sans-serif" font-size="16" fill="#506458">130 SP planned, 130 SP completed, 0 SP remaining</text>
+  <rect x="72" y="126" width="760" height="286" rx="18" fill="#FFFFFF" stroke="#CADCCD"/>
+  <line x1="128" y1="354" x2="790" y2="354" stroke="#CADCCD" stroke-width="2"/>
+  <line x1="128" y1="162" x2="128" y2="354" stroke="#CADCCD" stroke-width="2"/>
+  <text x="84" y="166" font-family="Arial, sans-serif" font-size="14" fill="#506458">130</text>
+  <text x="92" y="260" font-family="Arial, sans-serif" font-size="14" fill="#506458">65</text>
+  <text x="104" y="359" font-family="Arial, sans-serif" font-size="14" fill="#506458">0</text>
+  <polyline points="128,162 340,251 560,327 790,354" fill="none" stroke="#2F6B46" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="128" cy="162" r="10" fill="#2F6B46"/>
+  <circle cx="340" cy="251" r="10" fill="#2F6B46"/>
+  <circle cx="560" cy="327" r="10" fill="#2F6B46"/>
+  <circle cx="790" cy="354" r="10" fill="#2F6B46"/>
+  <text x="106" y="389" font-family="Arial, sans-serif" font-size="14" fill="#143E25">Start</text>
+  <text x="304" y="389" font-family="Arial, sans-serif" font-size="14" fill="#143E25">Mid</text>
+  <text x="522" y="389" font-family="Arial, sans-serif" font-size="14" fill="#143E25">Review</text>
+  <text x="752" y="389" font-family="Arial, sans-serif" font-size="14" fill="#143E25">Done</text>
+  <rect x="70" y="438" width="228" height="44" rx="22" fill="#E9F3EA"/>
+  <text x="96" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#143E25">Target: 130 SP</text>
+  <rect x="328" y="438" width="246" height="44" rx="22" fill="#E9F3EA"/>
+  <text x="354" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#143E25">Completed: 130 SP</text>
+  <rect x="604" y="438" width="228" height="44" rx="22" fill="#FFF0F1"/>
+  <text x="638" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#7A3D45">Remaining: 0 SP</text>
+</svg>
+

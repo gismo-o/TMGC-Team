@@ -6,7 +6,6 @@ import { ProductDraft, RootStackParamList } from '../types';
 import { useUser } from '../context/UserContext';
 import { userService } from '../services/userService';
 import { useRoute } from '@react-navigation/native';
-// KRAVAT IMPORT: authService import edildi
 import { authService } from '../services/authService';
 import { errorDev, logDev, warnDev } from '../services/logger';
 import { colors, fonts, radius, shadows } from '../theme';
@@ -66,9 +65,7 @@ const OptionButton = ({
 export default function OnboardingScreen({ navigation }: Props) {
   const { profile, updateUserProfile } = useUser();
   const route = useRoute<any>();
-  
-  // YÖNLENDİRME KORUMASI: Önce route parametresine, bulamazsa aktif oturum belleğine bakar
-  const userId = route.params?.userId || authService.getUserId(); 
+  const userId = route.params?.userId || authService.getUserId();
 
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState(profile.displayName || '');
@@ -98,9 +95,7 @@ export default function OnboardingScreen({ navigation }: Props) {
     setSelected(withoutExclusive.includes(value) ? withoutExclusive.filter(item => item !== value) : [...withoutExclusive, value]);
   };
 
-  // Veritabanına kaydetme metodu
   const saveProfile = async () => {
-    // EĞER KULLANICI ID BULUNAMAZSA İŞLEMİ İPTAL EDER
     if (!userId) {
       warnDev('Oturum açmış kullanıcı ID bilgisi bulunamadı!');
       alert('Lütfen önce giriş yapın.');
@@ -126,18 +121,16 @@ export default function OnboardingScreen({ navigation }: Props) {
     };
 
     try {
-      logDev('Profil verileri Spring Boot\'a kaydediliyor...', profileData);
-      const result = await userService.updateProfile(String(userId), profileData);
-      logDev('Profil başarıyla veritabanına kaydedildi:', result);
+      logDev('Profil Spring Boot API ile kaydediliyor.');
+      await userService.updateProfile(String(userId), profileData);
+      logDev('Profil başarıyla kaydedildi.');
     } catch (error) {
       errorDev('Cilt profili kaydedilirken hata oluştu:', error);
     }
 
-    // Yerel cihaz hafızasını/state'ini güncellemeye devam ediyoruz
     await updateUserProfile(profileData, { persist: false });
   };
 
-  // Yönlendirme buton metotları
   const completeToMain = async () => {
     await saveProfile();
     navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });

@@ -14,6 +14,7 @@ Bu klasor SkinShelf projesinin sprint bazli Scrum kanitlarini, teknik tasarim do
 
 - [General_Documents](General_Documents): Urun vizyonu, hedef kitle, teknik kararlar ve sprint yol haritasi icin genel referanslar.
 - [Sprint_1/README.md](Sprint_1/README.md): Sprint 1 teslim kanitlarinin tek sayfalik indeksi.
+- [Sprint_2/README.md](Sprint_2/README.md): Sprint 2 fullstack entegrasyon ve Scrum kanit indeksi.
 
 ## Sprint 1 Kanit Checklist
 
@@ -33,19 +34,20 @@ Bu klasor SkinShelf projesinin sprint bazli Scrum kanitlarini, teknik tasarim do
 
 ## Sprint 2 Kanit Checklist
 
-| Kanit                                                     | Durum | Açıklama                                                         |
-| --------------------------------------------------------- | ----- | ---------------------------------------------------------------- |
-| Sprint 2 Board Ekran Görüntüsü                            | Hazır | Başlangıç, orta ve tamamlanmış board panoları                    |
-| Daily Scrum Toplantı Kanıtları                            | Hazır | Günlük stand-up ve takım senkronizasyon notları                  |
-| Sprint 2 Burndown / Tamamlanma Grafiği                    | Hazır | Tamamlanan işlerin hız ve kapanış grafiği                        |
-| S2- Ürün Yönetimi (CRUD) Servis Kanıtları                 | Hazır | Dolaptan ürün silme, güncellenme ve anlık rutin eşleşmesi        |
-| S2- Barkod Sorgulama ve Kamera Entegrasyonu               | Hazır | Kamera ile barkod tarama ve Open Beauty Facts entegrasyonu       |
-| S2- Fotoğraf ile Ürün (AI Vision) Servisi                 | Hazır | Gemini AI destekli görsel cilt analizi ve ürün zenginleştirme    |
-| S2- Ingredient Analyzer Agent (AI)                        | Hazır | Ürün hammaddelerini yapay zekâ ile tarama ve raporlama           |
-| S2- Compatibility Checker Agent                           | Hazır | Aktif içerik çakışmalarını (Retinol + Asitler) denetleyen kalkan |
-| S2- Recommendation Agent                                  | Hazır | Kullanıcının kendi dolap ürünlerini ismen eşleştiren AI          |
-| S2- Routine Planner Agent                                 | Hazır | Shelly ile sabah/akşam rutin sıralaması ve haftalık planlama     |
-| S2- AI Chat & "Sohbet Hafızası" (Conversational Memory)   | Hazır | Çok turlu tanı sohbetleri ve son 6 mesajı aklında tutma yeteneği |
-| Sprint 2 Ürün Ekran Görüntüleri                           | Hazır | Mobil ve web arayüz canlı test çıktıları                         |
-| Sprint 2 Review ve Retrospective Raporu                   | Hazır | Sprint sonu değerlendirme ve takım retrospective aksiyonları     |
-| Acceptance Criteria / Definition of Done / Test Doğrulama | Hazır | Kabul kriterleri, ddl-auto doğrulama ve derleme (build) notları  |
+| Kanit                                                     | Durum | Dosya |
+| --------------------------------------------------------- | ----- | ----- |
+| Sprint 2 Board / Backlog Takibi                           | Hazır | [Sprint_2/Sprint_Board](Sprint_2/Sprint_Board) |
+| Daily Scrum Toplantı Kanıtları                            | Hazır | [Sprint_2/Daily_Scrum](Sprint_2/Daily_Scrum) |
+| Sprint 2 Burndown / Tamamlanma Grafiği                    | Hazır | [Sprint_2/Burndown_Chart](Sprint_2/Burndown_Chart) |
+| S2- Ürün Yönetimi (CRUD) Servis Kanıtları                 | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Barkod Sorgulama ve Kamera Entegrasyonu               | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Fotoğraf/Cilt Analizi Servisi                         | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Ingredient Analyzer Agent (AI)                        | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Compatibility Checker / Safety Guard                  | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Recommendation Agent                                  | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| S2- Routine Planner Agent                                 | Hazır | [Sprint_2/Product_Screenshots](Sprint_2/Product_Screenshots) |
+| S2- AI Chat & Sohbet Hafızası                             | Hazır | [Sprint_2/Backend_API](Sprint_2/Backend_API) |
+| Sprint 2 Ürün Durumu ve Ekran Akışları                    | Hazır | [Sprint_2/Product_Screenshots](Sprint_2/Product_Screenshots) |
+| Sprint 2 Review ve Retrospective Raporu                   | Hazır | [Sprint_2/Review_and_Retrospective](Sprint_2/Review_and_Retrospective) |
+| Story Point Dağılımı                                      | Hazır | [Sprint_2/sprint2-story-points.md](Sprint_2/sprint2-story-points.md) |
+| Test Doğrulama                                            | Hazır | [Sprint_2/Test_and_Verification.md](Sprint_2/Test_and_Verification.md) |

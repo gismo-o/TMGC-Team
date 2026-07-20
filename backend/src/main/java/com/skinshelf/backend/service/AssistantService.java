@@ -189,7 +189,6 @@ public class AssistantService {
                     .ifPresent(p -> avoids.add("Kaçın: " + p.getBrand() + " " + p.getName() + " -> " + reason));
         });
 
-        // Shelly'nin sorduğu takip soruları
         List<String> followUps = new ArrayList<>();
         json.path("followUpQuestions").forEach(q -> {
             String question = q.asText("").trim();
@@ -201,7 +200,6 @@ public class AssistantService {
         String warning = json.path("warning").asText("").trim();
         String riskLevel = normalizeRisk(json.path("riskLevel").asText("low"));
 
-        // 🛡️ DÜZELTİLDİ: containsAny yerine matchesAny çağrılarak hata giderildi
         boolean hasRetinoid = false;
         boolean hasAcidOrPeroxide = false;
         String clashingProductName = "";

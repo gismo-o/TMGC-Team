@@ -3,7 +3,7 @@ package com.skinshelf.backend.service;
 import com.skinshelf.backend.entity.Product;
 import com.skinshelf.backend.entity.SkinLog;
 import com.skinshelf.backend.entity.UserProfile;
-import com.skinshelf.backend.entity.AssistantMessage; // GÜNCELLEME: Sohbet geçmişi için eklendi
+import com.skinshelf.backend.entity.AssistantMessage;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,8 +35,6 @@ public class ShellyPromptService {
         this.knowledgeBase = knowledgeBase;
     }
 
-    // Shelly'ye tüm modları ve hangi durumda hangisini seçeceğini master prompt
-    // olarak tanımlıyoruz
     public static final String SYSTEM_PROMPT = """
             Sen SkinShelf uygulamasindaki akilli, empatik ve uzman yapay zeka cilt bakim asistanisin. Adin 'Shelly'.
             Gorevin: kullanicinin cilt bakim urunlerini, iceriklerini, rutinini ve cilt durumunu analiz etmek, teshis koymadan yonlendirmek.
@@ -60,8 +58,6 @@ public class ShellyPromptService {
             - Turkce samimi ve guven veren bir dille yanit ver.
             """;
 
-    // GÜNCELLEME: ShellyMode parametresi ve Java'daki tüm statik mod süzgeçleri
-    // kaldırıldı, karar AI'a devredildi
     public String buildChatPrompt(
             UserProfile profile,
             List<Product> products,
@@ -165,8 +161,6 @@ public class ShellyPromptService {
         if (products == null || products.isEmpty()) {
             builder.append("- (raf bos)\n");
         } else {
-            // GÜNCELLEME: Ürünler ID'leri, kategorileri ve aktif içerikleri ile birlikte
-            // detaylı olarak prompt'a yazılıyor
             products.stream().limit(15).forEach(product -> builder
                     .append("- id: ").append(product.getId())
                     .append(" | marka: ").append(value(product.getBrand()))
@@ -234,8 +228,6 @@ public class ShellyPromptService {
         return value == null || value.isBlank() ? "-" : value.trim();
     }
 
-    // GÜNCELLEME: detectMode metodu diğer servislerin (ve cankurtaran yedek
-    // sisteminin) derlenebilmesi için korundu!
     public ShellyMode detectMode(String message) {
         String normalized = message == null ? "" : message.toLowerCase(Locale.forLanguageTag("tr-TR"));
 

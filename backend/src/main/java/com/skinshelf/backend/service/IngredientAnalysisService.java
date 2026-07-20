@@ -92,17 +92,14 @@ public class IngredientAnalysisService {
                 emptyIfNull(request.getActiveIngredients()));
     }
 
-    // GÜNCELLEME: AI'dan gelen clashingProducts verilerini okuyup gerçek ürün adlarıyla eşleştiriyoruz
     private IngredientAnalysisResponse fromJson(JsonNode json, IngredientAnalysisRequest request, List<Product> shelfProducts) {
         List<String> notableIngredients = toStringList(json.path("notableIngredients"));
         if (notableIngredients.isEmpty()) {
             notableIngredients = emptyIfNull(request.getActiveIngredients());
         }
 
-        // Standart uyarıları alıyoruz
         List<String> warnings = new ArrayList<>(toStringList(json.path("warnings")));
 
-        // GÜNCELLEME: AI'ın bizzat veritabanı ID'si ile eşleştirdiği çakışan ürünleri doğrulayıp uyarılara ekliyoruz
         json.path("clashingProducts").forEach(node -> {
             Long id = node.path("id").asLong();
             String reason = node.path("reason").asText("");
@@ -219,7 +216,6 @@ public class IngredientAnalysisService {
         return false;
     }
 
-    // GÜNCELLEME: Gemini'nin akıllı eşleştirme yapabilmesi için ürünlerin ID'lerini de prompt'a ekliyoruz
     private String formatShelf(List<Product> products) {
         if (products.isEmpty()) {
             return "- Bos";
@@ -227,7 +223,7 @@ public class IngredientAnalysisService {
         return products.stream()
                 .limit(12)
                 .map(product -> "- id: %d | %s %s / %s / %s".formatted(
-                        product.getId(), // ID eklendi!
+                        product.getId(),
                         value(product.getBrand()),
                         value(product.getName()),
                         value(product.getCategory()),

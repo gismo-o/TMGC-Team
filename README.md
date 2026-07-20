@@ -433,6 +433,20 @@ Sonraki sprint için kararlar:
 
 Sprint 2 plan dosyası: [Project_Management_Files/Sprint_2/README.md](Project_Management_Files/Sprint_2/README.md)
 
+Sprint 2 kanit dosyalari:
+
+| Kanit | Dosya |
+| --- | --- |
+| Story point dagilimi | [sprint2-story-points.md](Project_Management_Files/Sprint_2/sprint2-story-points.md) |
+| Board ve backlog takibi | [Sprint_Board](Project_Management_Files/Sprint_2/Sprint_Board) |
+| Daily scrum | [Daily_Scrum](Project_Management_Files/Sprint_2/Daily_Scrum) |
+| Burndown / tamamlanma grafigi | [Burndown_Chart](Project_Management_Files/Sprint_2/Burndown_Chart) |
+| Backend API ve entegrasyon | [Backend_API](Project_Management_Files/Sprint_2/Backend_API) |
+| Sistem mimarisi | [System_Design](Project_Management_Files/Sprint_2/System_Design) |
+| Urun durumu ve ekran akislari | [Product_Screenshots](Project_Management_Files/Sprint_2/Product_Screenshots) |
+| Review ve retrospective | [Review_and_Retrospective](Project_Management_Files/Sprint_2/Review_and_Retrospective) |
+| Test dogrulama | [Test_and_Verification.md](Project_Management_Files/Sprint_2/Test_and_Verification.md) |
+
 ## Sprint Notları
 
 - **Fullstack Entegrasyonu:** React Native/Expo mobil istemci katmanı, Spring Boot backend sunucu katmanı ve Supabase PostgreSQL ilişkisel veritabanı katmanı uçtan uca başarıyla bağlandı.
@@ -459,6 +473,8 @@ Sprint 2 sonunda story point bazlı ilerleme aşağıdaki gibidir:
 | Tamamlanan       |      130 SP |
 | Kalan / To Do    |        0 SP |
 | Tamamlanma oranı |        %100 |
+
+<img src="Project_Management_Files/Sprint_2/Burndown_Chart/sprint2-completion-summary.svg" width="720">
 
 Sprint 2 için hedeflenen ana kapsam; güvenli veritabanı entegrasyonu, asenkron kayıt/giriş akışları, onboarding verilerinin veritabanına yazılması, akıllı asistan sohbet hafızası, otonom ürün eşleme ve arayüz-dolap-rutin senkronizasyonudur.
 
@@ -512,6 +528,19 @@ Shelly ekranı ve chat katmanı, `AssistantService` ve `ShellyPromptService` üz
 Kullanıcı kamerayla bir ürün tarattığında, harici API ürün içeriğini eksik dönse dahi backend'deki `enrichProductWithAi` servisi devreye girer. Gemini ürünü markası ve adıyla analiz ederek kategorisini, aktif bileşenlerini ve en güvenli kullanım zamanını (`timeOfDay`) belirleyip veritabanına kaydeder.
 
 - Ürün detay sayfasındaki "Rutinlerimde Aktif Kullan" switch anahtarı kapatıldığında, veri saniyeler içinde veritabanında `false` olarak güncellenir ve ürün "Rutinim" sayfasındaki günlük/haftalık planlardan anında kaldırılır.
+
+### 4. Kod Mimarisi ve Teknik Yapı
+
+Sprint 2 sonunda kod yapısı; mobil ekranlar, context state, client servisleri, Spring controller/service/repository katmanları ve Supabase migration dosyaları olarak ayrılmıştır. Bu yapı, örnek repolardaki ürün kanıtlarına ek olarak teknik değerlendirmede de projenin okunabilir ve sürdürülebilir görünmesini sağlar.
+
+| Katman | Dosya/Klasor | Sorumluluk |
+| --- | --- | --- |
+| Mobile screens | `src/screens` | Kullanıcı akışları ve ekran state'i |
+| Context | `src/context` | Kullanıcı profili ve ürün dolabı state yönetimi |
+| Client services | `src/services`, `src/api` | Auth, product, assistant, skin analysis ve Open Beauty Facts istekleri |
+| Backend controllers | `backend/src/main/java/com/skinshelf/backend/controller` | HTTP endpoint sözleşmeleri |
+| Backend services | `backend/src/main/java/com/skinshelf/backend/service` | İş kuralları, AI enrichment, guardrail ve analiz mantığı |
+| Persistence | `backend/src/main/java/com/skinshelf/backend/repository`, `backend/src/main/resources/db/migration` | Supabase PostgreSQL veri erişimi ve migration |
 
 ---
 

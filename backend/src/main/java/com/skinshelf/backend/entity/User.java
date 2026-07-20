@@ -1,4 +1,4 @@
-package com.skinshelf.backend.entity; // Paket adını kendi projenize göre düzenleyin
+package com.skinshelf.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,7 +16,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // int8 tipi Java'da Long'a karşılık gelir
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String email;

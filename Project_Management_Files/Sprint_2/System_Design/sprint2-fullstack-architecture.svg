@@ -1,0 +1,66 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" fill="#F7F8F4"/>
+  <text x="56" y="62" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#143E25">SkinShelf Fullstack Architecture</text>
+  <text x="56" y="96" font-family="Arial, sans-serif" font-size="18" fill="#506458">Sprint 2: mobile client, Spring Boot API, Supabase and Shelly AI services</text>
+
+  <rect x="56" y="132" width="324" height="548" rx="24" fill="#FFFFFF" stroke="#B8D7C3" stroke-width="2"/>
+  <text x="88" y="176" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#143E25">React Native / Expo</text>
+  <rect x="88" y="204" width="260" height="92" rx="16" fill="#F2F7F0" stroke="#B8D7C3"/>
+  <text x="112" y="237" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Screens</text>
+  <text x="112" y="263" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Dolabim, Rutinim, Shelly</text>
+  <text x="112" y="285" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Onboarding, Cilt Takibi</text>
+  <rect x="88" y="324" width="260" height="92" rx="16" fill="#F2F7F0" stroke="#B8D7C3"/>
+  <text x="112" y="357" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Context State</text>
+  <text x="112" y="383" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">UserContext</text>
+  <text x="112" y="405" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">ProductContext</text>
+  <rect x="88" y="444" width="260" height="120" rx="16" fill="#F2F7F0" stroke="#B8D7C3"/>
+  <text x="112" y="477" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Client Services</text>
+  <text x="112" y="503" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">apiFetch + authSession</text>
+  <text x="112" y="525" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">productService</text>
+  <text x="112" y="547" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">assistant / skin APIs</text>
+
+  <rect x="438" y="132" width="324" height="548" rx="24" fill="#FFFFFF" stroke="#B8D7C3" stroke-width="2"/>
+  <text x="470" y="176" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#143E25">Spring Boot API</text>
+  <rect x="470" y="204" width="260" height="92" rx="16" fill="#F8FBF7" stroke="#B8D7C3"/>
+  <text x="494" y="237" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Controllers</text>
+  <text x="494" y="263" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Auth, Profiles, Products</text>
+  <text x="494" y="285" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Assistant, Skin Logs</text>
+  <rect x="470" y="324" width="260" height="104" rx="16" fill="#F8FBF7" stroke="#B8D7C3"/>
+  <text x="494" y="357" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Services</text>
+  <text x="494" y="383" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Business rules</text>
+  <text x="494" y="405" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">AI enrichment + guardrails</text>
+  <rect x="470" y="456" width="260" height="92" rx="16" fill="#F8FBF7" stroke="#B8D7C3"/>
+  <text x="494" y="489" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Repositories / DTOs</text>
+  <text x="494" y="515" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">JPA repositories</text>
+  <text x="494" y="537" font-family="Arial, sans-serif" font-size="15" fill="#2B3A31">Request / response models</text>
+  <rect x="470" y="576" width="260" height="64" rx="16" fill="#FFF7E9" stroke="#E9B75E"/>
+  <text x="494" y="615" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#7A4B00">Security: JWT + BCrypt</text>
+
+  <rect x="820" y="132" width="324" height="236" rx="24" fill="#FFFFFF" stroke="#B8D7C3" stroke-width="2"/>
+  <text x="852" y="176" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#143E25">Supabase PostgreSQL</text>
+  <text x="852" y="218" font-family="Arial, sans-serif" font-size="16" fill="#2B3A31">users</text>
+  <text x="852" y="247" font-family="Arial, sans-serif" font-size="16" fill="#2B3A31">user_profiles</text>
+  <text x="852" y="276" font-family="Arial, sans-serif" font-size="16" fill="#2B3A31">user_products</text>
+  <text x="852" y="305" font-family="Arial, sans-serif" font-size="16" fill="#2B3A31">user_assistant_messages</text>
+  <text x="852" y="334" font-family="Arial, sans-serif" font-size="16" fill="#2B3A31">skin_logs</text>
+
+  <rect x="820" y="424" width="324" height="256" rx="24" fill="#FFF6F6" stroke="#F2C7CC" stroke-width="2"/>
+  <text x="852" y="468" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#143E25">External Intelligence</text>
+  <rect x="852" y="500" width="260" height="68" rx="15" fill="#FFFFFF" stroke="#F2C7CC"/>
+  <text x="876" y="541" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Gemini / Shelly Agent</text>
+  <rect x="852" y="592" width="260" height="56" rx="15" fill="#FFFFFF" stroke="#F2C7CC"/>
+  <text x="876" y="627" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#143E25">Open Beauty Facts</text>
+
+  <path d="M380 400H438" stroke="#2E5C3E" stroke-width="4" stroke-linecap="round"/>
+  <path d="M426 390L438 400L426 410" stroke="#2E5C3E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="386" y="382" font-family="Arial, sans-serif" font-size="14" fill="#506458">HTTPS + JWT</text>
+
+  <path d="M762 288H820" stroke="#2E5C3E" stroke-width="4" stroke-linecap="round"/>
+  <path d="M808 278L820 288L808 298" stroke="#2E5C3E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="766" y="268" font-family="Arial, sans-serif" font-size="14" fill="#506458">JPA</text>
+
+  <path d="M762 520H820" stroke="#B85B66" stroke-width="4" stroke-linecap="round"/>
+  <path d="M808 510L820 520L808 530" stroke="#B85B66" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="766" y="500" font-family="Arial, sans-serif" font-size="14" fill="#8D4B54">AI / product lookup</text>
+</svg>
+

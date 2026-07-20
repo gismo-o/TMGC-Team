@@ -39,8 +39,6 @@ public class ProductService {
         product.setUser(user);
         applyRequest(product, request);
 
-        // KRAVAT ADIM: Ürün kaydedilmeden önce eksik bilgileri yapay zekâ ile
-        // tamamlıyoruz
         enrichProductWithAi(product);
 
         return ProductResponse.from(productRepository.save(product));
@@ -51,7 +49,6 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Ürün bulunamadı."));
         applyRequest(product, request);
 
-        // Güncellenirken de eksik bilgiler varsa tamamlanır
         enrichProductWithAi(product);
 
         return ProductResponse.from(productRepository.save(product));
@@ -69,7 +66,6 @@ public class ProductService {
         product.setBrand(request.getBrand().trim());
         product.setCategory(request.getCategory().trim());
 
-        // Geliştirici Uyumlaştırması: Varsayılan olarak formdan geleni yazar
         product.setTimeOfDay(request.getTimeOfDay() == null || request.getTimeOfDay().isBlank() ? "both"
                 : request.getTimeOfDay().trim());
 
@@ -82,7 +78,6 @@ public class ProductService {
         product.setFavorite(Boolean.TRUE.equals(request.getIsFavorite()));
     }
 
-    // GÜNCELLEME: Tamamen Yapay Zekâ Güdümlü (AI-Driven) Zenginleştirme Metodu
     private void enrichProductWithAi(Product product) {
         if (!geminiApiClient.isConfigured()) {
             return;
@@ -93,7 +88,7 @@ public class ProductService {
         boolean isDescMissing = desc == null || desc.isBlank() || desc.contains("eksik") || desc.contains("bulunamadı");
 
         if (!hasNoIngredients && !isDescMissing && !"Diğer".equalsIgnoreCase(product.getCategory())) {
-            return; // Bilgiler zaten tam, yapay zekaya sormaya gerek yok
+            return;
         }
 
         String prompt = """
@@ -127,13 +122,11 @@ public class ProductService {
                     product.setCategory(aiCategory);
                 }
 
-                // 2. Açıklama düzeltme (Dinamik AI kararı)
                 if (isDescMissing) {
                     String aiDesc = json.path("description").asText("Cilt bakımı ürünü.").trim();
                     product.setDescription(aiDesc);
                 }
 
-                // 3. Aktif içerikleri zenginleştirme (Dinamik AI kararı)
                 if (hasNoIngredients) {
                     List<String> ingredients = new ArrayList<>();
                     json.path("activeIngredients").forEach(node -> {
@@ -145,9 +138,6 @@ public class ProductService {
                     product.setActiveIngredients(ingredients);
                 }
 
-                // 4. Kullanım zamanı (timeOfDay) Koruması:
-                // GÜNCELLEME: Tüm karar tamamen yapay zekâya bırakıldı, Java içinde statik
-                // süzgeç kullanılmıyor!
                 if (product.getTimeOfDay() == null || product.getTimeOfDay().isBlank()
                         || "both".equalsIgnoreCase(product.getTimeOfDay())) {
                     String aiTime = json.path("timeOfDay").asText("both").trim();

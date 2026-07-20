@@ -9,7 +9,6 @@ type ScanInput = {
   imageData?: unknown;
 };
 
-// GÜNCELLEME: toRequest filtresine isActive ve is_active alanları eklendi!
 const toRequest = (product: Omit<Product, 'id'> | Partial<Product>) => ({
   name: product.name,
   brand: product.brand,
@@ -21,7 +20,6 @@ const toRequest = (product: Omit<Product, 'id'> | Partial<Product>) => ({
   expiryDate: product.expiryDate || null,
   activeIngredients: product.activeIngredients ?? [],
   isFavorite: product.isFavorite ?? false,
-  // GÜNCELLEME: Aktiflik bilgisini de artık JSON paketine dahil ediyoruz
   isActive: (product as any).isActive ?? (product as any).is_active ?? true,
   is_active: (product as any).isActive ?? (product as any).is_active ?? true,
 });

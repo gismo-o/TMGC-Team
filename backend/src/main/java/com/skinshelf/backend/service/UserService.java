@@ -43,7 +43,6 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
-    // Kayıt Metodu
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.getEmail());
         if (userRepository.findByEmail(email).isPresent()) {
@@ -59,7 +58,6 @@ public class UserService {
         return toAuthResponse(userRepository.save(user));
     }
 
-    // Giriş Metodu
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(normalizeEmail(request.getEmail()))
                 .orElseThrow(() -> new RuntimeException("E-posta veya şifre hatalı."));

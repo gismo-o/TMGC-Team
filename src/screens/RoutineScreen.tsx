@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'; // GÜNCELLEME: useCallback eklendi
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Modal, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { CompositeNavigationProp, useFocusEffect } from '@react-navigation/native'; // GÜNCELLEME: useFocusEffect eklendi
+import { CompositeNavigationProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AlertTriangle, Bot, Calendar, CheckCircle2, MessageCircle, Moon, Send, Sparkles, Sun, X } from 'lucide-react-native';
 import { MainTabParamList, Product, RootStackParamList } from '../types';
@@ -47,7 +47,6 @@ const RoutineBlock = ({
   navigation: RoutineScreenNavigationProp;
   isSafeMode?: boolean;
 }) => {
-  // Güvenli modda agresif aktifler filtreleme
   const filteredProducts = useMemo(() => {
     if (!isSafeMode) return products;
 
@@ -102,17 +101,14 @@ export default function RoutineScreen({ navigation }: Props) {
     return products.filter(p => (p as any).isActive ?? (p as any).is_active ?? true);
   }, [products]);
 
-  // GÜNCELLEME: Kullanıcı sekmeyi her açtığında tetiklenecek bir state kurguladık
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      // Sekme her odaklandığında tetikleyiciyi artırarak useMemo'ları yenilemeye zorlar
       setUpdateTrigger(prev => prev + 1);
     }, [])
   );
 
-  // GÜNCELLEME: Hesaplama bağımlılıklarına [updateTrigger] eklendi
   const weekPlan = useMemo(() => buildWeekPlan(activeProducts, 'standard'), [products, updateTrigger]);
   const todayPlan = weekPlan[0];
   
@@ -188,14 +184,12 @@ export default function RoutineScreen({ navigation }: Props) {
               <Text style={styles.summarySubtitle}>Cilt tipi: {profile.skinType || 'Belirlenmedi'} • Kaynak: Dolabım</Text>
             </View>
           </View>
-          <View style={styles.summaryScoreRow}>
-            <View style={styles.summaryScorePill}>
-              <Text style={styles.summaryScoreValue}>{routineReview.score}/10</Text>
-              <Text style={styles.summaryScoreLabel}>Uyum skoru</Text>
+          <View style={styles.summaryChipRow}>
+            <View style={styles.summaryChip}>
+              <Text style={styles.summaryChipText}>Dolabımdan seçildi</Text>
             </View>
-            <View style={styles.summaryScorePill}>
-              <Text style={styles.summaryScoreValue}>{routineReview.riskLevel}</Text>
-              <Text style={styles.summaryScoreLabel}>Risk seviyesi</Text>
+            <View style={styles.summaryChip}>
+              <Text style={styles.summaryChipText}>{activeProducts.length} aktif ürün</Text>
             </View>
           </View>
           <Text style={styles.summaryText}>
@@ -364,26 +358,24 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     lineHeight: 21,
   },
-  summaryScoreRow: { flexDirection: 'row', gap: 9, marginBottom: 12 },
-  summaryScorePill: {
-    flex: 1,
+  summaryChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  summaryChip: {
     backgroundColor: 'rgba(255,255,255,0.09)',
-    borderRadius: radius.md,
-    paddingVertical: 10,
-    alignItems: 'center',
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
   },
-  summaryScoreValue: {
-    fontFamily: fonts.sansExtraBold,
-    fontSize: 15,
-    color: colors.goldSoft,
-  },
-  summaryScoreLabel: {
+  summaryChipText: {
     fontFamily: fonts.sansSemiBold,
-    fontSize: 10.5,
-    color: colors.onDarkSoft,
-    marginTop: 2,
+    fontSize: 11.5,
+    color: colors.goldSoft,
   },
   todayHeader: {
     flexDirection: 'row',
