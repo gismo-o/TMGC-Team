@@ -1,8 +1,18 @@
 # Product Status ve Ekran Kanitlari
 
-Sprint 2 sonunda urun, statik prototipten backend ve AI baglantili demo akislara gecti. Bu klasor ekran kanitlarinin hangi akislari gostermesi gerektigini ve mevcut kod karsiliklarini listeler.
+Sprint 2 sonunda urun, statik prototipten backend ve AI baglantili demo akislara gecti. Ornek bootcamp repolarindaki gibi ana uygulama ekranlari bu klasorde PNG olarak tutulur ve README icinde dogrudan gorunur.
 
-## Gosterilmesi Gereken Ana Akislar
+## App Screenshots
+
+| Login / Onboarding | Dolabim | Urun Detayi | Rutinim |
+| --- | --- | --- | --- |
+| <img src="android-login-onboarding.png" width="180"> | <img src="android-dolabim-backend-shelf.png" width="180"> | <img src="android-product-detail-active-toggle.png" width="180"> | <img src="android-routine-weekly-plan.png" width="180"> |
+
+| Shelly | Profil | Barkod / Urun Ekleme |
+| --- | --- | --- |
+| <img src="android-shelly-memory-chat.png" width="180"> | <img src="android-profile-supabase.png" width="180"> | <img src="android-barcode-review.png" width="180"> |
+
+## Gosterilen Akislar
 
 | Ekran/Akis | Sprint 2 degeri | Kod karsiligi |
 | --- | --- | --- |
@@ -15,15 +25,7 @@ Sprint 2 sonunda urun, statik prototipten backend ve AI baglantili demo akislara
 | Cilt takibi | Fotograf notu, analiz ve haftalik ozet | `SkinTrackingScreen`, `SkinLogController` |
 | Bildirimler | Rutin ve urun takip sinyalleri | `NotificationsScreen`, `notificationService` |
 
-## README Gorsel Notu
+## Sonraki Guncelleme Notu
 
-Kok README'de Sprint 2 bolumu, eski veya kirik gorsel linklerine dayanmadan bu klasore ve teknik kanitlara baglanir. Ekip yeni emulator ekran goruntulerini aldiginda bu klasore eklenmesi onerilen dosya adlari:
-
-- `android-login-onboarding.png`
-- `android-dolabim-backend-shelf.png`
-- `android-product-review-ai.png`
-- `android-product-detail-active-toggle.png`
-- `android-routine-weekly-plan.png`
-- `android-shelly-memory-chat.png`
-- `android-skin-tracking-summary.png`
+Emulator uzerinden yeni ekran goruntuleri alindiginda ayni dosya adlari korunarak bu klasordeki PNG'ler guncellenebilir. README linkleri sabit kalacagi icin GitHub ana sayfasinda ek is gerektirmez.
 

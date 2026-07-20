@@ -1,0 +1,48 @@
+<svg width="1180" height="720" viewBox="0 0 1180 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1180" height="720" rx="28" fill="#F7F8F4"/>
+  <text x="44" y="58" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#143E25">SkinShelf Board Summary</text>
+  <text x="44" y="90" font-family="Arial, sans-serif" font-size="17" fill="#506458">Backlog, To Do, Progress and Done flow used for the integration milestone</text>
+
+  <rect x="40" y="130" width="250" height="530" rx="20" fill="#F1EEE8" stroke="#DED4C5"/>
+  <rect x="320" y="130" width="250" height="530" rx="20" fill="#F6F4EF" stroke="#DED4C5"/>
+  <rect x="600" y="130" width="250" height="530" rx="20" fill="#EEF4FA" stroke="#CAD8E8"/>
+  <rect x="880" y="130" width="250" height="530" rx="20" fill="#EAF5ED" stroke="#B8D7C3"/>
+
+  <text x="64" y="174" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#5D4839">Product Backlog</text>
+  <text x="344" y="174" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#5D4839">To Do</text>
+  <text x="624" y="174" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#214B73">Progress</text>
+  <text x="904" y="174" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#143E25">Done</text>
+
+  <g font-family="Arial, sans-serif" font-size="15" fill="#26342C">
+    <rect x="64" y="208" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#E0D8CC"/>
+    <text x="82" y="239" font-weight="700">Final demo video</text>
+    <text x="82" y="262">Sprint 3 scope</text>
+    <rect x="64" y="296" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#E0D8CC"/>
+    <text x="82" y="327" font-weight="700">Release checklist</text>
+    <text x="82" y="350">Sprint 3 scope</text>
+
+    <rect x="344" y="208" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#E0D8CC"/>
+    <text x="362" y="239" font-weight="700">Manual QA pass</text>
+    <text x="362" y="262">Final polish</text>
+
+    <rect x="624" y="208" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#CAD8E8"/>
+    <text x="642" y="239" font-weight="700">Evidence polish</text>
+    <text x="642" y="262">Screens + links</text>
+
+    <rect x="904" y="208" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#B8D7C3"/>
+    <text x="922" y="239" font-weight="700">Auth API</text>
+    <text x="922" y="262">13 SP</text>
+    <rect x="904" y="296" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#B8D7C3"/>
+    <text x="922" y="327" font-weight="700">Supabase schema</text>
+    <text x="922" y="350">18 SP</text>
+    <rect x="904" y="384" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#B8D7C3"/>
+    <text x="922" y="415" font-weight="700">Product CRUD</text>
+    <text x="922" y="438">13 SP</text>
+    <rect x="904" y="472" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#B8D7C3"/>
+    <text x="922" y="503" font-weight="700">Shelly agent</text>
+    <text x="922" y="526">41 SP</text>
+    <rect x="904" y="560" width="202" height="70" rx="14" fill="#FFFFFF" stroke="#B8D7C3"/>
+    <text x="922" y="591" font-weight="700">Skin tracking</text>
+    <text x="922" y="614">13 SP</text>
+  </g>
+</svg>

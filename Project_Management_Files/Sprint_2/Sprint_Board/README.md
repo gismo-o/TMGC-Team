@@ -2,6 +2,8 @@
 
 Sprint 2 backlog'u Notion board uzerinden takip edildi. Ornek bootcamp repolarinda Trello/Asana/Miro board ekran goruntuleri README icine gomuluyor; SkinShelf tarafinda board linki kok README'de ve bu klasorde referanslanir.
 
+<img src="sprint2-board-summary.svg" width="900" alt="SkinShelf board summary">
+
 ## Board Kolon Mantigi
 
 | Kolon | Anlam |
@@ -26,4 +28,3 @@ Detayli puan dagilimi: [../sprint2-story-points.md](../sprint2-story-points.md)
 ## Kanit Notu
 
 Daily scrum ve board ekran goruntuleri takim tarafindan Notion/Imgur uzerinden saklanir. GitHub tarafinda bu klasor, board'un hangi kolon/kart mantigiyla kullanildigini ve puanlarin nasil dagitildigini aciklayan kalici teslim kanitidir.
-
