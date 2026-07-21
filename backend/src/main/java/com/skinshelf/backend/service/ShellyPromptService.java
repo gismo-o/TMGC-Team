@@ -1,5 +1,9 @@
 package com.skinshelf.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skinshelf.backend.entity.Product;
 import com.skinshelf.backend.entity.SkinLog;
 import com.skinshelf.backend.entity.UserProfile;
@@ -30,6 +34,7 @@ public class ShellyPromptService {
     }
 
     private final IngredientKnowledgeBase knowledgeBase;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ShellyPromptService(IngredientKnowledgeBase knowledgeBase) {
         this.knowledgeBase = knowledgeBase;
@@ -57,6 +62,73 @@ public class ShellyPromptService {
             - Asla kullanicinin rafında olmayan uydurma bir urun ID'si üretme.
             - Turkce samimi ve guven veren bir dille yanit ver.
             """;
+
+    /**
+     * Shelly'nin sohbet yanitinin Gemini responseSchema karsiligi. Prompt
+     * metnindeki JSON semasiyla ayni alanlari tanimlar; farkla ki artik model
+     * bunu API seviyesinde uymak zorunda, sadece rica degil.
+     */
+    public JsonNode buildChatResponseSchema() {
+        ObjectNode schema = objectMapper.createObjectNode();
+        schema.put("type", "OBJECT");
+        ObjectNode properties = schema.putObject("properties");
+
+        enumField(properties, "intentType", "INFO", "ISSUE");
+        nullableStringField(properties, "detectedIssue");
+        enumField(properties, "mode", "PRODUCT_ANALYSIS", "ROUTINE_CHECK", "INGREDIENT_ANALYSIS",
+                "SKIN_REACTION", "WEEKLY_PLAN", "GENERAL_CHAT");
+        stringField(properties, "title");
+        stringField(properties, "summary");
+        stringField(properties, "analysis");
+        properties.set("recommendedProducts", productSuggestionArraySchema());
+        properties.set("avoidProducts", productSuggestionArraySchema());
+        properties.set("followUpQuestions", stringArraySchema());
+        enumField(properties, "riskLevel", "low", "medium", "high");
+        properties.set("tags", stringArraySchema());
+
+        schema.putArray("required")
+                .add("intentType").add("mode").add("title").add("summary").add("analysis").add("riskLevel");
+
+        return schema;
+    }
+
+    private void stringField(ObjectNode properties, String name) {
+        properties.putObject(name).put("type", "STRING");
+    }
+
+    private void nullableStringField(ObjectNode properties, String name) {
+        ObjectNode field = properties.putObject(name);
+        field.put("type", "STRING");
+        field.put("nullable", true);
+    }
+
+    private void enumField(ObjectNode properties, String name, String... values) {
+        ObjectNode field = properties.putObject(name);
+        field.put("type", "STRING");
+        ArrayNode enumValues = field.putArray("enum");
+        for (String value : values) {
+            enumValues.add(value);
+        }
+    }
+
+    private ObjectNode stringArraySchema() {
+        ObjectNode array = objectMapper.createObjectNode();
+        array.put("type", "ARRAY");
+        array.putObject("items").put("type", "STRING");
+        return array;
+    }
+
+    private ObjectNode productSuggestionArraySchema() {
+        ObjectNode array = objectMapper.createObjectNode();
+        array.put("type", "ARRAY");
+        ObjectNode item = array.putObject("items");
+        item.put("type", "OBJECT");
+        ObjectNode itemProperties = item.putObject("properties");
+        itemProperties.putObject("id").put("type", "INTEGER");
+        itemProperties.putObject("reason").put("type", "STRING");
+        item.putArray("required").add("id").add("reason");
+        return array;
+    }
 
     public String buildChatPrompt(
             UserProfile profile,
